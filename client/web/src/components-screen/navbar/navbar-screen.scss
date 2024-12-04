@@ -1,0 +1,113 @@
+.agapay-icon{
+    width: 50px;
+}
+
+.navbar-container-screen{
+    position: fixed;
+    z-index: 5;
+    width: 100%;
+    background-color: rgb(255, 255, 255);
+    padding: 12px 64px;
+    display: grid;
+   
+}
+.navbar-screen{
+    width: 100%;
+    display: flex;
+
+    justify-content: space-between;
+    align-items: stretch;
+}
+
+.logo-container{
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+.logo-container span{
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: maroon;
+}
+
+.nav-links{
+    margin: 0;
+    padding: 0;
+    gap: 18px;
+    display: flex;
+    list-style: none;
+}
+.navbar-screen .nav-links .links{
+    text-decoration: none;
+    color: rgb(128, 0, 0);
+    font-size: 18px;
+    width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 1px;
+    transition: color 0.3s ease;
+    position: relative;
+    cursor: pointer;
+}
+.nav-links li {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 1px;
+
+    position: relative;
+    cursor: pointer;
+}
+
+.nav-links li:hover span {
+    color:#cfb53b;
+    font-weight: bold;
+    font-size: 18px;
+    width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 2px;
+    transition: color 0.1s ease;  
+}
+
+.nav-links li::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background-color: #cfb53b;
+    transition: width 0.3s ease;
+}
+
+.nav-links li:hover::after {
+    width: 100%;
+}
+
+.nav-links li.active::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: #cfb53b;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+  }
+
+  .nav-links li.active span {
+    color:#cfb53b;
+    font-weight: bold;
+    font-size: 18px;
+    width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 2px;
+    transition: color 0.1s ease;  
+  }
+

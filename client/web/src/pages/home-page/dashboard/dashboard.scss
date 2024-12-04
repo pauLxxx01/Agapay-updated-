@@ -1,0 +1,166 @@
+@import "../../../styles/variables.scss";
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.title {
+  display: flex;
+  color: $soft-color;
+  padding-bottom: 24px;
+  width: 100%;
+  
+  letter-spacing: 2px;
+  justify-content: center;
+  color: rgba(128, 128, 128, 0.5);
+}
+
+
+//dashboard
+
+.dashboard {
+
+  z-index: 1;
+  top: 89px;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: minmax(50px, auto);
+
+  .box {
+    color: $soft-color;
+    display: flex;
+    padding: 16px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+  .count {
+    font-size: 42px;
+  }
+  .box1 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    letter-spacing: 1px;
+    font-size: 16px;
+    background-color: rgba(128, 0, 0, 0.342);
+
+    &:hover {
+      color: $soft-color;
+      background-color: maroon;
+      transform: scale(1.05);
+    }
+  }
+  .box2 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    letter-spacing: 1px;
+    font-size: 16px;
+    background-color: rgba(210, 105, 30, 0.363);
+
+    &:hover {
+      color: $soft-color;
+      background-color: chocolate;
+      transform: scale(1.05);
+    }
+  }
+  .box3 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    letter-spacing: 1px;
+    font-size: 16px;
+    background-color: rgba(0, 128, 0, 0.308);
+
+    &:hover {
+      color: $soft-color;
+      background-color: green;
+      transform: scale(1.05);
+    }
+  }
+  .box4 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    letter-spacing: 1px;
+    font-size: 16px;
+    background-color: rgba(1, 103, 138, 0.418);
+
+    &:hover {
+      background-color: rgb(48, 122, 206);
+      transform: scale(1.05);
+      color: $soft-color;
+    }
+  }
+  .box5 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    letter-spacing: 1px;
+    font-size: 16px;
+    background-color: rgba(128, 128, 128, 0.384);
+
+    &:hover {
+      color: $soft-color;
+      background-color: gray;
+      transform: scale(1.05);
+    }
+  }
+  .box6 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    letter-spacing: 1px;
+    font-size: 16px;
+    background-color: rgba(255, 255, 0, 0.26);
+
+    &:hover {
+      background-color: #e1ad01;
+      transform: scale(1.05);
+      color: $soft-color;
+    }
+  }
+  .box7 {
+   margin-top: 22px;
+    cursor: default;
+    color: $main-color;
+    background-color: rgba(255, 255, 255, 0.486);
+    grid-row: span 4;
+    border-right: 1px solid rgba(0, 0, 0, 0.127);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.127);
+    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+    h1 {
+      font-size: 24px;
+      color: $main-color;
+      width: 10%;
+    }
+
+    &:hover {
+      transform: scale(0.9);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.405);
+    }
+  }
+  .box8 {
+   margin-top: 22px;
+    cursor: default;
+    color: $main-color;
+    background-color: rgb(255, 255, 255);
+    grid-column: span 2;
+    grid-row: span 4;
+    border-right: 1px solid rgba(0, 0, 0, 0.127);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.127);
+    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+    h1 {
+      font-size: 24px;
+      color: $main-color;
+      width: 10%;
+    }
+    &:hover {
+      transform: scale(0.9);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.405);
+    }
+  }
+}

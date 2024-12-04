@@ -1,0 +1,46 @@
+@import "../../styles/variables.scss";
+.menu {
+ 
+  display: flex;
+  width: min(210px, 100%);
+  .item {
+    gap: 8px;
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .listItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    border-radius: 5px;
+    color: $soft-color;
+    transition: background-color 0.3s ease, transform 0.3s ease; 
+    &:hover {
+      background-color: rgba(255, 255, 0, 0.35);
+      transform: translateX(10px);
+    }
+  }
+
+  .icon {
+    width: 35px;
+    height: 35px;
+  }
+  .active{
+    background-color: rgba(255, 255, 0, 0.35);
+
+    .listItemTitle {
+      color: white;
+    
+      letter-spacing: 1px;
+    }
+
+    .icon {
+      transform: scale(1.1);
+    }
+  }
+}

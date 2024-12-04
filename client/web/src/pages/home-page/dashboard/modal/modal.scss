@@ -1,0 +1,246 @@
+@import "../../../../styles/variables.scss";
+
+.main-modal {
+  display: flex;
+  position: fixed;
+  padding: 42px;
+  background-color: rgb(38 38 38 / 80%);
+  backdrop-filter: blur(10px);
+  z-index: 10;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  justify-content: center;
+  overflow: auto;
+}
+.popup {
+  overflow: auto;
+
+  padding: 22px 42px;
+  width: 100%;
+  background-color: $main-bg;
+  border-radius: 32px;
+  color: $main-color;
+}
+.containerModal{
+  display: flex;
+  flex-direction: column;
+}
+.containerNav{
+  display: flex;
+  width: 100%;
+justify-content: end;
+}
+.button-container {
+  display: flex;
+  justify-content: end;
+  button {
+    font-size: 12px;
+    border: none;
+    background: none;
+    padding: 12px;
+    height: 25px;
+    width: 25px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    margin: 8px 0;
+    font-weight: 800;
+    color: gray;
+    cursor: pointer;
+    &:hover {
+      background: $fire-hover;
+      color: $soft-color;
+      border-radius: 26px;
+      font-weight: lighter;
+      font-size: 10px;
+    }
+  }
+}
+
+.popup-header {
+  display: flex;
+  flex-direction: column;
+  text-transform: uppercase;
+  padding: 0;
+  margin: 0;
+
+  span {
+    display: flex;
+    align-items: center;
+    &:first-child {
+      color: maroon;
+      font-weight: 900;
+      font-size: 60px;
+    }
+    &:last-child {
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 22px;
+    }
+  }
+}
+.search {
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: flex-end;
+  input[type="search"] {
+    width: 50%;
+    height: 50%;
+    padding: 0.5rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 20px;
+    border: 1px solid #eee;
+    background-color: #fff;
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 10px rgba(129, 129, 129, 0.09);
+    }
+  }
+}
+.container-body {
+  overflow: auto;
+  max-height: 100%;
+  max-width: 100%;
+}
+
+table {
+  background-color: #faebd74d;
+  padding: 1%;
+  border-radius: 20px;
+  text-align: center;
+  width: 100%;
+  min-width: 800px;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  .data-modal.no {
+    background-color: gray;
+  }
+
+  .data-modal.yes {
+    background-color: rgb(255, 217, 0);
+    color: maroon;
+  }
+  .data-modal {
+    text-transform: uppercase;
+    font-size: 12px;
+    border-radius: 12px;
+    color: $soft-color;
+    padding: 12px;
+    margin: 0 12px;
+  }
+  .showView {
+    text-decoration: none;
+    width: auto;
+    text-transform: uppercase;
+    font-size: 12px;
+    background-color: rgba(128, 0, 0, 0.355);
+    border-radius: 12px;
+    color: $soft-color;
+    padding: 12px;
+    margin: 0 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+
+    &:hover {
+      transform: scale(1.1);
+      background-color: $dark-bg;
+    }
+  }
+}
+
+
+thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+tbody {
+  overflow: auto; /* or overflow: scroll; */
+  max-height: 100%; /* adjust the max height to your liking */
+  max-width: 800px; /* adjust the max width to your liking */
+}
+
+th,
+td {
+  align-items: center;
+  flex: 1 1 0;
+  margin: 0 10px;
+  padding: 10px;
+  border: none; // remove borders
+}
+
+/* Add the following media queries to make the table responsive */
+
+@media only screen and (max-width: 1200px) {
+  table {
+    font-size: 0.9rem;
+  }
+  th,
+  td {
+    padding: 8px;
+  }
+}
+
+@media only screen and (max-width: 992px) {
+  .popup{
+    font-size: 0.5rem;
+  }
+  table {
+    font-size: 0.5rem;
+
+    .data-modal {
+      font-size: 0.5rem;
+      border-radius: 6px;
+      padding: 5%;
+      margin: 0 1%;
+    }
+    .showView {
+      display: inline-flex;
+      width: 50%;
+      font-size: 0.5rem;
+      border-radius: 6px;
+      color: #fff;
+      padding: 5%;
+      margin: 0 1%;
+      justify-content: center;
+    }
+  }
+
+  th,
+  td {
+    padding: 6px;
+  }
+
+  .pagination-modal {
+   
+    gap: 4px;
+
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 0.5rem;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  table {
+    font-size: 0.7rem;
+  }
+  th,
+  td {
+    padding: 4px;
+  }
+}
+
+@media only screen and (max-width: 576px) {
+  table {
+    font-size: 0.6rem;
+  }
+  th,
+  td {
+    padding: 2px;
+  }
+}

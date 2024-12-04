@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "Agapay",
+    "slug": "Agapay",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/agapay/logo/logo.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/agapay/logo/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/agapay/logo/logo.png",
+          "color": "#ffffff",
+          "defaultChannel": "default",
+          "sounds": [
+            "./assets/mp3/notification_sound_mobile.wav",
+            "./assets/mp3/alert.mp3"
+          ],
+          "enableBackgroundRemoteNotifications": false
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/agapay/logo/logo.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c85535dc-9c9a-4f11-b108-f2a444058bf8"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/c85535dc-9c9a-4f11-b108-f2a444058bf8"
+    }
+  }
+}

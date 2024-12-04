@@ -1,0 +1,66 @@
+.body-content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 22px 64px;
+  align-items: center;
+}
+
+.body-content form {
+  border: 12px solid maroon;
+  background-color: white;
+  width: 30%;
+  border-radius: 0 22px 22px 22px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+.body-content .title-bar {
+  display: flex;
+  padding: 8px 0;
+  align-items: center;
+  width: 80%;
+  background-color: maroon;
+  border-radius: 0 0 22px 0;
+
+}
+.body-content .title-bar .login-title{
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: White;
+}
+.body-content .title-bar .lock-icon {
+  padding: 0 8px;
+  width: 50px;
+  display: flex;
+}
+.body-content .content-login{
+  display: flex;
+  flex-direction: column;
+  padding: 10%;
+  gap: 10px;
+
+}
+
+.input{
+  display: flex;
+  flex-direction: column;
+}
+.button{
+  display: flex;
+
+  justify-content: end;
+}
+
+.button-login {
+  justify-content: center;
+  padding: 8px 16px;
+  background-color: maroon;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  width: 50%;
+}
+.button-login:hover {
+  background-color: rgb(148, 64, 64);
+}

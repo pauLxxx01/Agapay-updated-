@@ -1,0 +1,100 @@
+.form-container-user {
+  display: flex;
+  width: 100%;
+  margin: 0px 42px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+input {
+  padding: 8px;
+}
+.radio-group {
+  display: flex;
+  gap: 16px;
+}
+.user-form {
+  background-color: #fff;
+  border-radius: 8px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+.header-container {
+  display: flex;
+  padding: 8px;
+  justify-content: center;
+  background-color: maroon;
+  border-radius: 8px 8px 0px 0px;
+  h2 {
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 0;
+    padding: 0;
+
+    color: #fff;
+  }
+}
+h3 {
+  color: maroon;
+}
+label {
+  width: 100%;
+  font-size: 16px;
+  color: #800000;
+}
+
+.grid-container {
+  grid-template-columns: 1fr 1fr 1fr;
+  display: grid;
+  padding: 24px;
+}
+.input {
+  width: 100%;
+  margin: 0px;
+}
+select {
+  cursor: pointer;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: border-color 0.3s;
+  &:focus {
+    border-color: #4caf50;
+  }
+}
+.cancel-btn {
+  grid-column: 2;
+}
+
+.user-info,
+.parent-info {
+  padding: 10px; // Optional: Add some padding or styling
+}
+
+.form-group {
+  margin: 8px 0px; // Space between form groups
+}
+
+.submit-button-register {
+  grid-column: span 3; // Make the submit button span both columns
+  background-color: maroon; // Background color of the button
+  color: #fff; // Text color of the button
+  border: none; // No border
+  padding: 10px 20px; // Padding inside the button
+  font-size: 16px; // Font size
+  cursor: pointer; // Cursor pointer on hover
+  transition: transform 0.2s; // Smooth transition for transform
+  border-radius: 5px;
+  scale: 1; // Rounded corners for the button
+  &:hover {
+    background-color: rgba(
+      128,
+      0,
+      0,
+      0.384
+    ); // Change background color on hover
+    transform: scale(1.04); // Zoom in effect
+  }
+}

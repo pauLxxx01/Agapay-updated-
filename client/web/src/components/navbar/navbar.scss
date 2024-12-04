@@ -1,0 +1,129 @@
+@import "../../styles/variables.scss";
+
+.navbar {
+  position: fixed;
+  display: flex;
+  z-index: 3;
+  width: 100%;
+  padding: 0px 32px;
+  align-items: center;
+  justify-content: space-between;
+  background-color: $dark-bg;
+  color: $soft-color;
+
+
+  .logo{
+  
+    text-decoration: none;
+    color: white;
+  }
+  
+
+  .icons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 0;
+    .icon {
+      display: flex;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .notification {
+      position: relative;
+      cursor: pointer;
+      padding:  8px ;
+      transition: background-color 0.3s ease, border-radius 0.3s ease, transform 0.3s ease;
+      span {
+        background-color: rgb(255, 217, 0);
+        color: rgb(255, 0, 0);
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        position: absolute;
+        top: 6px;
+        right: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 8px;
+      }
+    }
+    
+    .account {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding:  8px ;
+      transition: background-color 0.3s ease, border-radius 0.3s ease, transform 0.3s ease;
+    }
+  }
+
+  .account-dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+  }
+
+  .account-dropdown-btn {
+
+    cursor: pointer;
+  }
+
+  .account-dropdown-content {
+    gap: 8px;
+    padding: 8px;
+    flex-direction: column;
+    position: absolute;
+    top: 25px;
+    right: 20px;
+    border-radius: 12px;
+    background-color: #f9f9f9;
+    min-width: 150px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+  }
+  .text-dropdown{
+    border-radius: 8px;
+    display: flex;
+    padding: 8px;
+    &:hover{
+      border-radius: 8px;
+      background-color: $fire-hover;
+      color: $soft-color;
+    }
+  }
+  span {
+    text-align: end;
+    color: $main-color;
+    text-decoration: none;
+  }
+  
+  .account-dropdown-btn{
+    color: $soft-color;
+  }
+
+  .account-dropdown:hover {
+
+    filter: drop-shadow(
+      0px 0px 8px rgba(0, 0, 0, 0.444)
+    );
+
+  }
+}
+.notification:hover{
+  background-color: rgba(255, 255, 0, 0.224);
+  border-radius: 12px;
+  transform: scale(1.05);
+}
+
+
+.account:hover {
+  background-color: rgba(255, 255, 0, 0.224);
+  border-radius: 12px;
+  transform: scale(1.05);
+}
