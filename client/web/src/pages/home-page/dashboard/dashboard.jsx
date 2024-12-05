@@ -12,6 +12,7 @@ import { useSocket } from "../../../socket/Socket.jsx";
 import Notification from "../../../components/notification/notification.jsx";
 import { ToastContainer, toast } from "react-toastify";
 import alertSound from "../../../assets/mp3/alert.mp3";
+
 const Dashboard = ({ users }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -93,9 +94,13 @@ const Dashboard = ({ users }) => {
   };
 
   const sendN = async () => {
+    const token = [
+      "ExponentPushToken[1jRuMsNQhGr-LxcWl5VxdA]",
+      "ExponentPushToken[je3EcfOl6f3gpnDBiI43cD]"
+    ]
     try {
       const request = {
-        to: "ExponentPushToken[hdu_TNJlQLo8Cg_5-6np3p]",
+        to: token,
         title: "ExponentPushToken",
         body: "ExponentPushToken",
   

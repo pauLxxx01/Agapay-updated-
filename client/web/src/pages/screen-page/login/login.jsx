@@ -52,15 +52,23 @@ const Login = () => {
         console.log("Admin ID: ", response.data.admin._id);
         console.log("Verification: ", response.data.admin.isVerified);
         console.log("Token: ", response.data.token);
-        setVerify(response.data.admin.isVerified);
-        setAdmin(response.data.admin);
-        setAdminID(response.data.admin._id); // Set the verification token
-        // Set the token in context (global state)
+
+        // Store Admin ID in state and localStorage
+        const adminId = response.data.admin._id;
+        setAdminID(adminId);
+        localStorage.setItem("adminID", adminId);
+        
+        localStorage.setItem("@auth", JSON.stringify(response.data));
+
+        // Store token in context (global state)
         setToken(response.data.token);
 
-        // Open dialog if login is successful
+        // Handle verification
+        setVerify(response.data.admin.isVerified);
+        setAdmin(response.data.admin);
+
         if (!response.data.admin.isVerified) {
-          setDialogOpen(true); // Open dialog if verified
+          setDialogOpen(true); // Open dialog if not verified
           toast.info(
             "Please verify your account with the OTP sent to your email."
           );
@@ -90,6 +98,10 @@ const Login = () => {
   };
 
   useEffect(() => {
+    const storedAdminId = localStorage.getItem("adminID");
+    if (storedAdminId) {
+      console.log("Stored admin ID:", storedAdminId);
+    }
     const storedUsername = localStorage.getItem("username");
     const storedPassword = localStorage.getItem("password");
     if (storedUsername && storedPassword) {

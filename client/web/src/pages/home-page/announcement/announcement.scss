@@ -1,0 +1,88 @@
+@import "../../../styles/variables.scss";
+
+.announcement-container {
+  display: flex;
+  flex-direction: column;
+  color: $main-color;
+  gap: 12px;
+}
+.btn-search {
+  margin-bottom: 12px;
+  display: flex;
+  margin-bottom: 12px;
+  justify-content: flex-end;
+  input[type="search"] {
+    width: 50%;
+    height: 40px;
+    padding: 12px 22px;
+    font-size: 16px;
+    border-radius: 20px;
+    border: 1px solid #eee;
+    background-color: #fff;
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 10px rgba(129, 129, 129, 0.09);
+    }
+  }
+}
+.btnAnnounce {
+  display: flex;
+}
+.bnt-container {
+  padding: 10px 20px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  background-color: $main-color;
+  color: white;
+  cursor: pointer;
+  width: 20%;
+  transition: background-color 0.3s, transform 0.3s;
+  &:hover {
+    color: $soft-color;
+    background-color: rgba(128, 0, 0, 0.35);
+    transform: scale(0.95);
+  }
+}
+
+th {
+  width: auto;
+  font-size: 12px;
+  font-weight: lighter;
+  text-transform: uppercase;
+  background-color: $dark-bg;
+  border-radius: 12px;
+  border-right: 1px solid $soft-color;
+  color: $soft-color;
+  padding: 12px 22px;
+}
+td {
+  padding: 12px 15px;
+  text-align: center;
+}
+.items-row:hover {
+
+  background-color: #b34f4f2a;
+}
+
+.btn-action-container {
+  display: flex;
+  gap: 10px;
+
+  align-items: center;
+  justify-content: center;
+  button {
+    cursor: pointer;
+    color: $soft-color;
+    background-color: $dark-bg;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;;
+    &:hover {
+        transform: scale(1.05);
+      background-color: rgba(128, 0, 0, 0.333);
+      color: #e0e0e0;
+    }
+  }
+}

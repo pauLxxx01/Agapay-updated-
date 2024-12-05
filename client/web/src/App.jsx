@@ -10,8 +10,7 @@ import Report from "./pages/home-page/report/report.jsx";
 import Dashboard from "./pages/home-page/dashboard/dashboard";
 import ViewReports from "./pages/home-page/process-report/view-report/view";
 import OngoingReports from "./pages/home-page/process-report/contact-user/ongoing-process.jsx";
-
-import { API_URL } from "./constants.js";
+import Announcement from "./pages/home-page/announcement/announcement.jsx";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -23,7 +22,7 @@ import ResponderAccounts from "./Accounts/Responder/responder-accounts/responder
 
 import { ToastContainer } from "react-toastify"; // Import ToastContainer
 import "react-toastify/dist/ReactToastify.css"; // Import toastify styles
-
+import { AuthProvider } from "./context/authContext.jsx";
 
 function App() {
   const [users, setUsers] = useState([]);
@@ -101,6 +100,10 @@ function App() {
           element: <Dashboard users={users} />,
         },
         {
+          path: "/home/announcement",
+          element: <Announcement />,
+        },
+        {
           path: "/home/report",
           element: <Report users={users} messages={messages} />,
         },
@@ -118,11 +121,10 @@ function App() {
 
   return (
     <>
-    
-        <RouterProvider router={router} />
-        <ToastContainer 
-        position="top-right" />
-     
+
+      <RouterProvider router={router} />
+      <ToastContainer position="top-right" />
+ 
     </>
   );
 }

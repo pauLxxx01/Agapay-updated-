@@ -23,6 +23,7 @@ const AuthProvider = ({ children }) => {
 
         let data = await AsyncStorage.getItem("@auth");
         let loginData = JSON.parse(data);
+        console.log("Full data from AsyncStorage:", data);
 
         setState({ user: loginData?.user, token: loginData?.token });
       } catch (error) {
@@ -31,7 +32,6 @@ const AuthProvider = ({ children }) => {
     };
     loadLocalStorageData();
   }, []);
-  let token = state && state.token;
 
   return (
     <AuthContext.Provider value={[state, setState]}>

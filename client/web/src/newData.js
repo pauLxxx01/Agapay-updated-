@@ -95,6 +95,29 @@ export const headerTableGeneral = [
 
 ];
 
+export const headerTableAnnounce = [
+  {
+    id: 1,
+    KEY: "title",
+    Label: "TITLE",
+  },
+  {
+    id: 2,
+    KEY: "Topic",
+    Label: "TOPIC",
+  },
+  {
+    id: 3,
+    KEY: "createdAt",
+    Label: "ANNOUNCE CREATED",
+  },
+  {
+    id: 4,
+    KEY: "Action",
+    Label: "ACTION",
+  },
+]
+
 
 
 //responder - register

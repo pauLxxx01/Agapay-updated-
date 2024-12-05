@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,25 +12,8 @@ import {
   SafeAreaView,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-
+import axios from "axios";
 const { width, height } = Dimensions.get("window");
-
-const initialAnnouncements = [
-  {
-    id: "1",
-    title: "Earthquake Drill",
-    department: "Health and Safety Office",
-    date: "May 9 2024",
-    pinned: false,
-  },
-  {
-    id: "2",
-    title: "Fire Drill",
-    department: "Health and Safety Office",
-    date: "March 3 2024",
-    pinned: false,
-  },
-];
 
 const details = [
   {
@@ -52,39 +35,61 @@ const details = [
 ];
 
 const Announcement = ({ navigation }) => {
-  const [announcements, setAnnouncements] = useState(initialAnnouncements);
+  const [announcements, setAnnouncements] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredAnnouncements, setFilteredAnnouncements] =
-    useState(initialAnnouncements);
+  const [filteredAnnouncements, setFilteredAnnouncements] = useState([]);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
+
+  const [pinnedId, setPinnedId] = useState(null); // Tracks the pinned announcement's ID
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await axios.get("get-announcement");
+        console.log(data.data.announcements);
+        setAnnouncements(data.data.announcements);
+        setFilteredAnnouncements(data.data.announcements);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const sortAnnouncements = (announcements) => {
-    return announcements.sort(
-      (a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0)
-    );
+    return announcements.sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
   };
 
   const handleSearch = (query) => {
-    setSearchQuery(query);
-    if (query === "") {
-      setFilteredAnnouncements(announcements);
+    setSearchQuery(query); // Update the query state
+    if (!query) {
+      setFilteredAnnouncements(announcements); // Reset to all announcements if query is empty
     } else {
-      const filtered = announcements.filter((item) =>
-        item.title.toLowerCase().includes(query.toLowerCase())
+      const filtered = announcements.filter(
+        (announcement) =>
+          announcement.title.toLowerCase().includes(query.toLowerCase()) || // Search in title
+          announcement.department.toLowerCase().includes(query.toLowerCase()) // Optionally, search in department
       );
-      setFilteredAnnouncements(filtered);
+      setFilteredAnnouncements(filtered); // Update the filtered list
     }
   };
 
   const handlePress = (item) => {
     setSelectedAnnouncement(item);
-    const detail = details.find((detail) => detail.id === item.id);
-    setSelectedDetail(detail);
     setModalVisible(true);
+
+    const detail = details.find((detail) => detail._id === item._id);
+    setSelectedDetail(detail);
   };
 
   const openMenu = (item) => {
@@ -94,29 +99,39 @@ const Announcement = ({ navigation }) => {
 
   const handleDelete = () => {
     const updatedAnnouncements = announcements.filter(
-      (a) => a.id !== selectedAnnouncement.id
+      (a) => a._id !== selectedAnnouncement._id
     );
+
     const sortedAnnouncements = sortAnnouncements(updatedAnnouncements);
     setAnnouncements(sortedAnnouncements);
     setFilteredAnnouncements(sortedAnnouncements);
+    setConfirmDeleteVisible(false);
     setMenuVisible(false);
   };
 
   const handlePin = () => {
-    let updatedAnnouncements = announcements.map((a) =>
-      a.id === selectedAnnouncement.id ? { ...a, pinned: !a.pinned } : a
-    );
+    const newPinnedId =
+      selectedAnnouncement._id === pinnedId ? null : selectedAnnouncement._id;
 
-    if (selectedAnnouncement.pinned === false) {
-      updatedAnnouncements = updatedAnnouncements.map((a) =>
-        a.id !== selectedAnnouncement.id ? { ...a, pinned: false } : a
-      );
-    }
+    setPinnedId(newPinnedId); // Update the pinned ID state
 
-    const sortedAnnouncements = sortAnnouncements(updatedAnnouncements);
+    // Update announcements locally
+    const updatedAnnouncements = announcements.map((announce) => ({
+      ...announce,
+      pinned: announce._id === newPinnedId,
+    }));
+
+    const sortedAnnouncements = newPinnedId
+      ? sortAnnouncements(updatedAnnouncements)
+      : updatedAnnouncements.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt) // Sort by createdAt descending
+        );
+
     setAnnouncements(sortedAnnouncements);
     setFilteredAnnouncements(sortedAnnouncements);
     setMenuVisible(false);
+
+    console.log("Pinned ID:", newPinnedId);
   };
 
   const renderItem = ({ item }) => (
@@ -129,7 +144,7 @@ const Announcement = ({ navigation }) => {
         <Text style={styles.departmentText}>{item.department}</Text>
         <View style={styles.titleRow}>
           <Text style={styles.titleText}>{item.title}</Text>
-          {item.pinned && (
+          {item._id === pinnedId && (
             <Icon
               name="push-pin"
               size={20}
@@ -184,25 +199,25 @@ const Announcement = ({ navigation }) => {
       <FlatList
         data={filteredAnnouncements}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContent}
       />
 
       {/* Modals */}
-      <Modal visible={modalVisible} transparent animationType="">
+      <Modal visible={modalVisible} transparent animationType="fade">
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTopic}>
-              {selectedDetail && selectedDetail.topic}
+              {selectedAnnouncement && selectedAnnouncement.topic}
             </Text>
             <Text style={styles.modalDate}>
-              Date: {selectedDetail && selectedDetail.date}
+              Date: {selectedAnnouncement && selectedAnnouncement.date}
             </Text>
             <Text style={styles.modalDuration}>
-              Duration: {selectedDetail && selectedDetail.duration}
+              Duration: {selectedAnnouncement && selectedAnnouncement.duration}
             </Text>
             <Text style={styles.modalMessage}>
-              {selectedDetail && selectedDetail.message}
+              {selectedAnnouncement && selectedAnnouncement.description}
             </Text>
             <TouchableOpacity
               onPress={() => setModalVisible(false)}
@@ -214,7 +229,41 @@ const Announcement = ({ navigation }) => {
         </View>
       </Modal>
 
-      <Modal visible={menuVisible} transparent animationType="">
+      <Modal visible={menuVisible} transparent animationType="fade">
+        <View style={styles.modalContainerBottom}>
+          <View style={styles.modalContentBottom}>
+            <TouchableOpacity
+              onPress={() => {
+                setConfirmDeleteVisible(true);
+                setMenuVisible(false);
+              }}
+              style={styles.modalButtonBottom}
+            >
+              <Text style={styles.modalButtonTextBottom}>Delete</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handlePin}
+              style={styles.modalButtonBottom}
+            >
+              {selectedAnnouncement && (
+                <Text style={styles.modalButtonTextBottom}>
+                  {" "}
+                  {selectedAnnouncement._id === pinnedId ? "Unpin" : "Pin"}
+                </Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setMenuVisible(false)}
+              style={styles.modalButtonBottom}
+            >
+              <Text style={styles.modalButtonTextBottom}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal visible={confirmDeleteVisible} transparent animationType="fade">
         <View style={styles.modalContainerBottom}>
           <View style={styles.modalContentBottom}>
             <TouchableOpacity
@@ -224,15 +273,7 @@ const Announcement = ({ navigation }) => {
               <Text style={styles.modalButtonTextBottom}>Delete</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={handlePin}
-              style={styles.modalButtonBottom}
-            >
-              <Text style={styles.modalButtonTextBottom}>
-                {selectedAnnouncement?.pinned ? "Unpin" : "Pin"}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setMenuVisible(false)}
+              onPress={() => setConfirmDeleteVisible(false)}
               style={styles.modalButtonBottom}
             >
               <Text style={styles.modalButtonTextBottom}>Cancel</Text>
@@ -275,16 +316,16 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
+
     backgroundColor: "#F0F0F0",
-    borderRadius: 10,
-    paddingLeft: 10,
+    paddingLeft: width * 0.05,
   },
   searchInput: {
     flex: 1,
     borderRadius: 10,
   },
   listContent: {
-    padding: width * 0.04,
+    padding: width * 0.05,
   },
   announcementCard: {
     flexDirection: "row",
