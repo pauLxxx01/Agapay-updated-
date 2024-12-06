@@ -128,128 +128,115 @@ const Progress = ({ navigation, route }) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0} // Adjust offset as needed
-    >
-      <View style={styles.bodyContainer}>
-        {/* reminder */}
-        <View style={styles.container}>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>{name}</Text>
-          </View>
-          <View style={styles.firstaid}>
-            <Text style={styles.firstaidText}>Reminder</Text>
-            {reminders.map((reminder, index) => (
-              <View key={index}>
-                <Text style={styles.firstaidPro}>{reminder}</Text>
-              </View>
-            ))}
-          </View>
+    <View style={styles.bodyContainer}>
+      {/* reminder */}
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>{name}</Text>
         </View>
-        {/* input reports */}
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          style={styles.actionsContainer}
-        >
-          {/* camera icon */}
-
-          {capturedPhotos.length < 1 && ( // Only show the icon if there's not exactly one photo
-            <View style={styles.camcontainer}>
-              <TouchableOpacity
-                style={styles.cameraIconButton}
-                onPress={() =>
-                  navigation.navigate("Camera", { name, img, ...reminder })
-                }
-              >
-                <Icon name="camera" size={45} color="#fff" />
-              </TouchableOpacity>
+        <View style={styles.firstaid}>
+          <Text style={styles.firstaidText}>Reminder</Text>
+          {reminders.map((reminder, index) => (
+            <View key={index}>
+              <Text style={styles.firstaidPro}>{reminder}</Text>
             </View>
-          )}
+          ))}
+        </View>
+      </View>
+      {/* input reports */}
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        style={styles.actionsContainer}
+      >
+        {/* camera icon */}
 
-          {/* camera display */}
-
-          <View
-            horizontal
-            style={[
-              styles.imageScrollView,
-              capturedPhotos.length <= 0
-                ? { opacity: 0.2, marginTop: 0 }
-                : { opacity: 1, marginTop: height * 0.05 },
-            ]}
-          >
-            <View style={styles.imageContainer}>
-              {capturedPhotos.length <= 0 ? (
-                <Text style={styles.backgroundText}>IMAGE</Text>
-              ) : (
-                capturedPhotos.map((photoUri, index) => (
-                  <View key={index} style={styles.photoWrapper}>
-                    <Image
-                      source={{ uri: photoUri }}
-                      style={styles.capturedImage}
-                    />
-                    <TouchableOpacity
-                      style={styles.removeButton}
-                      onPress={() => removePhoto(index)}
-                    >
-                      <Icon name="times-circle" size={22} color="white" />
-                    </TouchableOpacity>
-                  </View>
-                ))
-              )}
-            </View>
-          </View>
-
-          {/* text display */}
-          <ScrollView vertical style={styles.textContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Type your concerns..."
-              placeholderTextColor="#666"
-              multiline={true}
-              value={reportText}
-              onChangeText={setReportText}
-            />
-          </ScrollView>
-
-          <View style={styles.dropdownContainer}>
-            <Picker
-              required
-              selectedValue={selectedValue}
-              mode="dropdown"
-              style={[styles.dropdownPicker]} // Added borderRadius
-              onValueChange={(itemValue, itemIndex) =>
-                setSelectedValue(itemValue)
+        {capturedPhotos.length < 1 && ( // Only show the icon if there's not exactly one photo
+          <View style={styles.camcontainer}>
+            <TouchableOpacity
+              style={styles.cameraIconButton}
+              onPress={() =>
+                navigation.navigate("Camera", { name, img, ...reminder })
               }
             >
-              <Picker.Item
-                label="Nearby"
-                value=""
-                style={styles.dropdownTitle}
-              />
-              {options.map((x, i) => (
-                <Picker.Item
-                  label={x.label}
-                  style={styles.dropdownItems}
-                  value={x.value}
-                  key={i}
-                />
-              ))}
-            </Picker>
-          </View>
-
-          <View style={styles.notificationButtons}>
-            <TouchableOpacity
-              style={styles.notifyButton}
-              onPress={handleSubmit}
-            >
-              <Text style={styles.notifyButtonText}>Send SOS</Text>
+              <Icon name="camera" size={45} color="#fff" />
             </TouchableOpacity>
           </View>
+        )}
+
+        {/* camera display */}
+
+        <View
+          horizontal
+          style={[
+            styles.imageScrollView,
+            capturedPhotos.length <= 0
+              ? { opacity: 0.2, marginTop: 0 }
+              : { opacity: 1, marginTop: height * 0.05 },
+          ]}
+        >
+          <View style={styles.imageContainer}>
+            {capturedPhotos.length <= 0 ? (
+              <Text style={styles.backgroundText}>IMAGE</Text>
+            ) : (
+              capturedPhotos.map((photoUri, index) => (
+                <View key={index} style={styles.photoWrapper}>
+                  <Image
+                    source={{ uri: photoUri }}
+                    style={styles.capturedImage}
+                  />
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => removePhoto(index)}
+                  >
+                    <Icon name="times-circle" size={22} color="white" />
+                  </TouchableOpacity>
+                </View>
+              ))
+            )}
+          </View>
+        </View>
+
+        {/* text display */}
+        <ScrollView vertical style={styles.textContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Type your concerns..."
+            placeholderTextColor="#666"
+            multiline={true}
+            value={reportText}
+            onChangeText={setReportText}
+          />
         </ScrollView>
-      </View>
-    </KeyboardAvoidingView>
+
+        <View style={styles.dropdownContainer}>
+          <Picker
+            required
+            selectedValue={selectedValue}
+            mode="dropdown"
+            style={[styles.dropdownPicker]} // Added borderRadius
+            onValueChange={(itemValue, itemIndex) =>
+              setSelectedValue(itemValue)
+            }
+          >
+            <Picker.Item label="Nearby" value="" style={styles.dropdownTitle} />
+            {options.map((x, i) => (
+              <Picker.Item
+                label={x.label}
+                style={styles.dropdownItems}
+                value={x.value}
+                key={i}
+              />
+            ))}
+          </Picker>
+        </View>
+
+        <View style={styles.notificationButtons}>
+          <TouchableOpacity style={styles.notifyButton} onPress={handleSubmit}>
+            <Text style={styles.notifyButtonText}>Send SOS</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
@@ -262,7 +249,6 @@ const styles = StyleSheet.create({
   },
   container: {
     paddingTop: statusBarSize(),
-
     justifyContent: "center",
     paddingHorizontal: width * 0.04,
     gap: 12,
@@ -307,7 +293,6 @@ const styles = StyleSheet.create({
   //Input Station
   actionsContainer: {
     flex: 1,
-
     backgroundColor: "maroon",
     borderTopRightRadius: width * 0.2,
     borderTopLeftRadius: width * 0.2,

@@ -304,7 +304,7 @@ const UserAccounts = ({ users }) => {
                         <option value="1st ">1st Year</option>
                         <option value="2nd ">2nd Year</option>
                         <option value="3rd ">3nd Year</option>
-                        <option value="4th ">4st Year</option>
+                        <option value="4th ">4th Year</option>
                       </select>
                     </div>
                   </div>

@@ -26,9 +26,15 @@ const reportSchema = new mongoose.Schema(
       type: String,
       default: "0%",
     },
-    message: {
-      type: String,
+    message:{
+      type: String
     },
+    chat: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Message",
+      },
+    ],
     respond: {
       type: String,
       enum: ["completed", "in-progress", "pending"],

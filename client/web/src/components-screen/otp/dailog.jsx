@@ -161,7 +161,7 @@ const OTPDialog = ({ open, onClose, onConfirm, adminID, admin }) => {
         ) : (
           <>
             <Typography variant="body2" color="textSecondary" gutterBottom>
-              We have sent a verification code to your mobile number.
+              We have sent a verification code to your Email.
             </Typography>
             <Grid
               container

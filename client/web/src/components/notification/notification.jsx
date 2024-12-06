@@ -35,6 +35,13 @@ function Notification() {
       
       });
 
+      socket.on("chat", (chat) => {
+        console.log("Chat received: ", chat)
+        const {sender, senderId, message} = chat
+
+        toast.success(sender)
+      })
+
       // Cleanup listeners when the component unmounts
       return () => {
         socket.off("report");

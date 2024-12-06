@@ -45,9 +45,25 @@ const socketConnection = (socket) => {
     name: socket.user.name,
   });
 
+  //chat room
+  socket.on("join-room", (roomName) => {
+    socket.join(roomName);
+    console.log(`${socket.id} joined room: ${roomName}`);
+  });
+
+  socket.on("chatMessage", ({ room, message, sender }) => {
+    console.log(`Message in room ${room} ~ sender ${sender} : ${message}`);
+    io.to(room).emit("chatMessage", { id: socket._id, message, room,sender });
+  });
+
   socket.on("notification", (notif) => {
     console.log("Notification from server socket: " + notif);
   });
+
+  socket.on("chat", ({message, senderId, sender, room }) => {
+    console.log(`Message in room ${room} ~ sender ${sender} & ${senderId} : ${message}`);
+    io.to(room).emit("chat", {sender, senderId, message, room})
+  })
 
   socket.emit("receive-notification", (notif) => {
     console.log("Notification received:", notif);
@@ -84,7 +100,7 @@ async function sendReport(
           percentage,
           img,
         }); // Send detailed report
-        console.log(`Socket: ${socket}`)
+        console.log(`Socket: ${socket}`);
         console.log(`Report sent to admin ${admin.name} --- ${senderId}`);
       } else {
         console.log(`Admin ${admin.name} is not connected`);
@@ -95,13 +111,19 @@ async function sendReport(
   }
 }
 
+
+
 async function sendAnnouncementToUser(
-  title, description, date, department, duration
-){
+  title,
+  description,
+  date,
+  department,
+  duration
+) {
   try {
     const users = await userModel.find();
     users.forEach((user) => {
-      const socket = activeSockets[user._id]; 
+      const socket = activeSockets[user._id];
       if (socket) {
         socket.emit("announcement", {
           title,
@@ -110,7 +132,7 @@ async function sendAnnouncementToUser(
           department,
           duration,
         }); // Send announcement
-        console.log(`Socket: ${socket}`)
+        console.log(`Socket: ${socket}`);
         console.log(`Announcement sent to user ${user.name}`);
       } else {
         console.log(`User ${user.name} is not connected`);
@@ -121,6 +143,25 @@ async function sendAnnouncementToUser(
   }
 }
 
+async function sendMessages(message, sender, senderId, room) {
+  try {
+    const socket = activeSockets[senderId];
+    if (socket) {
+      socket.emit("chat", {
+        senderId,
+        sender,
+        message,
+        room,
+      });
+      console.log(`Socket: ${socket}`);
+      console.log(`Room: ${room} ~ Message sent: ${senderId} & ${sender} ~ Message: ${message}`);
+    } else {
+      console.log(`Client ${senderId} is not connected`);
+    }
+  } catch (error) {
+    console.error("Error sending message", error);
+  }
+}
 async function updateProgress(userId, percentage, id) {
   try {
     // Find the socket for the specific user
@@ -128,8 +169,10 @@ async function updateProgress(userId, percentage, id) {
 
     if (socket) {
       // Emit the progress update to the specific user
-      socket.emit("progressUpdate", {userId, percentage, id});
-      console.log(`Progress updated for user ${userId} messageId: ${id}  ~~ percent: ${percentage}`);
+      socket.emit("progressUpdate", { userId, percentage, id });
+      console.log(
+        `Progress updated for user ${userId} messageId: ${id}  ~~ percent: ${percentage}`
+      );
     } else {
       console.log(`No active socket found for user ${userId}`);
     }
@@ -137,7 +180,6 @@ async function updateProgress(userId, percentage, id) {
     console.error("Error updating progress:", error);
   }
 }
-
 
 // Initialize and configure WebSocket server
 const initializeSocket = (server) => {
@@ -152,4 +194,10 @@ const initializeSocket = (server) => {
   global.io = io;
 };
 
-module.exports = { initializeSocket, sendReport, updateProgress, sendAnnouncementToUser };
+module.exports = {
+  initializeSocket,
+  sendReport,
+  updateProgress,
+  sendAnnouncementToUser,
+  sendMessages,
+};

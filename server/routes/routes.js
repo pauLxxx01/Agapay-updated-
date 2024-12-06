@@ -47,6 +47,7 @@ const multer = require("multer");
 const { sendPush } = require("../controller/notificationController");
 const { sendFeedback } = require("../controller/feedbackController");
 const { sendAnnouncement, getAnnouncement } = require("../controller/announcementController");
+const { sendMessage, getMessage } = require("../controller/messageController");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -118,6 +119,9 @@ router.post('/push-notification', sendPush);
 //feedbacks
 router.post('/user/feedback', sendFeedback);
 
+//chat
+router.post('/send-chat', sendMessage )
+router.get('/get-chats', getMessage)
 
 //announcement
 router.post('/send-announcement', sendAnnouncement);

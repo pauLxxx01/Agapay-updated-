@@ -16,9 +16,9 @@ import { getFullScreenHeight, statusBarSize } from "../../../components/getFullS
 console.log(
 `
 Device Dimensions:
-- Status bar Height: ${statusBarSize().toFixed(2)}
-- Screen Height: ${Dimensions.get("screen").height.toFixed(2)}
-- Full Screen Height: ${getFullScreenHeight().toFixed(2)}
+- Status bar Height: ${statusBarSize()}
+- Screen Height: ${Dimensions.get("screen").height}
+- Full Screen Height: ${getFullScreenHeight()}
 `
 );
 

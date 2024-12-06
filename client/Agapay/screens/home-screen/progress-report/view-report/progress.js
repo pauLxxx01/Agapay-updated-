@@ -172,7 +172,7 @@ const ShowProgress = ({ navigation, route }) => {
       <View style={styles.floatingButtonContainer}>
         <TouchableOpacity
           style={styles.floatingButton}
-          onPress={() => navigation.navigate("Message")}
+          onPress={() => navigation.navigate("Message", {data: details})}
         >
           <FontAwesome
             name="comment"

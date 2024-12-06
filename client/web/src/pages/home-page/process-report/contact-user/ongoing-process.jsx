@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./ongoing.scss";
 import { useLocation, useParams } from "react-router-dom";
 import Call from "@mui/icons-material/Call";
 
 import Loading from "../../../../components/loading/loading";
 import axios from "axios";
-
+import MessageIcon from "@mui/icons-material/Message";
 import QRCode from "react-qr-code";
 import CustomTooltip from "../../../../components/ToolTip/CustomToolTip";
 
+import Badge from "@mui/material/Badge"; // Import Badge for notification count
 //dialog
 import {
   Dialog,
@@ -18,19 +19,25 @@ import {
   Button,
   Typography,
 } from "@mui/material";
+import { useSocket } from "../../../../socket/Socket";
 
 const Ongoing = () => {
   const { id } = useParams(); // Access the dynamic parameter
   const location = useLocation();
   const passedId = location.state?.id;
-  const [message, setMessage] = useState([])
-  
+  const [message, setMessage] = useState([]);
+  const { socket } = useSocket();
+  const dialogContentRef = useRef(null)
 
-  console.log("passed Id: ",JSON.stringify(message))
+  const [openChat, setOpenChat] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  console.log(socket, "socket");
+
+  console.log("passed Id: ", JSON.stringify(message));
 
   const [parents, setParents] = useState([]);
   const [progress, setProgress] = useState("");
-
 
   //error
   const [loading, setLoading] = useState(false);
@@ -109,7 +116,6 @@ const Ongoing = () => {
   };
 
   //steps
-
   const [openDialog, setOpenDialog] = useState(false);
   const [direction, setDirection] = useState(null); // 'next' or 'previous'
   const [currentStep, setCurrentStep] = useState(1);
@@ -119,7 +125,13 @@ const Ongoing = () => {
     otw: false,
     ota: false,
   });
+  const [room, setRoom] = useState("");
+  const [chat, setChat] = useState("");
+  const [messages, setMessages] = useState([]);
 
+  const [userChats, setUserChats] = useState([]);
+
+  console.log(messages, "message details: ");
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -136,9 +148,13 @@ const Ongoing = () => {
         console.log(responderResponse.data.data, "responder response");
         setResponder(responderResponse.data.data);
 
-        const messageResponse = await axios.get(`/user/message/specific/${id}`)
-        console.log("message: ",messageResponse.data.data)
-        setMessage(messageResponse.data.data)
+        const messageResponse = await axios.get(`/user/message/specific/${id}`);
+        console.log("message response: ", messageResponse.data.data);
+        setMessage(messageResponse.data.data);
+
+        const chatResponse = await axios.get("/get-chats");
+        console.log("chats ", chatResponse.data.messages);
+        setUserChats(chatResponse.data.messages);
 
         // Load saved step and process info from local storage based on ID
         const savedStep = localStorage.getItem(`currentStep_${id}`);
@@ -171,6 +187,68 @@ const Ongoing = () => {
     fetchData();
   }, [id, currentStep]);
 
+  useEffect(() => {
+    if (socket) {
+      console.log("Socket initialized:", socket);
+      socket.on("chat", (data) => {
+        setUserChats((prev) => [...prev, data]);
+        if (!openChat) {
+          setUnreadMessages((prev) => prev + 1);
+        }
+      });
+      if (passedId) {
+        setRoom(message._id);
+        if (room) {
+          socket.emit("join-room", room);
+          console.log("connected to room!");
+        }
+      }
+    }
+    return () => {
+      if (socket) {
+        socket.off("chat");
+      }
+    };
+  }, [socket, room, openChat]);
+
+   // Scroll to the bottom whenever the dialog opens or messages update
+   const scrollToBottom = () => {
+    if (dialogContentRef.current) {
+      dialogContentRef.current.scrollTop = dialogContentRef.current.scrollHeight;
+    }
+  };
+  useEffect(() => {
+    if (openChat) {
+      console.log("helo")
+      scrollToBottom();
+    }
+  }, [userChats, openChat]);
+  const sendMessage = async () => {
+    if (setChat) {
+      const messageData = {
+        room: "6751b7e9549f29d882c20429",
+        message: chat,
+        senderId: "67519003549f29d882c20366",
+        sender: "admin", // Replace with actual sender name if needed
+      };
+
+      // Emit the message through the socket
+      socket.emit("chat", messageData);
+      console.log("Message sent via socket:", messageData);
+
+      try {
+        // Send the message to the server
+        await axios.post("/send-chat", messageData);
+        console.log("Message sent to server:", messageData);
+      } catch (error) {
+        console.error("Error sending message to server:", error);
+      }
+
+      // Clear the input field
+      setChat("");
+    }
+  };
+
   if (loading) return <Loading />;
   if (error)
     return (
@@ -200,9 +278,7 @@ const Ongoing = () => {
     setOpenDialog(false);
   };
   const handleUpdate = async (id) => {
-    
     try {
-
       const data = {
         percentage: progress,
         userId: passedId._id,
@@ -214,7 +290,7 @@ const Ongoing = () => {
         body: "Tap to see details!",
         data: {
           screen: "ShowProgress",
-          details: message
+          details: message,
         },
       };
       await axios.post("/push-notification", sendNotif);
@@ -618,8 +694,79 @@ const Ongoing = () => {
               </Dialog>
             </div>
 
-            {/* Chat with user */}
-            <div className="box box1">Chat with {passedId.name}</div>
+            {/* Message Icon to Open Chat Modal */}
+            <div
+              className="chat-icon"
+              onClick={() => {
+                setOpenChat(true);
+                setUnreadMessages(0);
+              }}
+            >
+              <Badge badgeContent={unreadMessages} color="error">
+                <MessageIcon style={{ fontSize: 30, cursor: "pointer" }} />
+              </Badge>
+            </div>
+
+            {/* Chat Modal */}
+            <Dialog
+              open={openChat}
+              onClose={() => setOpenChat(false)}
+              onRendered={scrollToBottom}
+              sx={{ "& .MuiDialog-paper": { width: "700px" } }}
+            >
+              {" "}
+              <DialogActions>
+                <Button onClick={() => setOpenChat(false)} color="primary">
+                  X
+                </Button>
+              </DialogActions>
+              <DialogTitle>Chat with {passedId.name}</DialogTitle>
+              <DialogContent ref={dialogContentRef} sx={{ maxHeight: "400px", overflowY: "auto" }}>
+                <div className="message-list">
+                  {userChats.length > 0 ? (
+                    userChats.map((msg) => (
+                      <div
+                        key={msg.id || msg.createdAt}
+                        className={
+                          msg.sender.toLowerCase() === "admin"
+                            ? "message-sent"
+                            : "message-received"
+                        }
+                      >
+                        <span
+                          className={
+                            msg.sender.toLowerCase() === "admin"
+                              ? "message-sent"
+                              : "message-received"
+                          }
+                        >
+                          <span className="chatText">{msg.message}</span>
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="no-messages">No Messages</p>
+                  )}
+                </div>
+              </DialogContent>
+              <div className="message-input-container">
+                <textarea
+                  type="text"
+                  placeholder="Type a message"
+                  value={chat}
+                  onChange={(e) => setChat(e.target.value)}
+                  className="message-input"
+                  rows={4}
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={!chat.trim()}
+                  className="send-button"
+                >
+                  Send
+                </button>
+              </div>
+            </Dialog>
           </div>
         ) : (
           <p>No parents available</p>

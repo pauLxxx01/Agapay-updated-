@@ -30,7 +30,7 @@ function App() {
 
   const [error, setError] = useState(null);
 
-  axios.defaults.baseURL = "http://192.168.18.42:8080/admin/auth";
+  axios.defaults.baseURL = "http://192.168.18.90:8080/admin/auth";
 
   useEffect(() => {
     const fetchData = async () => {

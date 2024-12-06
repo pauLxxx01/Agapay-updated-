@@ -13,7 +13,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (token) {
       // Create socket connection using the token
-      const socketConnection = io("http://192.168.18.42:8080", {
+      const socketConnection = io("http://192.168.18.90:8080", {
         query: { token: token },
       });
 

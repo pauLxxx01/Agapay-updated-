@@ -11,7 +11,7 @@ import {
 import Icon from "react-native-vector-icons/Ionicons";
 import * as MediaLibrary from "expo-media-library";
 
-import { 
+import {
   getFullScreenHeight,
   statusBarSize,
 } from "../../components/getFullScreen";
@@ -55,11 +55,16 @@ const Camera = ({ navigation, route }) => {
       if (photo) {
         await MediaLibrary.saveToLibraryAsync(photo.uri);
         console.log("Image saved to camera roll!");
-        const filename = photo.uri.split('/').pop();
-        console.log("Filename: ", filename)
+        const filename = photo.uri.split("/").pop();
+        console.log("Filename: ", filename);
       }
       setCapturedPhoto(photo.uri);
-      navigation.navigate("Progress", { photoUri: photo.uri, name, img, ...reminder }); // Navigate back and pass photo URI
+      navigation.navigate("Progress", {
+        photoUri: photo.uri,
+        name,
+        img,
+        ...reminder,
+      }); // Navigate back and pass photo URI
     }
   };
 
@@ -88,17 +93,7 @@ const Camera = ({ navigation, route }) => {
               style={styles.buttonAction}
               onPress={() => setCapturedPhoto(null)}
             >
-              <Icon name="refresh" size={24} color="#fff" />
-              <Text style={styles.buttonText}>Re-take</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.buttonAction}
-              onPress={() => {
-                /* save logic here */
-              }}
-            >
-              <Icon name="save" size={24} color="#fff" />
-              <Text style={styles.buttonText}>Save</Text>
+              <Icon name="refresh" size={90} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
@@ -169,32 +164,26 @@ const styles = StyleSheet.create({
   },
   previewContainer: {
     position: "absolute",
-    top: "20%",
-    left: "50%",
+    width: "100%",
+    height: "100%",
     transform: [{ translateX: -150 }],
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
-    padding: 10,
-    borderRadius: 10,
   },
   previewImage: {
-    width: "100%",
-    height: 200,
     resizeMode: "cover",
   },
   overlay: {
     position: "absolute",
-    bottom: 50,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    paddingVertical: 10,
+    width: "100%",
+    height: "100%",
+   
   },
   buttonAction: {
-    alignItems: "center",
+    left: 20,
+    top: 350,
+    justifyContent: "center",
+    alignItems: "flex-end",
   },
   buttonText: {
     color: "white",

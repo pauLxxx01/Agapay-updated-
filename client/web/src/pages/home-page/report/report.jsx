@@ -14,7 +14,7 @@ const Report = ({ users, messages }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [filterStatus, setFilterStatus] = useState("all");
-  const [sortDirection, setSortDirection] = useState("desc"); 
+  const [sortDirection, setSortDirection] = useState("desc");
   const recordsPerPage = 5;
 
   const count = (data) => {
@@ -53,9 +53,10 @@ const Report = ({ users, messages }) => {
   };
 
   const handleDateSortToggle = () => {
-    setSortDirection((prevDirection) => (prevDirection === "desc" ? "asc" : "desc"));
+    setSortDirection((prevDirection) =>
+      prevDirection === "desc" ? "asc" : "desc"
+    );
   };
-
 
   const filteredUsers = useMemo(() => {
     return messages
@@ -109,16 +110,16 @@ const Report = ({ users, messages }) => {
         sortDirection === "desc"
           ? new Date(b.createdAt) - new Date(a.createdAt)
           : new Date(a.createdAt) - new Date(b.createdAt)
-      ); 
+      );
 
     return;
-  },  [messages, users, searchTerm, sortDirection]); 
+  }, [messages, users, searchTerm, sortDirection]);
 
   // Filter based on selected status
   const getFilteredUsersByStatus = () => {
     if (filterStatus === "all") return filteredUsers;
     return filteredUsers.filter((user) => user.respond === filterStatus);
-  }
+  };
 
   const lastIndex = currentPage * recordsPerPage;
   const firstIndex = lastIndex - recordsPerPage;
@@ -225,143 +226,156 @@ const Report = ({ users, messages }) => {
         whileInView={"show"}
         className="user-table"
       >
-      <thead>
+        <thead>
           <tr>
             {headerTableGeneral.map((header, index) => (
-             <th
-             key={index}
-             onClick={
-               header.Label === "DATE" ? handleDateSortToggle : undefined
-             }
-             style={{
-               cursor: header.Label === "DATE" ? "pointer" : "default",
-             }}
-           >
-             {header.Label}
-             {header.Label === "DATE" &&
-               (sortDirection === "desc" ? " ↑" : " ↓")}
-           </th>
+              <th
+                key={index}
+                onClick={
+                  header.Label === "DATE" ? handleDateSortToggle : undefined
+                }
+                style={{
+                  cursor: header.Label === "DATE" ? "pointer" : "default",
+                }}
+              >
+                {header.Label}
+                {header.Label === "DATE" &&
+                  (sortDirection === "desc" ? " ↑" : " ↓")}
+              </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {currentUsers.map((data) => (
-            <tr
-              className="items-row"
-              key={data.messageID}
-              onClick={() => handleRowClick(data)}
-            >
-              <td>{data.name}</td>
-              <td>{data.account_id}</td>
-              <td>{data.department}</td>
-              <td>{data.emergency}</td>
-              <td>{data.createdAt || ""}</td>
-              <td>
-                <div className={`data ${data.respond}`}>
-                  {data.respond === "completed"
-                    ? "Completed"
-                    : data.respond === "pending"
-                    ? "Pending"
-                    : data.respond === "in-progress"
-                    ? "In - Progress"
-                    : "No respond received"}
-                </div>
-              </td>
+          {currentUsers.length === 0 ? (
+            <tr>
+              <td colSpan={headerTableGeneral.length}>No Report found</td>
             </tr>
-          ))}
+          ) : (
+            currentUsers.map((data) => (
+              <tr
+                className="items-row"
+                key={data.messageID}
+                onClick={() => handleRowClick(data)}
+              >
+                <td>{data.name}</td>
+                <td>{data.account_id}</td>
+                <td>{data.department}</td>
+                <td>{data.emergency}</td>
+                <td>{data.createdAt || ""}</td>
+                <td>
+                  <div className={`data ${data.respond}`}>
+                    {data.respond === "completed"
+                      ? "Completed"
+                      : data.respond === "pending"
+                      ? "Pending"
+                      : data.respond === "in-progress"
+                      ? "In - Progress"
+                      : "No respond received"}
+                  </div>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </motion.table>
       {totalPages > 1 && (
-  <motion.div
-    variants={fadeIn("right", 0.1)}
-    initial="hidden"
-    whileInView={"show"}
-    className="containerNav"
-  >
-    <nav>
-      <ul className="pagination-modal">
-        {currentPage > 1 && (
-          <li className="page-items">
-            <button className="page-links" onClick={prePage}>
-              Previous
-            </button>
-          </li>
-        )}
-        {(() => {
-          const pageNumbers = [];
-          const maxVisiblePages = 3; // Adjust for your desired truncation window
-          const halfVisible = Math.floor(maxVisiblePages / 2);
-
-          let startPage = Math.max(1, currentPage - halfVisible);
-          let endPage = Math.min(totalPages, currentPage + halfVisible);
-
-          if (currentPage <= halfVisible) {
-            endPage = Math.min(maxVisiblePages, totalPages);
-          }
-          if (currentPage + halfVisible >= totalPages) {
-            startPage = Math.max(1, totalPages - maxVisiblePages + 1);
-          }
-
-          if (startPage > 1) {
-            pageNumbers.push(
-              <li key="first" className="page-items">
-                <button className="page-links" onClick={() => handlePageChange(1)}>
-                  1
-                </button>
-              </li>
-            );
-            if (startPage > 2) {
-              pageNumbers.push(
-                <li key="start-ellipsis" className="page-items ellipsis">
-                  ...
+        <motion.div
+          variants={fadeIn("right", 0.1)}
+          initial="hidden"
+          whileInView={"show"}
+          className="containerNav"
+        >
+          <nav>
+            <ul className="pagination-modal">
+              {currentPage > 1 && (
+                <li className="page-items">
+                  <button className="page-links" onClick={prePage}>
+                    Previous
+                  </button>
                 </li>
-              );
-            }
-          }
+              )}
+              {(() => {
+                const pageNumbers = [];
+                const maxVisiblePages = 3; // Adjust for your desired truncation window
+                const halfVisible = Math.floor(maxVisiblePages / 2);
 
-          for (let i = startPage; i <= endPage; i++) {
-            pageNumbers.push(
-              <li
-                key={i}
-                onClick={() => handlePageChange(i)}
-                className={`page-items ${currentPage === i ? "active" : ""}`}
-              >
-                <button className="page-links">{i}</button>
-              </li>
-            );
-          }
+                let startPage = Math.max(1, currentPage - halfVisible);
+                let endPage = Math.min(totalPages, currentPage + halfVisible);
 
-          if (endPage < totalPages) {
-            if (endPage < totalPages - 1) {
-              pageNumbers.push(
-                <li key="end-ellipsis" className="page-items ellipsis">
-                  ...
+                if (currentPage <= halfVisible) {
+                  endPage = Math.min(maxVisiblePages, totalPages);
+                }
+                if (currentPage + halfVisible >= totalPages) {
+                  startPage = Math.max(1, totalPages - maxVisiblePages + 1);
+                }
+
+                if (startPage > 1) {
+                  pageNumbers.push(
+                    <li key="first" className="page-items">
+                      <button
+                        className="page-links"
+                        onClick={() => handlePageChange(1)}
+                      >
+                        1
+                      </button>
+                    </li>
+                  );
+                  if (startPage > 2) {
+                    pageNumbers.push(
+                      <li key="start-ellipsis" className="page-items ellipsis">
+                        ...
+                      </li>
+                    );
+                  }
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                  pageNumbers.push(
+                    <li
+                      key={i}
+                      onClick={() => handlePageChange(i)}
+                      className={`page-items ${
+                        currentPage === i ? "active" : ""
+                      }`}
+                    >
+                      <button className="page-links">{i}</button>
+                    </li>
+                  );
+                }
+
+                if (endPage < totalPages) {
+                  if (endPage < totalPages - 1) {
+                    pageNumbers.push(
+                      <li key="end-ellipsis" className="page-items ellipsis">
+                        ...
+                      </li>
+                    );
+                  }
+                  pageNumbers.push(
+                    <li key="last" className="page-items">
+                      <button
+                        className="page-links"
+                        onClick={() => handlePageChange(totalPages)}
+                      >
+                        {totalPages}
+                      </button>
+                    </li>
+                  );
+                }
+
+                return pageNumbers;
+              })()}
+              {currentPage < totalPages && (
+                <li className="page-items">
+                  <button className="page-links" onClick={nextPage}>
+                    Next
+                  </button>
                 </li>
-              );
-            }
-            pageNumbers.push(
-              <li key="last" className="page-items">
-                <button className="page-links" onClick={() => handlePageChange(totalPages)}>
-                  {totalPages}
-                </button>
-              </li>
-            );
-          }
-
-          return pageNumbers;
-        })()}
-        {currentPage < totalPages && (
-          <li className="page-items">
-            <button className="page-links" onClick={nextPage}>
-              Next
-            </button>
-          </li>
-        )}
-      </ul>
-    </nav>
-  </motion.div>
-)}
-
+              )}
+            </ul>
+          </nav>
+        </motion.div>
+      )}
     </div>
   );
 };
