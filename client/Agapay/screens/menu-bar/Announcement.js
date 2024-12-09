@@ -10,86 +10,199 @@ import {
   Modal,
   Dimensions,
   SafeAreaView,
+  Button,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import axios from "axios";
+import { useSocket } from "../../context/socketContext";
 const { width, height } = Dimensions.get("window");
 
-const details = [
-  {
-    id: "1",
-    topic: "Earthquake Drill Announcement:",
-    date: "May 12, 2024",
-    duration: "1:00 PM - 4:00 PM",
-    message:
-      "Attention all AGAPAY users, In preparation for ensuring our community safety during seismic events, we are conducting an Earthquake Drill on May 12, 2024, between 1:00 PM and 4:00 PM. This drill is crucial for practicing emergency response procedures and enhancing our readiness for real-life earthquake scenarios",
-  },
-  {
-    id: "2",
-    topic: "Fire Drill Announcement:",
-    date: "March 3, 2024",
-    duration: "10:00 AM - 11:00 AM",
-    message:
-      "Attention all AGAPAY users, A fire drill will be conducted on March 3, 2024, from 10:00 AM to 11:00 AM. This drill is an important part of ensuring the safety of our community. Please cooperate and participate in the drill by following the instructions of our safety personnel. The drill will include evacuation procedures and familiarization with emergency exits.",
-  },
-];
-
 const Announcement = ({ navigation }) => {
+  const { socket } = useSocket();
+
+  console.log(socket.connected);
   const [announcements, setAnnouncements] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredAnnouncements, setFilteredAnnouncements] = useState([]);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
-  const [selectedDetail, setSelectedDetail] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
 
   const [pinnedId, setPinnedId] = useState(null); // Tracks the pinned announcement's ID
 
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await axios.get("get-announcement");
-        console.log(data.data.announcements);
-        setAnnouncements(data.data.announcements);
-        setFilteredAnnouncements(data.data.announcements);
+        const { data } = await axios.get("/get-announcement");
+
+        // Sorting the announcements
+        const sortedAnnouncements = sortAnnouncements(data.announcements);
+
+        console.log(sortedAnnouncements);
+
+        // Filtering out announcements where isHidden is false
+        const visibleAnnouncements = sortedAnnouncements.filter(
+          (announcement) => !announcement.isHidden
+        );
+
+        // Set announcements in state
+        setAnnouncements(visibleAnnouncements);
+        setFilteredAnnouncements(visibleAnnouncements);
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching announcements:", error);
       }
     };
     fetchData();
-  }, []);
+
+    // Real-time updates for hide-status
+    socket.on("hide-status", (updatedAnnouncement) => {
+      setAnnouncements((prev) => {
+        // Map through existing announcements to update the one that matches the _id
+        const updatedAnnouncements = prev.map((a) =>
+          a._id === updatedAnnouncement._id
+            ? { ...a, isHidden: updatedAnnouncement.isHidden }
+            : a
+        );
+
+        // Ensure not appending the updatedAnnouncement if it already exists in the list
+        const isAlreadyPresent = updatedAnnouncements.some(
+          (a) => a._id === updatedAnnouncement._id
+        );
+
+        if (!isAlreadyPresent) {
+          updatedAnnouncements.push(updatedAnnouncement);
+        }
+
+        return updatedAnnouncements;
+      });
+    });
+
+    socket.on("announcement", (data) => {
+      // Check if the announcement already exists
+      setAnnouncements((prev) => {
+        const existingAnnouncement = prev.find((a) => a._id === data._id);
+        if (existingAnnouncement) {
+          // Update the existing announcement
+          return prev.map((a) =>
+            a._id === data._id ? { ...a, isHidden: data.isHidden } : a
+          );
+        } else {
+          // Append the new announcement
+          return [...prev, data];
+        }
+      });
+      console.log("Announcement received:", data);
+    });
+
+    return () => {
+      socket.off("hide-status");
+      socket.off("announcemnt");
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    // Filter announcements to only show those that are not hidden
+    const visibleAnnouncements = announcements.filter(
+      (announcement) => !announcement.isHidden
+    );
+    setFilteredAnnouncements(visibleAnnouncements);
+  }, [announcements]);
+
+  // useEffect(() => {
+  //   socket.on("hide-status", (updatedAnnouncement) => {
+  //     setAnnouncements((prev) =>
+  //       prev.map((a) =>
+  //         a._id === updatedAnnouncement._id
+  //           ? { ...a, isHidden: updatedAnnouncement.isHidden }
+  //           : a
+  //       )
+  //     );
+  //   });
+
+  //   return () => {
+  //     socket.off("hide-status");
+  //   };
+  // }, []);
 
   const sortAnnouncements = (announcements) => {
     return announcements.sort((a, b) => {
       if (a.pinned && !b.pinned) return -1;
       if (!a.pinned && b.pinned) return 1;
-      return new Date(b.createdAt) - new Date(a.createdAt);
+      return new Date(b.createdAt) - new Date(a.createdAt); // Most recent first
     });
   };
 
-  const handleSearch = (query) => {
-    setSearchQuery(query); // Update the query state
-    if (!query) {
-      setFilteredAnnouncements(announcements); // Reset to all announcements if query is empty
-    } else {
-      const filtered = announcements.filter(
-        (announcement) =>
-          announcement.title.toLowerCase().includes(query.toLowerCase()) || // Search in title
-          announcement.department.toLowerCase().includes(query.toLowerCase()) // Optionally, search in department
+  const toggleHide = async () => {
+    if (!selectedAnnouncement) return;
+
+    try {
+      const { data } = await axios.put(
+        `/announcement/toggle-hide/${selectedAnnouncement._id}`
       );
-      setFilteredAnnouncements(filtered); // Update the filtered list
+      console.log(
+        `Announcement toggle data: ${data.announcement._id}, isHidden: ${data.announcement.isHidden}`
+      );
+
+      // Real-time updates for hide-status
+      socket.on("hide-status", (updatedAnnouncement) => {
+        setAnnouncements((prev) => {
+          //matches the _id
+          const updatedAnnouncements = prev.map((a) =>
+            a._id === updatedAnnouncement._id
+              ? { ...a, isHidden: updatedAnnouncement.isHidden }
+              : a
+          );
+          // Ensure not appending the updatedAnnouncement if it already exists in the list
+          const isAlreadyPresent = updatedAnnouncements.some(
+            (a) => a._id === updatedAnnouncement._id
+          );
+
+          if (!isAlreadyPresent) {
+            updatedAnnouncements.push(updatedAnnouncement);
+          }
+          return updatedAnnouncements;
+        });
+      });
+
+      setConfirmDeleteVisible(false);
+      setMenuVisible(false);
+    } catch (error) {
+      console.error("Error toggling hide status:", error);
+      Alert.alert("Error", "Failed to toggle announcement visibility.");
+      setConfirmDeleteVisible(false);
+      setMenuVisible(false);
     }
   };
 
-  const handlePress = (item) => {
-    setSelectedAnnouncement(item);
-    setModalVisible(true);
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    if (!query) {
+      setFilteredAnnouncements(announcements);
+    } else {
+      const filtered = announcements.filter(
+        (announcement) =>
+          announcement.title.toLowerCase().includes(query.toLowerCase()) ||
+          announcement.department.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredAnnouncements(filtered);
+    }
+  };
 
-    const detail = details.find((detail) => detail._id === item._id);
-    setSelectedDetail(detail);
+  const handlePin = () => {
+    const newPinnedId =
+      selectedAnnouncement._id === pinnedId ? null : selectedAnnouncement._id;
+    setPinnedId(newPinnedId);
+
+    const updatedAnnouncements = announcements.map((announce) => ({
+      ...announce,
+      pinned: announce._id === newPinnedId,
+    }));
+    const sortedAnnouncements = sortAnnouncements(updatedAnnouncements);
+    setAnnouncements(sortedAnnouncements);
+    setFilteredAnnouncements(sortedAnnouncements);
+    setMenuVisible(false);
   };
 
   const openMenu = (item) => {
@@ -97,47 +210,23 @@ const Announcement = ({ navigation }) => {
     setMenuVisible(true);
   };
 
-  const handleDelete = () => {
-    const updatedAnnouncements = announcements.filter(
-      (a) => a._id !== selectedAnnouncement._id
-    );
-
-    const sortedAnnouncements = sortAnnouncements(updatedAnnouncements);
-    setAnnouncements(sortedAnnouncements);
-    setFilteredAnnouncements(sortedAnnouncements);
-    setConfirmDeleteVisible(false);
-    setMenuVisible(false);
+  const buttonAlert = () => {
+    Alert.alert("Delete Confirmation", "Are you sure you want to delete? ", [
+      {
+        text: "Cancel",
+        onPress: () => setConfirmDeleteVisible(false),
+        style: "cancel",
+      },
+      { text: "Delete", onPress: () => toggleHide() },
+    ]);
   };
-
-  const handlePin = () => {
-    const newPinnedId =
-      selectedAnnouncement._id === pinnedId ? null : selectedAnnouncement._id;
-
-    setPinnedId(newPinnedId); // Update the pinned ID state
-
-    // Update announcements locally
-    const updatedAnnouncements = announcements.map((announce) => ({
-      ...announce,
-      pinned: announce._id === newPinnedId,
-    }));
-
-    const sortedAnnouncements = newPinnedId
-      ? sortAnnouncements(updatedAnnouncements)
-      : updatedAnnouncements.sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt) // Sort by createdAt descending
-        );
-
-    setAnnouncements(sortedAnnouncements);
-    setFilteredAnnouncements(sortedAnnouncements);
-    setMenuVisible(false);
-
-    console.log("Pinned ID:", newPinnedId);
-  };
-
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.announcementCard}
-      onPress={() => handlePress(item)}
+      onPress={() => {
+        setSelectedAnnouncement(item);
+        setModalVisible(true);
+      }}
     >
       <View style={styles.flag} />
       <View style={styles.announcementContent}>
@@ -145,15 +234,12 @@ const Announcement = ({ navigation }) => {
         <View style={styles.titleRow}>
           <Text style={styles.titleText}>{item.title}</Text>
           {item._id === pinnedId && (
-            <Icon
-              name="push-pin"
-              size={20}
-              color="#800000"
-              style={styles.pinIcon}
-            />
+            <Icon name="push-pin" size={20} style={styles.pinIcon} />
           )}
         </View>
-        <Text style={styles.dateText}>{item.date}</Text>
+        <Text style={styles.dateText}>
+          {new Date(item.createdAt).toLocaleDateString()}
+        </Text>
       </View>
       <TouchableOpacity onPress={() => openMenu(item)}>
         <Icon name="more-vert" size={24} color="#800000" />
@@ -210,9 +296,23 @@ const Announcement = ({ navigation }) => {
             <Text style={styles.modalTopic}>
               {selectedAnnouncement && selectedAnnouncement.topic}
             </Text>
-            <Text style={styles.modalDate}>
-              Date: {selectedAnnouncement && selectedAnnouncement.date}
+            <Text style={styles.modalDepartment}>
+              {selectedAnnouncement && selectedAnnouncement.department}
             </Text>
+            <Text style={styles.modalDate}>
+              When:{" "}
+              {selectedAnnouncement &&
+                new Date(selectedAnnouncement.date).toLocaleDateString(
+                  undefined,
+                  {
+                    weekday: "long", // e.g., "Monday"
+                    year: "numeric", // e.g., "2024"
+                    month: "long", // e.g., "December"
+                    day: "numeric", // e.g., "7"
+                  }
+                )}
+            </Text>
+
             <Text style={styles.modalDuration}>
               Duration: {selectedAnnouncement && selectedAnnouncement.duration}
             </Text>
@@ -233,11 +333,8 @@ const Announcement = ({ navigation }) => {
         <View style={styles.modalContainerBottom}>
           <View style={styles.modalContentBottom}>
             <TouchableOpacity
-              onPress={() => {
-                setConfirmDeleteVisible(true);
-                setMenuVisible(false);
-              }}
               style={styles.modalButtonBottom}
+              onPress={buttonAlert}
             >
               <Text style={styles.modalButtonTextBottom}>Delete</Text>
             </TouchableOpacity>
@@ -254,26 +351,6 @@ const Announcement = ({ navigation }) => {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setMenuVisible(false)}
-              style={styles.modalButtonBottom}
-            >
-              <Text style={styles.modalButtonTextBottom}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Delete Confirmation Modal */}
-      <Modal visible={confirmDeleteVisible} transparent animationType="fade">
-        <View style={styles.modalContainerBottom}>
-          <View style={styles.modalContentBottom}>
-            <TouchableOpacity
-              onPress={handleDelete}
-              style={styles.modalButtonBottom}
-            >
-              <Text style={styles.modalButtonTextBottom}>Delete</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setConfirmDeleteVisible(false)}
               style={styles.modalButtonBottom}
             >
               <Text style={styles.modalButtonTextBottom}>Cancel</Text>
@@ -343,7 +420,7 @@ const styles = StyleSheet.create({
   },
   flag: {
     width: width * 0.04,
-    height: height * 0.05,
+    height: "100%",
     backgroundColor: "#800000",
     borderTopLeftRadius: 10,
     borderBottomLeftRadius: 10,
@@ -372,7 +449,13 @@ const styles = StyleSheet.create({
     marginTop: height * 0.005,
   },
   pinIcon: {
-    marginLeft: width * 0.02,
+    color: "#F7B32D",
+    position: "absolute",
+    top: height * -0.08,
+    left: width * 0.6,
+    backgroundColor: "maroon",
+    borderRadius: 100,
+    padding: 4,
   },
   modalContainer: {
     flex: 1,
@@ -393,11 +476,13 @@ const styles = StyleSheet.create({
   modalTopic: {
     fontSize: width * 0.06,
     fontWeight: "bold",
-    marginBottom: height * 0.02,
   },
   modalDate: {
     fontSize: width * 0.045,
     marginBottom: height * 0.01,
+  },
+  modalDepartment: {
+    marginBottom: height * 0.03,
   },
   modalDuration: {
     fontSize: width * 0.045,
@@ -444,18 +529,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalButtonBottom: {
-    width: "95%",
-    paddingVertical: height * 0.01,
+    padding: height * 0.01,
     backgroundColor: "#800000",
     borderRadius: 10,
+    width: "100%",
     alignItems: "center",
     marginVertical: height * 0.004,
-    width: "70%",
   },
   modalButtonTextBottom: {
     color: "#fff",
+    textAlign: "center",
     fontSize: width * 0.045,
     fontWeight: "bold",
+    width: "100%",
   },
 });
 export default Announcement;

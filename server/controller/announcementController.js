@@ -1,6 +1,9 @@
 const adminModel = require("../model/adminModel");
 const announceModel = require("../model/announceModel");
-const { sendAnnouncementToUser } = require("../sockets/socket");
+const {
+  sendAnnouncementToUser,
+  updatedAnnouncement,
+} = require("../sockets/socket");
 
 const sendAnnouncement = async (req, res) => {
   try {
@@ -20,6 +23,7 @@ const sendAnnouncement = async (req, res) => {
         message: "Admin not found",
       });
     }
+    const isHidden = false;
     const newAnnouncement = new announceModel({
       title,
       description,
@@ -28,6 +32,7 @@ const sendAnnouncement = async (req, res) => {
       duration,
       topic,
       creator: admin._id,
+      isHidden
     });
 
     const savedAnnouncement = await newAnnouncement.save();
@@ -36,7 +41,7 @@ const sendAnnouncement = async (req, res) => {
     admin.announcement.push(savedAnnouncement._id);
     await admin.save();
 
-    sendAnnouncementToUser(title, description, date, department, duration);
+    sendAnnouncementToUser(title, description, date, department, duration, isHidden);
 
     res.status(200).send({
       success: true,
@@ -55,7 +60,7 @@ const sendAnnouncement = async (req, res) => {
 
 const getAnnouncement = async (req, res) => {
   try {
-    const announcements = await announceModel.find();
+    const announcements = await announceModel.find({ isHidden: false });
     res.status(200).send({
       success: true,
       message: "Announcements retrieved successfully",
@@ -70,7 +75,37 @@ const getAnnouncement = async (req, res) => {
     });
   }
 };
+
+const toggleHide = async (req, res) => {
+  try {
+    const announcement = await announceModel.findById(req.params.id);
+    if (!announcement) {
+      return res.status(404).send({
+        success: false,
+        message: "Announcement not found",
+      });
+    }
+    announcement.isHidden = !announcement.isHidden;
+    await announcement.save();
+
+    updatedAnnouncement(announcement);
+
+    res.status(200).send({
+      success: true,
+      message: "Announcement hidden status updated successfully",
+      announcement,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      success: false,
+      message: "Internal Server Error",
+      error: error,
+    });
+  }
+};
 module.exports = {
   sendAnnouncement,
-  getAnnouncement
+  getAnnouncement,
+  toggleHide,
 };

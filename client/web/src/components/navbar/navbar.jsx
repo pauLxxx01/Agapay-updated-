@@ -16,19 +16,17 @@ const navbar = () => {
     () => parseInt(localStorage.getItem("notificationCount")) || 0
   );
 
-  
   const [notification, setNotification] = useState([]);
   const { socket } = useSocket();
 
-
-  console.log("data notif: ",notification)
+  console.log("data notif: ", notification);
   useEffect(() => {
     if (socket) {
       socket.on("report", (notif) => {
         console.log("Notification received:", notif);
         setNotificationCount((prev) => {
           const newCount = prev + 1;
-          localStorage.setItem("notificationCount", newCount); 
+          localStorage.setItem("notificationCount", newCount);
           return newCount;
         });
         setNotification([notif]);
@@ -36,11 +34,6 @@ const navbar = () => {
     }
   }, [socket]);
 
-  // Handle the button click to refresh the page
-  const handleRefresh = () => {
-    // setNotificationCount(0); // Reset the notification count
-    window.location.reload(); // Reload the page
-  };
 
   const handleDropdownClick = () => {
     setIsOpen(!isOpen);
@@ -50,12 +43,9 @@ const navbar = () => {
     setIsAccountOpen(!isAccountOpen);
   };
 
-  const handleRemoveNotification = () => {
-    setNotificationCount((prev) => {
-      const newCount = Math.max(prev - 1, 0); // Ensure the count does not go below 0
-      localStorage.setItem("notificationCount", newCount); // Save updated count to localStorage
-      return newCount;
-    });
+  const handleNotification = () => {
+    setNotificationCount(0);
+    localStorage.setItem("notificationCount", 0);
   };
   return (
     <div className="navbar">
@@ -64,12 +54,10 @@ const navbar = () => {
       </Link>
       <div className="icons">
         <div className="notification">
-          <NotificationsIcon fontSize="large" />
+          <NotificationsIcon fontSize="large" onClick={handleNotification} />
           {notificationCount >= 1 ? <span>{notificationCount}</span> : null}
         </div>
-        <button onClick={handleRemoveNotification} style={{ marginLeft: "10px" }}>
-          Remove Notifications
-        </button>
+
         <div className="account">
           <div className="account-dropdown">
             <img

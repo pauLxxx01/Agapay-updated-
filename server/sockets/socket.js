@@ -4,8 +4,9 @@ const { Server } = require("socket.io");
 const colors = require("colors");
 const adminModel = require("../model/adminModel");
 const userModel = require("../model/userModel");
+const messageModel = require("../model/messageModel");
 
-let activeSockets = {}; // Object to store sockets by user ID
+let activeSockets = []; // Object to store sockets by user ID
 
 // WebSocket authentication middleware
 const socketIoMiddleware = (socket, next) => {
@@ -38,6 +39,10 @@ const socketConnection = (socket) => {
     `User Connected: ${socket.user._id} - ${socket.user.name} - ${socket.id} `
       .bgCyan.white
   );
+  socket.on("register", () => {
+    activeSockets[socket.user._id] = socket;
+    console.log(`Registered socket for user: ${socket.user._id}`);
+  });
 
   // Example of emitting an event after a successful connection
   socket.emit("userConnected", {
@@ -48,25 +53,52 @@ const socketConnection = (socket) => {
   //chat room
   socket.on("join-room", (roomName) => {
     socket.join(roomName);
-    console.log(`${socket.id} joined room: ${roomName}`);
+    console.log(`${socket.user.name} joined room: ${roomName}`);
   });
 
-  socket.on("chatMessage", ({ room, message, sender }) => {
+  socket.on("sendMessage", async ({ room, message, sender }) => {
+    // Validate the incoming data
+    if (!room || !message || !sender) {
+      console.error(
+        "Invalid data received. Room, message, or sender is missing."
+      );
+      return;
+    }
+
     console.log(`Message in room ${room} ~ sender ${sender} : ${message}`);
-    io.to(room).emit("chatMessage", { id: socket._id, message, room,sender });
+
+    try {
+      const newMessage = { sender, message, timestamp: new Date() };
+
+      // Update the room with the new message
+      const updatedRoom = await messageModel.findOneAndUpdate(
+        { room },
+        { $push: { content: newMessage } },
+        { new: true }
+      );
+
+      if (!updatedRoom) {
+        console.error(`Room not found for ID: ${room}`);
+        return;
+      }
+
+      // Emit the message to all clients in the room
+      io.to(room).emit("receiveMessage", newMessage);
+      console.log(`Message sent to room ${room}:`, newMessage);
+    } catch (error) {
+      console.error("Error updating room messages:", error);
+    }
   });
 
   socket.on("notification", (notif) => {
     console.log("Notification from server socket: " + notif);
   });
-
-  socket.on("chat", ({message, senderId, sender, room }) => {
-    console.log(`Message in room ${room} ~ sender ${sender} & ${senderId} : ${message}`);
-    io.to(room).emit("chat", {sender, senderId, message, room})
-  })
-
   socket.emit("receive-notification", (notif) => {
     console.log("Notification received:", notif);
+  });
+
+  socket.on("update-hide-status", (announcement) => {
+    io.emit("hide-status", announcement);
   });
 
   socket.on("disconnect", () => {
@@ -74,6 +106,7 @@ const socketConnection = (socket) => {
       `User disconnected: ${socket.user._id} - ${socket.user.name} - ${socket.id}`
         .bgRed.white
     );
+    delete activeSockets[socket.user._id]; // Remove from activeSockets
   });
 };
 
@@ -111,14 +144,13 @@ async function sendReport(
   }
 }
 
-
-
 async function sendAnnouncementToUser(
   title,
   description,
   date,
   department,
-  duration
+  duration,
+  isHidden
 ) {
   try {
     const users = await userModel.find();
@@ -131,6 +163,7 @@ async function sendAnnouncementToUser(
           date,
           department,
           duration,
+          isHidden
         }); // Send announcement
         console.log(`Socket: ${socket}`);
         console.log(`Announcement sent to user ${user.name}`);
@@ -140,6 +173,15 @@ async function sendAnnouncementToUser(
     });
   } catch (error) {
     console.error("Error sending announcement to users:", error);
+  }
+}
+
+
+async function updatedAnnouncement(announcement) {
+  try {
+    global.io.emit("hide-status", announcement);
+  } catch (error) {
+    console.error("Error updating announcement:", error);
   }
 }
 
@@ -154,7 +196,9 @@ async function sendMessages(message, sender, senderId, room) {
         room,
       });
       console.log(`Socket: ${socket}`);
-      console.log(`Room: ${room} ~ Message sent: ${senderId} & ${sender} ~ Message: ${message}`);
+      console.log(
+        `Room: ${room} ~ Message sent: ${senderId} & ${sender} ~ Message: ${message}`
+      );
     } else {
       console.log(`Client ${senderId} is not connected`);
     }
@@ -200,4 +244,5 @@ module.exports = {
   updateProgress,
   sendAnnouncementToUser,
   sendMessages,
+  updatedAnnouncement,
 };

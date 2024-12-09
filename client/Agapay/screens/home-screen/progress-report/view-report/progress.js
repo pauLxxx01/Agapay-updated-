@@ -42,6 +42,8 @@ const ShowProgress = ({ navigation, route }) => {
   const fadeAnim = useState(new Animated.Value(1))[0];
   const [sound, setSound] = useState(null);
 
+  const [unreadCount, setUnreadCount] = useState(0);
+
   const loadSound = async () => {
     try {
       const { sound } = await Audio.Sound.createAsync(
@@ -56,7 +58,7 @@ const ShowProgress = ({ navigation, route }) => {
   const playSound = async () => {
     try {
       if (sound) {
-        await sound.playAsync(); 
+        await sound.playAsync();
       }
     } catch (error) {
       console.log("Error playing sound:", error);
@@ -71,7 +73,6 @@ const ShowProgress = ({ navigation, route }) => {
 
     const handleUpdate = (data) => {
       loadSound();
-      console.log("Progress update: ", data);
       playSound();
       setReport((prevReports) =>
         prevReports.map((reportItem) =>
@@ -100,10 +101,17 @@ const ShowProgress = ({ navigation, route }) => {
     fetchAdmins();
 
     socket.on("progressUpdate", handleUpdate);
+
+    socket.on("receiveMessage", (message) => {
+      console.log("New message received: ", message);
+      setUnreadCount((prevCount) => prevCount + 1);
+    });
+
     return () => {
+      socket.off("receiveMessage");
       socket.off("progressUpdate", handleUpdate);
     };
-  }, [socket]);
+  }, [socket, report]);
 
   useEffect(() => {
     if (currentMessage) {
@@ -172,7 +180,10 @@ const ShowProgress = ({ navigation, route }) => {
       <View style={styles.floatingButtonContainer}>
         <TouchableOpacity
           style={styles.floatingButton}
-          onPress={() => navigation.navigate("Message", {data: details})}
+          onPress={() => {
+            setUnreadCount(0);
+            navigation.navigate("Message", { data: details });
+          }}
         >
           <FontAwesome
             name="comment"
@@ -180,6 +191,11 @@ const ShowProgress = ({ navigation, route }) => {
             color="#FFF"
           />
         </TouchableOpacity>
+        {unreadCount > 0 && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{unreadCount}</Text>
+          </View>
+        )}
 
         <TouchableOpacity style={styles.floatingButton} onPress={openCall}>
           <FontAwesome
@@ -320,6 +336,22 @@ const styles = StyleSheet.create({
     maxWidth: "100%",
     alignContent: "center",
     backgroundColor: "#FAA0A0",
+  },
+  badge: {
+    position: "absolute",
+    top: 2,
+    right: -2,
+    backgroundColor: "#F7B32D",
+    borderRadius: 50,
+    width: isSmallDevice ? 25 : 30,
+    height: isSmallDevice ? 25 : 30,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  badgeText: {
+    color: "maroon",
+    fontSize: 13,
+    fontWeight: "bold",
   },
 });
 

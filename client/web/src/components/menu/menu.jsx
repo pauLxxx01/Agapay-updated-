@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./menu.scss";
 
 import DashboardIcon from "../../assets/icons/menu/dashboard.svg";
@@ -18,15 +18,8 @@ const menuItems = [
 
 const Menu = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const handleNavigateWithRefresh = (path) => {
-    // Navigate to the path first
-    window.location.href = path;
-    // Reload the page
-    setTimeout(() => {
-      window.location.reload();
-    }, 100); // Slight delay ensures the navigation happens first
-  };
 
   return (
     <div className="menu">
@@ -37,7 +30,7 @@ const Menu = () => {
             className={`listItem ${
               location.pathname === item.path ? "active" : ""
             }`}
-            onClick={() => handleNavigateWithRefresh(item.path)}
+            onClick={() => navigate(item.path)}
           >
             <img src={item.icon} alt={`${item.title} icon`} className="icon" />
             <span className="listItemTitle">{item.title}</span>

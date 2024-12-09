@@ -13,90 +13,119 @@ import {
 import { FontAwesome } from "@expo/vector-icons";
 import { useSocket } from "../../../context/socketContext";
 import axios from "axios";
+import LoadingScreen from "../../../components/loading/loading";
 
 const { width } = Dimensions.get("window");
 const isSmallDevice = width < 375;
 
 const Message = ({ route }) => {
   const { data } = route.params;
-  console.log("data from progress", data);
+  const [loading, setLoading] = useState(true);
+
   const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState("");
+  const [newMessage, setNewMessage] = useState("");
+
   const scrollViewRef = useRef(); // Ref to manage scroll
 
   const [room, setRoom] = useState("");
 
-  const [sendChats, setSendChats] = useState("");
-  const [chats, setChats] = useState([]);
-
   const { socket } = useSocket();
 
   useEffect(() => {
-    if (scrollViewRef.current) {
-      scrollViewRef.current.scrollToEnd({ animated: true });
+    if (data) {
+      setRoom(data._id);
+      console.log("Room updated!");
     }
-    if (socket) {
-      console.log("Socket initialized:", socket.connected);
-      socket.on("chat", (data) => {
-        console.log("data: ", data);
-        setChats((prev) => [...prev, data]);
-      });
 
-      if (data) {
-        setRoom(data._id);
-        if (room) {
-          socket.emit("join-room", room);
-          console.log("Connected to room!");
+    const fetchData = async () => {
+      if (room) {
+        setLoading(true);
+        try {
+          const response = await axios.get(`/chats/${room}`);
+          console.log("Fetched messages:", response.data); // Check the full response structure
+          const fetchedMessages = response.data?.data?.content || [];
+          setMessages(fetchedMessages);
+        } catch (error) {
+          console.error("Error fetching messages:", error);
+          setMessages([]);
+        } finally {
+          setLoading(false);
         }
       }
-    }
-    return () => {
-      if (socket) {
-        socket.off("chat");
-      }
     };
-  }, [room, socket]);
+
+  
+    if (room) {
+      fetchData();
+    }
+  }, [room, data]); // Dependencies: fetch data when room or data changes
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const chatResponse = await axios.get("/get-chats");
-        console.log("message response: ", chatResponse.data);
-        setChats(chatResponse.data.messages);
-      } catch (error) {
-        console.log("Error fetching data", error);
+    if (socket && room) {
+      console.log("Socket initialized:", socket.connected);
+
+      // Join room once room is set
+      socket.emit("join-room", room);
+      console.log(`Connected to room with ID: ${room}!`);
+
+      socket.on("receiveMessage", (message) => {
+        setMessages((prev) => [...prev, message]);
+      });
+    }
+
+    return () => {
+      if (socket) {
+        socket.off("receiveMessage");
       }
     };
-    fetchData();
-  }, []);
+  }, [socket, room]);
 
-  const handleSendChat = async () => {
-    if (sendChats) {
-      const senderId = data.senderId.toString();
-      console.log(
-        `Room: ${room} ~ Message: ${sendChats} ~ Sender ID: ${senderId}`
-      );
-
-      const messageData = {
-        room: room,
-        message: sendChats,
-        senderId: senderId,
-        sender: "user",
-      };
-      // Emit the message through the socket
-      socket.emit("chat", messageData);
-      console.log("Message sent via socket:", messageData);
-
-      try {
-        // Send the message to the server
-        await axios.post("/send-chat", messageData);
-        console.log("Message sent to server:", messageData);
-      } catch (error) {
-        console.error("Error sending message to server:", error);
-      }
+  useEffect(() => {
+    // Scroll to the end when messages are updated or loading is done
+    if (scrollViewRef.current && !loading && messages.length > 0) {
+      scrollViewRef.current.scrollToEnd({ animated: true });
     }
-    setSendChats("")
+  }, [messages, loading]); // Dependency on messages and loading
+
+  const sendMessage = () => {
+    // Validate inputs
+    if (!room) {
+      console.error("Room is undefined. Cannot send message.");
+      return;
+    }
+
+    const senderId = data?.senderId?.toString();
+    if (!senderId) {
+      console.error("Sender ID is undefined. Cannot send message.");
+      return;
+    }
+
+    if (!socket) {
+      console.error("Socket is not initialized. Cannot send message.");
+      return;
+    }
+
+    if (!newMessage.trim()) {
+      console.error("Message is empty. Cannot send message.");
+      return;
+    }
+
+    // Emit the message
+    socket.emit("sendMessage", {
+      room: room,
+      sender: senderId,
+      message: newMessage,
+    });
+
+    console.log(
+      `Message sent: ${newMessage}, Room: ${room}, Sender: ${senderId}`
+    );
+    setNewMessage(""); // Clear the input field
   };
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <KeyboardAvoidingView
@@ -110,21 +139,27 @@ const Message = ({ route }) => {
       </View>
 
       {/* Messages List */}
-      <ScrollView>
-        {chats.map((message, index) => (
-          <View key={`${message._id}-${index}`} style={styles.sentContainer}>
-            <Text
-              style={[
-                styles.message,
-                message.sender === "admin"
-                  ? styles.receivedMessage
-                  : styles.sentMessage,
-              ]}
-            >
-              {message.message}
-            </Text>
+      <ScrollView ref={scrollViewRef}>
+        {Array.isArray(messages) && messages.length > 0 ? (
+          messages.map((message, index) => (
+            <View key={`${message._id}-${index}`} style={styles.sentContainer}>
+              <Text
+                style={[
+                  styles.message,
+                  message.sender === "admin"
+                    ? styles.receivedMessage
+                    : styles.sentMessage,
+                ]}
+              >
+                {message.message}
+              </Text>
+            </View>
+          ))
+        ) : (
+          <View style={styles.noMessagesContainer}>
+            <Text style={styles.noMessagesContainer}>No messages</Text>
           </View>
-        ))}
+        )}
       </ScrollView>
 
       {/* Input and Send Button */}
@@ -132,16 +167,18 @@ const Message = ({ route }) => {
         <TextInput
           style={styles.input}
           placeholder="Type a message..."
-          value={sendChats}
-          onChangeText={(e) => setSendChats(e)}
+          value={newMessage}
+          onChangeText={(e) => setNewMessage(e)}
         />
         <TouchableOpacity
           style={[
             styles.sendButton,
-            sendChats ? styles.sendButtonActive : styles.sendButtonDisabled,
+            newMessage.trim()
+              ? styles.sendButtonActive
+              : styles.sendButtonDisabled,
           ]}
-          onPress={handleSendChat}
-          disabled={!sendChats.trim()} // Disable button if there's no input
+          onPress={sendMessage}
+          disabled={!newMessage.trim()} // Correctly checks if the message is empty
         >
           <FontAwesome name="send" size={24} color="#fff" />
         </TouchableOpacity>

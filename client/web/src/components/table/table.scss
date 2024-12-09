@@ -1,0 +1,135 @@
+@import '../../styles/variables.scss';
+
+.search {
+    margin-bottom: 12px;
+    display: flex;
+    margin-bottom: 12px;
+    justify-content: flex-end;
+    input[type="search"] {
+      width: 50%;
+      height: 40px;
+      padding: 12px 22px;
+      font-size: 16px;
+      border-radius: 20px;
+      border: 1px solid #eee;
+
+      background-color: #fff;
+      &:focus {
+        outline: none;
+        box-shadow: 0 0 10px rgba(129, 129, 129, 0.09);
+      }
+    }
+  }
+  .user-table {
+    font-size: 0.9em;
+  }
+
+  thead {
+    gap: 12;
+  }
+  tr {
+    gap: 50;
+  }
+
+  th {
+    width: auto;
+    font-size: 12px;
+    font-weight: lighter;
+    text-transform: uppercase;
+    background-color: $dark-bg;
+    border-radius: 12px;
+    border-right: 1px solid $soft-color;
+    color: $soft-color;
+    padding: 12px 22px;
+  }
+
+  td {
+    padding: 12px 15px;
+    text-align: center;
+  }
+
+  .items-row:hover {  
+    transition: background-color 0.3s ease-in-out;
+    background-color: #b34f4f2a;
+    cursor: pointer;
+  }
+
+  .data {
+    padding: 5px;
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  .data.completed {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .data.pending {
+    background-color: #72727233;
+  }
+
+  .data.in-progress {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+
+  .view .showView {
+    text-decoration: none;
+  }
+
+
+
+
+  .containerNav {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+    padding: 0 20px;
+  }
+  
+.pagination-modal {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    gap: 8px;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+  }
+  
+  .page-items {
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .page-items:hover {
+    transform: scale(1.1);
+  }
+  
+  .page-links {
+    background-color: rgba(250, 235, 215, 0.3019607843);
+    color: $dark-bg;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-weight: 500;
+  }
+  
+  .page-links:hover {
+    background-color: rgba(128, 0, 0, 0.333);
+    color: #e0e0e0;
+  }
+  
+  .active .page-links {
+    background-color: $dark-bg;
+    color: #e0e0e0;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .page-links:focus {
+    outline: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  

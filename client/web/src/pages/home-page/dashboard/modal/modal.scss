@@ -23,14 +23,14 @@
   border-radius: 32px;
   color: $main-color;
 }
-.containerModal{
+.containerModal {
   display: flex;
   flex-direction: column;
 }
-.containerNav{
+.containerNav {
   display: flex;
   width: 100%;
-justify-content: end;
+  justify-content: end;
 }
 .button-container {
   display: flex;
@@ -61,23 +61,78 @@ justify-content: end;
 
 .popup-header {
   display: flex;
-  flex-direction: column;
   text-transform: uppercase;
   padding: 0;
   margin: 0;
+  justify-content: space-between;
+  align-items: center;
 
-  span {
+  .data-container {
+    width: 50%;
     display: flex;
-    align-items: center;
-    &:first-child {
-      color: maroon;
-      font-weight: 900;
-      font-size: 60px;
+    flex-direction: column;
+    span {
+      display: flex;
+      align-items: center;
+      &:first-child {
+        color: maroon;
+        font-weight: 900;
+        font-size: 60px;
+      }
+      &:last-child {
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 22px;
+      }
     }
-    &:last-child {
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-size: 22px;
+  }
+  .btn-container {
+    align-items: flex-end;
+    width: 50%;
+    display: flex;
+    gap: 8px;
+    .dataCount {
+      display: flex;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 8px;
+      border-radius: 12px;
+      color: maroon; /* Default text color */
+      width: 15%;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .dataCount.active {
+      background-color: green; /* Background color when active */
+      color: white; /* Text color when active */
+    }
+
+    .dataCount::before {
+      content: "";
+      z-index: -10;
+      position: absolute;
+      top: 0;
+      left: -100%; /* Start from the left */
+      width: 100%;
+      height: 100%;
+      background: rgba(128, 0, 0, 0.35);
+      transition: left 0.3s ease-in-out;
+    }
+
+    .dataCount:hover::before {
+      left: 0; /* Move the background from left to right on hover */
+    }
+
+    .dataCount:hover {
+      transform: scale(
+        1.05
+      ); /* Optional: add a slight scaling effect on hover */
+      background-color: transparent;
+      color: white;
     }
   }
 }
@@ -151,7 +206,6 @@ table {
   }
 }
 
-
 thead {
   position: sticky;
   top: 0;
@@ -186,7 +240,7 @@ td {
 }
 
 @media only screen and (max-width: 992px) {
-  .popup{
+  .popup {
     font-size: 0.5rem;
   }
   table {
@@ -216,7 +270,6 @@ td {
   }
 
   .pagination-modal {
-   
     gap: 4px;
 
     padding: 10px;

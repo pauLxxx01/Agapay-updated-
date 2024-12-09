@@ -38,7 +38,8 @@ const viewReports = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [openAlready, setOpenAlready] = useState(false);
 
   const [userInfo, setUserInfo] = useState([]);
 
@@ -116,9 +117,46 @@ const viewReports = () => {
       console.error(`Error updating message for ID ${id}:`, error);
     }
   };
+  const handleAlreadyUpdate = async (id) => {
+    try {
+      const requestData = {
+        respond: "completed",
+        percentage: 100, 
+        userId: userInfo._id, 
+        id: id
+      };
 
+      const sendNotif = {
+        to: `${userInfo.pushToken}`,
+        title: "New Notification",
+        body: "Transaction is already completed!",
+        data: { screen: "Transaction", 
+          details: null 
+        },
+      };
+
+      await axios.post('push-notification', sendNotif)
+
+      // Use template literals for the URL
+      const apiEndpoint = `/user/message/update/${id}`;
+
+      // Make the PUT request
+      await axios.put(apiEndpoint, requestData);
+
+      // Navigate after successful request
+      navigate(`/home/report`);
+    } catch (error) {
+      // Provide more descriptive error handling
+      console.error(`Error updating message for ID ${id}:`, error);
+    }
+  };
   const handleClickOpen = () => {
     setOpen(true);
+  };
+  
+
+  const handleClickAlready = () => {
+    setOpenAlready(true);
   };
 
   const handleClose = () => {
@@ -158,7 +196,7 @@ const viewReports = () => {
                     className="icon"
                   />
                 ) : messages.data.data.emergency.split(" ")[0].toLowerCase() ===
-                  "Utility" ? (
+                  "utility" ? (
                   <img src={Utility} alt="Utility Issue" className="icon" />
                 ) : messages.data.data.emergency.split(" ")[0].toLowerCase() ===
                   "crime" ? (
@@ -249,7 +287,7 @@ const viewReports = () => {
 
           <div className="box box5">
             <div className="bottonBox">
-              <Button color="primary" onClick={handleClickOpen}>
+              <Button color="primary" onClick={handleClickAlready}>
                 Already reported
               </Button>
               <Button
@@ -292,6 +330,46 @@ const viewReports = () => {
             </Button>
             <Button
               onClick={() => handleUpdate(messages.data.data._id, users)}
+              size="medium"
+              color="success"
+              variant="contained"
+              autoFocus
+            >
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* already done */}
+        <Dialog
+          open={openAlready}
+          onClose={handleClose}
+          sx={{
+            "& .MuiDialog-paper": {
+              backgroundColor: "#f5f5f5",
+              borderRadius: "10px",
+              padding: "20px",
+            },
+          }}
+        >
+          <DialogTitle>
+            <CheckCircleIcon
+              color="primary"
+              sx={{ marginRight: "8px", verticalAlign: "middle" }}
+            />
+            Confirmation
+          </DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" color="textSecondary" gutterBottom>
+              Are you sure you that report is already done?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="primary">
+              Cancel
+            </Button>
+            <Button
+              onClick={() => handleAlreadyUpdate(messages.data.data._id, users)}
               size="medium"
               color="success"
               variant="contained"

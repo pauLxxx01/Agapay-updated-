@@ -4,48 +4,12 @@ const { sendMessages } = require("../sockets/socket");
 
 const sendMessage = async (req, res) => {
   try {
-    const { message, sender, senderId, room } = req.body;
-
-    const messageReport = await reportModel.findById(room);
-    if(!messageReport){
-      return res.status(404).send({
-        success: false,
-        message: "Room not found",
-      });
-    }
-    if (!senderId) {
-      return res
-        .status(400)
-        .send({ success: false, message: "Sender's ID is required" });
-    }
-    if (!message) {
-      return res
-        .status(400)
-        .send({ success: false, message: "Message is required" });
-    }
-    if (!sender) {
-      return res
-        .status(400)
-        .send({ success: false, message: "Sender Id is required" });
-    }
-    if (!room) {
-      return res
-        .status(400)
-        .send({ success: false, message: "Sender Id is required" });
-    }
-    const newMessage = new messageModel({
-      sender: sender,
-      message: message,
-    });
-
-    await newMessage.save();
-
-    sendMessages(message, sender, senderId, room);
-
+    const messages = new messageModel({ room: req.body.room, content: [] });
+    await messages.save();
     return res.status(200).send({
       success: true,
       message: "Message successfully",
-      data: newMessage,
+      data: messages,
     });
   } catch (error) {
     console.error(error);
@@ -59,11 +23,18 @@ const sendMessage = async (req, res) => {
 
 const getMessage = async (req, res) => {
   try {
-    const messages = await messageModel.find();
+    const room = await messageModel.findOne({ room: req.params.id });
+    if (!room) {
+      return res.status(404).send({
+        success: false,
+        message: "No messages found in this room",
+      });
+    }
+
     return res.status(200).json({
       success: true,
       message: "Chats retrieved successfully",
-      messages,
+      data: room,
     });
   } catch (error) {
     console.error("Error retrieving messages:", error);

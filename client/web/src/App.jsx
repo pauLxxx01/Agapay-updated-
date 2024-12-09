@@ -11,6 +11,7 @@ import Dashboard from "./pages/home-page/dashboard/dashboard";
 import ViewReports from "./pages/home-page/process-report/view-report/view";
 import OngoingReports from "./pages/home-page/process-report/contact-user/ongoing-process.jsx";
 import Announcement from "./pages/home-page/announcement/announcement.jsx";
+import History from "./pages/home-page/history/history.jsx";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -23,14 +24,12 @@ import ResponderAccounts from "./Accounts/Responder/responder-accounts/responder
 import { ToastContainer } from "react-toastify"; // Import ToastContainer
 import "react-toastify/dist/ReactToastify.css"; // Import toastify styles
 import { AuthProvider } from "./context/authContext.jsx";
+import PrivateRoute from "./components/privateRoute/privateRoute.jsx";
 
 function App() {
   const [users, setUsers] = useState([]);
   const [messages, setMessages] = useState([]);
-
   const [error, setError] = useState(null);
-
-  axios.defaults.baseURL = "http://192.168.18.90:8080/admin/auth";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -97,23 +96,51 @@ function App() {
       children: [
         {
           path: "/home/dashboard",
-          element: <Dashboard users={users} />,
+          element: (
+            <PrivateRoute>
+              <Dashboard users={users} />
+            </PrivateRoute>
+          ),
         },
         {
           path: "/home/announcement",
-          element: <Announcement />,
+          element: (
+            <PrivateRoute>
+              <Announcement />
+            </PrivateRoute>
+          ),
         },
         {
           path: "/home/report",
-          element: <Report users={users} messages={messages} />,
+          element: (
+            <PrivateRoute>
+              <Report users={users} messages={messages} />
+            </PrivateRoute>
+          ),
         },
         {
           path: "/home/report/:id",
-          element: <ViewReports />,
+          element: (
+            <PrivateRoute>
+              <ViewReports />
+            </PrivateRoute>
+          ),
         },
         {
           path: "/home/report/in-progress/:id",
-          element: <OngoingReports />,
+          element: (
+            <PrivateRoute>
+              <OngoingReports />
+            </PrivateRoute>
+          ),
+        },
+        {
+          path: "/home/history",
+          element: (
+            <PrivateRoute>
+              <History />
+            </PrivateRoute>
+          ),
         },
       ],
     },
@@ -121,10 +148,8 @@ function App() {
 
   return (
     <>
-
       <RouterProvider router={router} />
       <ToastContainer position="top-right" />
- 
     </>
   );
 }

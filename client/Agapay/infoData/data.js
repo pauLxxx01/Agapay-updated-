@@ -2,7 +2,6 @@ const menuItems = [
   { toNavigate: "Transaction", name: "history", text: "Transaction" },
   { toNavigate: "Announcement", name: "bullhorn", text: "Announcement" },
   { toNavigate: "UpdateInfo", name: "refresh", text: "Update Information" },
-  { toNavigate: "Notification", name: "bell", text: "Notification Settings" },
   { toNavigate: "Feedback", name: "star", text: "Feedback" },
   { toNavigate: "About", name: "info-circle", text: "About the application" },
 ];
@@ -159,4 +158,10 @@ const options = [
   { label: "SHS BUILDING", value: "SHS BUILDING" },
 ];
 
-export { menuItems, emergencies, infoCardData, options, progressReportInformation };
+export {
+  menuItems,
+  emergencies,
+  infoCardData,
+  options,
+  progressReportInformation,
+};

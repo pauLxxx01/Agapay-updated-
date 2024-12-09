@@ -61,7 +61,6 @@ td {
   text-align: center;
 }
 .items-row:hover {
-
   background-color: #b34f4f2a;
 }
 
@@ -78,11 +77,76 @@ td {
     border: none;
     padding: 8px 12px;
     border-radius: 5px;
-    transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
     &:hover {
-        transform: scale(1.05);
+      transform: scale(1.05);
       background-color: rgba(128, 0, 0, 0.333);
       color: #e0e0e0;
     }
+  }
+}
+
+.announce-form {
+  background-color: maroon;
+  border-radius: 12px;
+  width: 100%;
+
+  .announce-container {
+    padding: 12px;
+
+    border-radius: 0px 0px 12px 12px;
+  }
+
+  .form-group-announce {
+    width: 100%;
+    position: relative;
+  }
+  .form-group-announce input {
+    color: white;
+    font-family: "Arial", sans-serif;
+    width: 100%;
+    font-size: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    background-color: transparent;
+    border: none;
+  }
+
+  input::placeholder {
+    font-weight: bold;
+    color: rgb(255, 255, 255);
+    text-transform: uppercase;
+  }
+  textarea::placeholder {
+   
+    color: rgba(128, 0, 0, 0.318);
+    text-transform: uppercase;
+  }
+  label {
+    width: 30%;
+    padding: 12px;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  textarea {
+    font-family: "Arial", sans-serif;
+    min-width: 500px;
+    min-height: 200px;
+    font-size: 16px;
+    color: maroon;
+    resize: none;
+    padding: 12px;
+    background-color: white;
+    border-radius: 8px;
+    border: none;
+  }
+  .time {
+    display: flex;
+    align-items: center;
+  }
+
+  textarea:focus {
+    outline: none;
   }
 }

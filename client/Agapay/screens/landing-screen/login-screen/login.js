@@ -14,7 +14,7 @@ import {
   Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { registerIndieID, unregisterIndieDevice } from 'native-notify';
+import { registerIndieID, unregisterIndieDevice } from "native-notify";
 import axios from "axios";
 
 import SubmitButton from "../../../components/SubmitButton";
@@ -23,15 +23,18 @@ import { AuthContext } from "../../../context/authContext";
 
 const { width, height } = Dimensions.get("window");
 
-import * as Notifications from 'expo-notifications';
+import * as Notifications from "expo-notifications";
+import LoadingScreen from "../../../components/loading/loading";
 
-export default function Login  ({ navigation })  {
+export default function Login({ navigation }) {
   //global state
   const [state, setState] = useContext(AuthContext);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(false);
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [alert, setAlert] = useState("");
 
   const [pushToken, setPushToken] = useState("");
 
@@ -39,7 +42,7 @@ export default function Login  ({ navigation })  {
     const getPushToken = async () => {
       try {
         const { status } = await Notifications.requestPermissionsAsync();
-        if (status === 'granted') {
+        if (status === "granted") {
           const token = await Notifications.getExpoPushTokenAsync();
           setPushToken(token.data);
           console.log("Push token: ", token.data);
@@ -50,8 +53,8 @@ export default function Login  ({ navigation })  {
         console.error("Error getting push token:", error);
       }
     };
-  
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
+
+    if (Platform.OS === "ios" || Platform.OS === "android") {
       getPushToken();
     } else {
       console.log("Push notifications are not supported on this platform.");
@@ -59,26 +62,27 @@ export default function Login  ({ navigation })  {
   }, []);
 
   const handleSubmit = async () => {
-    setLoading(true); // Start loading
+    setLoading(true);
     try {
       console.log("USERS: ", userId, password);
       if (!userId || !password) {
+        setLoading(false);
         Alert.alert(
           "Alert",
           "Please provide both student number and password!"
         );
-        setLoading(false); // Stop loading
+
         return;
       }
-      const user_id = userId.toUpperCase()
-      const {data} = await axios.post(`/mobile/user/login`, {
+      const user_id = userId.toUpperCase();
+      const { data } = await axios.post(`/mobile/user/login`, {
         account_id: user_id,
         password,
       });
-      console.log("data: ",data.user._id)
+      console.log("data: ", data.user._id);
       await axios.put(`/save-token/${data.user._id}`, {
         token: pushToken,
-      })
+      });
       console.log("data: ", data);
       setState(data);
       await AsyncStorage.setItem("@auth", JSON.stringify(data));
@@ -92,9 +96,39 @@ export default function Login  ({ navigation })  {
       );
       console.log("Login failed", error.response.data.message);
     } finally {
-      setLoading(false); // Ensure loading is stopped
+      setLoading(false);
     }
   };
+
+  // const handleSubmit = async () => {
+
+  //   try {
+  //     if (!userId || !password) {
+  //       const timer = setTimeout(() => {
+
+  //         Alert.alert(
+  //           "Alert",
+  //           "Please provide both student number and password!"
+  //         );
+  //       }, 1000);
+  //       return () => clearTimeout(timer);
+  //     }
+  //     console.log("Please")
+  //     const user_id = userId.toUpperCase()
+  //     const { data } = await axios.post(`/mobile/user/login`, {
+  //       account_id: user_id,
+  //       password,
+  //     });
+  //     console.log("data: ", data.user._id);
+
+  //   } catch (error) {
+
+  //     Alert.alert(
+  //       "Login failed",
+  //       error.response.data.message || "An error occurred. Please try again."
+  //     );
+  //   }
+  // };
 
   const getLocalStorageData = async () => {
     let dataString = await AsyncStorage.getItem("@auth");
@@ -104,6 +138,9 @@ export default function Login  ({ navigation })  {
     console.log("Token:", data.token);
   };
 
+  if (loading) {
+    return <LoadingScreen />;
+  }
   return (
     <ImageBackground
       source={require("../../../assets/agapay/background/agapaybg.jpg")}
@@ -118,13 +155,6 @@ export default function Login  ({ navigation })  {
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
         >
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-          >
-            <Text style={styles.backButtonText}></Text>
-          </TouchableOpacity>
-
           <Text style={styles.welcomeText}>Welcome ka-AGAPAY!</Text>
           <Text style={styles.subText}>Log in as User</Text>
           <Image
@@ -161,7 +191,7 @@ export default function Login  ({ navigation })  {
       </KeyboardAvoidingView>
     </ImageBackground>
   );
-};
+}
 
 const styles = StyleSheet.create({
   scrollContainer: {

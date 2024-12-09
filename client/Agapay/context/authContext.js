@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import LoadingScreen from "../components/loading/loading";
 
 //context
 const AuthContext = createContext();
@@ -13,14 +14,22 @@ const AuthProvider = ({ children }) => {
     token: "",
   });
 
-  //default axios
-  axios.defaults.baseURL = "http://192.168.18.90:8080/admin/auth";
+  const [loading, setLoading] = useState(true);
 
-  // initialization state of local storage
+  const defaultApiUrl = "http://192.168.18.42:8080/admin/auth";
+  axios.defaults.baseURL = defaultApiUrl;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  });
+
   useEffect(() => {
     const loadLocalStorageData = async () => {
       try {
-
         let data = await AsyncStorage.getItem("@auth");
         let loginData = JSON.parse(data);
         console.log("Full data from AsyncStorage:", data);
@@ -32,6 +41,10 @@ const AuthProvider = ({ children }) => {
     };
     loadLocalStorageData();
   }, []);
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <AuthContext.Provider value={[state, setState]}>

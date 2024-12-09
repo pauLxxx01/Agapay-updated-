@@ -19,12 +19,19 @@ export const SocketProvider = ({ children }) => {
         query: { token },
       });
       setSocket(newSocket);
+      console.log("Connected to " + newSocket.connected);
+
+      newSocket.on("connect", () => {
+        console.log("Connected to server");
+        newSocket.emit("register");
+
+      });
 
       return () => {
         newSocket.disconnect();
       };
     }
-  }, [token]); 
+  }, [token]);
 
   // Function to handle login and store the token
   const handleLogin = (newToken) => {

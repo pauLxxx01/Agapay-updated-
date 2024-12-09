@@ -2,33 +2,28 @@
 export const headerTableModal = [
   {
     id: 1,
-    KEY: "NAME",
+    KEY: "name",
     Label: "NAME",
   },
   {
     id: 2,
-    KEY: "ID",
+    KEY: "account_id",
     Label: "USER ID",
   },
   {
     id: 3,
-    KEY: "DEPARTMENT",
+    KEY: "department",
     Label: "DEPARTMENT",
   },
   {
     id: 4,
-    KEY: "DATE",
+    KEY: "createdAt",
     Label: "DATE",
   },
   {
     id: 5,
-    KEY: "RESPOND",
+    KEY: "respond",
     Label: "STATUS",
-  },
-  {
-    id: 6,
-    KEY: "VIEW",
-    Label: "REPORT",
   },
 ];
 
@@ -69,7 +64,7 @@ export const headerTableGeneral = [
   },
   {
     id: 2,
-    KEY: "userId",
+    KEY: "account_id",
     Label: "USER ID",
   },
   {

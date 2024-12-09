@@ -1,6 +1,7 @@
 const userModel = require("../model/userModel");
 const ReportModel = require("../model/reportModel");
 const { sendReport, updateProgress } = require("../sockets/socket");
+const messageModel = require("../model/messageModel");
 
 const sendReportToAdmin = async (req, res) => {
   try {
@@ -31,7 +32,7 @@ const sendReportToAdmin = async (req, res) => {
         .send({ success: false, message: "Message is required" });
     }
 
-    const user = await userModel.findById(senderId); 
+    const user = await userModel.findById(senderId);
     if (!user) {
       return res.status(404).send({
         success: false,
@@ -56,6 +57,11 @@ const sendReportToAdmin = async (req, res) => {
     user.report_data.push(savedMessage._id); // Add the new message ID
     await user.save(); // Save the updated user document
 
+    const newRoom = new messageModel({
+      room: savedMessage._id,
+    });
+    await newRoom.save();
+    
     sendReport(
       emergency,
       location,
@@ -139,11 +145,7 @@ const updateReportMessage = async (req, res) => {
       { new: true, runValidators: true } // `new: true` returns the updated document, `runValidators` ensures validation
     );
 
-    updateProgress(
-      userId,
-      percentage,
-       id
-    );
+    updateProgress(userId, percentage, id);
 
     if (!updatedMessage) {
       return res.status(404).json({ message: "Message not found" });

@@ -8,27 +8,25 @@ const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
 const ProgressBar = ({ progress }) => {
   const [indeterminate, setIndeterminate] = useState(true);
-  const [color, setColor] = useState("#800000");
+  const [color, setColor] = useState("");
 
   // Animated value for the progress width
   const progressAnim = new Animated.Value(0);
 
   useEffect(() => {
-    if (progress === 100) {
-      setIndeterminate(false);
+    if (progress === "100") {
       setColor("#4caf50");
     } else {
       setColor("#800000");
-      const interval = setInterval(() => {
-        setIndeterminate((prevState) => !prevState);  // Toggle indeterminate state
-      }, 5000);  // Toggle every 5 seconds
-      return () => clearInterval(interval);
     }
+    const interval = setInterval(() => {
+      setIndeterminate((prevState) => !prevState); // Toggle indeterminate state
+    }, 3000);
+    return () => clearInterval(interval);
   }, [progress]);
 
   useEffect(() => {
     if (!indeterminate) {
-      // Animate the progress bar width whenever progress changes
       Animated.timing(progressAnim, {
         toValue: progress / 100, // Normalize progress to a value between 0 and 1
         duration: 500, // Duration of the animation (in milliseconds)
@@ -61,7 +59,7 @@ const ProgressBar = ({ progress }) => {
   });
 
   return (
-    <View >
+    <View>
       <Svg height={height} width={width}>
         {/* Background bar */}
         <Rect
@@ -88,6 +86,5 @@ const ProgressBar = ({ progress }) => {
     </View>
   );
 };
-
 
 export default ProgressBar;

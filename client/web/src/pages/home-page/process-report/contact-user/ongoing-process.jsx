@@ -27,7 +27,7 @@ const Ongoing = () => {
   const passedId = location.state?.id;
   const [message, setMessage] = useState([]);
   const { socket } = useSocket();
-  const dialogContentRef = useRef(null)
+  const dialogContentRef = useRef(null);
 
   const [openChat, setOpenChat] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -150,11 +150,11 @@ const Ongoing = () => {
 
         const messageResponse = await axios.get(`/user/message/specific/${id}`);
         console.log("message response: ", messageResponse.data.data);
-        setMessage(messageResponse.data.data);
+        setMessages(messageResponse.data.data);
 
-        const chatResponse = await axios.get("/get-chats");
-        console.log("chats ", chatResponse.data.messages);
-        setUserChats(chatResponse.data.messages);
+        const chatResponse = await axios.get(`/chats/${id}`);
+        console.log("chats ", chatResponse.data.data);
+        setUserChats(chatResponse.data?.data?.content || []);
 
         // Load saved step and process info from local storage based on ID
         const savedStep = localStorage.getItem(`currentStep_${id}`);
@@ -190,59 +190,57 @@ const Ongoing = () => {
   useEffect(() => {
     if (socket) {
       console.log("Socket initialized:", socket);
-      socket.on("chat", (data) => {
+
+      // Handle incoming message
+      socket.on("receiveMessage", (data) => {
         setUserChats((prev) => [...prev, data]);
+
+        // Increment unread messages if chat is closed
         if (!openChat) {
           setUnreadMessages((prev) => prev + 1);
         }
       });
-      if (passedId) {
-        setRoom(message._id);
-        if (room) {
-          socket.emit("join-room", room);
-          console.log("connected to room!");
-        }
+
+      // Join room if room ID is set
+      if (id) {
+        socket.emit("join-room", id);
+        console.log(`Connected to room with ID: ${id}!`);
       }
     }
+
+    // Cleanup on unmount or when socket or dependencies change
     return () => {
       if (socket) {
-        socket.off("chat");
+        socket.off("receiveMessage");
       }
     };
-  }, [socket, room, openChat]);
+  }, [socket, id, openChat]);
 
-   // Scroll to the bottom whenever the dialog opens or messages update
-   const scrollToBottom = () => {
+  // Scroll to the bottom whenever the dialog opens or messages update
+  const scrollToBottom = () => {
     if (dialogContentRef.current) {
-      dialogContentRef.current.scrollTop = dialogContentRef.current.scrollHeight;
+      dialogContentRef.current.scrollTop =
+        dialogContentRef.current.scrollHeight;
     }
   };
   useEffect(() => {
     if (openChat) {
-      console.log("helo")
+      console.log("helo");
       scrollToBottom();
     }
-  }, [userChats, openChat]);
+  }, [userChats, userChats]);
+
   const sendMessage = async () => {
     if (setChat) {
       const messageData = {
-        room: "6751b7e9549f29d882c20429",
+        room: id,
         message: chat,
-        senderId: "67519003549f29d882c20366",
-        sender: "admin", // Replace with actual sender name if needed
+        sender: "admin",
       };
 
       // Emit the message through the socket
-      socket.emit("chat", messageData);
+      socket.emit("sendMessage", messageData);
       console.log("Message sent via socket:", messageData);
-
-      try {
-        // Send the message to the server
-        await axios.post("/send-chat", messageData);
-        console.log("Message sent to server:", messageData);
-      } catch (error) {
-        console.error("Error sending message to server:", error);
-      }
 
       // Clear the input field
       setChat("");
@@ -703,7 +701,9 @@ const Ongoing = () => {
               }}
             >
               <Badge badgeContent={unreadMessages} color="error">
-                <MessageIcon style={{ fontSize: 30, cursor: "pointer" }} />
+                <MessageIcon
+                  style={{ zIndex: 1000, fontSize: 30, cursor: "pointer" }}
+                />
               </Badge>
             </div>
 
@@ -711,7 +711,7 @@ const Ongoing = () => {
             <Dialog
               open={openChat}
               onClose={() => setOpenChat(false)}
-              onRendered={scrollToBottom}
+              onEntered={scrollToBottom}
               sx={{ "& .MuiDialog-paper": { width: "700px" } }}
             >
               {" "}
@@ -720,13 +720,21 @@ const Ongoing = () => {
                   X
                 </Button>
               </DialogActions>
-              <DialogTitle>Chat with {passedId.name}</DialogTitle>
-              <DialogContent ref={dialogContentRef} sx={{ maxHeight: "400px", overflowY: "auto" }}>
+              <DialogTitle>
+                <div className="header-chat">
+                  <span>{passedId.name} </span>
+                  <span>{passedId.account_id}</span>
+                </div>
+              </DialogTitle>
+              <DialogContent
+                ref={dialogContentRef}
+                sx={{ maxHeight: "400px", overflowY: "auto"}}
+              >
                 <div className="message-list">
                   {userChats.length > 0 ? (
-                    userChats.map((msg) => (
+                    userChats.map((msg, index) => (
                       <div
-                        key={msg.id || msg.createdAt}
+                        key={msg.id}
                         className={
                           msg.sender.toLowerCase() === "admin"
                             ? "message-sent"

@@ -46,7 +46,11 @@ const path = require("path");
 const multer = require("multer");
 const { sendPush } = require("../controller/notificationController");
 const { sendFeedback } = require("../controller/feedbackController");
-const { sendAnnouncement, getAnnouncement } = require("../controller/announcementController");
+const {
+  sendAnnouncement,
+  getAnnouncement,
+  toggleHide,
+} = require("../controller/announcementController");
 const { sendMessage, getMessage } = require("../controller/messageController");
 
 const storage = multer.diskStorage({
@@ -74,13 +78,12 @@ router.get("/user/getUser", getUser);
 router.get("/user/account/specific/:id", getSpecificUser);
 router.delete("/user/delete/:id", deleteUser);
 
-
 //Routes for user (mobile)
 router.post("/mobile/user/login", loginController);
 
 //Routes for update (user and parent)
 router.put("/userUpdate/parentUpdate/:id", updateAccounts);
-router.put('/save-token/:id', getToken)
+router.put("/save-token/:id", getToken);
 
 //Routes for (parents)
 router.get("/user/parent/getParent", getParent);
@@ -105,7 +108,7 @@ router.get("/user/message/specific/:id", getSpecificReportMessage);
 router.put("/user/message/update/:id", updateReportMessage);
 router.delete("/user/message/delete/:id", deleteReportMessage);
 
-router.post('/send-report', uploads.single("img"), sendReportToAdmin)
+router.post("/send-report", uploads.single("img"), sendReportToAdmin);
 
 //reponder
 router.post("/admin/responder/register", registerResponder);
@@ -114,17 +117,18 @@ router.put("/admin/responder/update/:id", updateResponder);
 router.delete("/admin/responder/delete/:id", deleteResponder);
 
 //sending to mobile
-router.post('/push-notification', sendPush);
+router.post("/push-notification", sendPush);
 
 //feedbacks
-router.post('/user/feedback', sendFeedback);
+router.post("/user/feedback", sendFeedback);
 
 //chat
-router.post('/send-chat', sendMessage )
-router.get('/get-chats', getMessage)
+router.post("/chats", sendMessage);
+router.get("/chats/:id", getMessage);
 
 //announcement
-router.post('/send-announcement', sendAnnouncement);
-router.get('/get-announcement', getAnnouncement);
+router.post("/send-announcement", sendAnnouncement);
+router.get("/get-announcement", getAnnouncement);
+router.put("/announcement/toggle-hide/:id", toggleHide);
 
 module.exports = router;

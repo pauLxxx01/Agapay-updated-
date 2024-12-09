@@ -16,11 +16,12 @@ export default function Donut({
   radius = 40,
   strokeWidth = 10,
   duration = 500,
-  color = "#800000",
+
   delay = 0,
   textColor,
   intervalTime = 1000,
 }) {
+  const [color, setColor] = React.useState("");
   const [percentage, setPercentage] = React.useState(initialPercentage);
   const animated = React.useRef(new Animated.Value(0)).current;
   const rectRef = React.useRef();
@@ -55,8 +56,13 @@ export default function Donut({
     });
 
     const interval = setInterval(() => {
-      setPercentage((prev) => (prev >= initialPercentage ? 0 : prev + 5)); 
+      setPercentage((prev) => (prev >= initialPercentage ? 0 : prev + 5));
     }, intervalTime);
+    if (percentage === "100") {
+      setColor("#4caf50");
+    } else {
+      setColor("#800000");
+    }
 
     return () => {
       clearInterval(interval);
@@ -97,7 +103,7 @@ export default function Donut({
             stroke={color}
             strokeWidth={strokeWidth}
             strokeLinejoin="round"
-            strokeOpacity=".2"
+            strokeOpacity="0.1"
           />
         </G>
       </Svg>

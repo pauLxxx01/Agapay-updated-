@@ -85,7 +85,6 @@ const FeedbackComponent = ({ navigation }) => {
       setDisplayWithName(true); // Set to display the name
       setDisplayAnonymously(false); // Disable anonymous display
       setName(username);
-      alert(name); // Use actual name
     }
   };
 

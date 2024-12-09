@@ -14,7 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { AuthContext } from "../../context/authContext";
 import axios from "axios";
-import InputBox from "../../components/TextFieldBox";
+
 const { width, height } = Dimensions.get("window");
 
 

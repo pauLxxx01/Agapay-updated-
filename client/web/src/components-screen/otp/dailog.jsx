@@ -16,6 +16,7 @@ import DoneIcon from "@mui/icons-material/Done";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const OTPDialog = ({ open, onClose, onConfirm, adminID, admin }) => {
   const [otpValues, setOtpValues] = useState(["", "", "", "", "", ""]);
@@ -55,7 +56,6 @@ const OTPDialog = ({ open, onClose, onConfirm, adminID, admin }) => {
       );
       console.log("Admin OTP sent:", response.data);
     } catch (error) {
-      console.error("Error sending OTP:", error);
       setError(true);
     }
   };
@@ -100,17 +100,15 @@ const OTPDialog = ({ open, onClose, onConfirm, adminID, admin }) => {
         console.log("Admin OTP verified:", verifyResponse);
         // Check if the response indicates success
         if (verifyResponse.data.success) {
-          alert("Data successfully verified!"); // Show success alert
+          toast.success("Data successfully verified!"); // Show success alert
           navigate("/home/dashboard"); // Navigate to homepage
         } else {
           alert("Verification failed. Please try again."); // Handle failure case
         }
-
         setLoading(false);
       } catch (error) {
-        console.error("Error verifying OTP:", error);
+        toast.info(error.response.data.message)
         setLoading(false);
-        setError(true);
       }
     } else {
       alert("Please enter a valid 6-digit OTP."); // Handle invalid OTP length

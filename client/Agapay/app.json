@@ -7,6 +7,9 @@
     "icon": "./assets/agapay/logo/logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "notification": {
+      "icon": "./assets/agapay/logo/logo.png"
+    },
     "splash": {
       "image": "./assets/agapay/logo/logo.png",
       "resizeMode": "contain",

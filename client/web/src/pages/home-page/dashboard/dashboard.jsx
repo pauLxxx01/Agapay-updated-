@@ -7,17 +7,18 @@ import Loading from "../../../components/loading/loading.jsx";
 
 import axios from "axios";
 import { motion } from "framer-motion";
-import { io } from "socket.io-client";
 import { useSocket } from "../../../socket/Socket.jsx";
-import Notification from "../../../components/notification/notification.jsx";
-import { ToastContainer, toast } from "react-toastify";
-import alertSound from "../../../assets/mp3/alert.mp3";
+import { useContext } from "react";
+import { AuthContext } from "../../../context/authContext.jsx";
 
-const Dashboard = ({ users }) => {
+const Dashboard = () => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [state, , , users] = useContext(AuthContext);
+
+  console.log(state, 'users');
   const { socket } = useSocket();
 
   const [modalOpen, setModalOpen] = useState({
@@ -43,8 +44,13 @@ const Dashboard = ({ users }) => {
         setLoading(false);
       }
     };
-
     fetchData();
+    if(socket) {
+      socket.on("report", (reportData) => {
+        
+      })
+    }
+
   }, []);
 
   // Define `filteredMessage` outside `findUserMessage`
@@ -91,24 +97,6 @@ const Dashboard = ({ users }) => {
 
   const handleModalClose = (type) => {
     setModalOpen((prevModalOpen) => ({ ...prevModalOpen, [type]: false }));
-  };
-
-  const sendN = async () => {
-    const token = [
-      "ExponentPushToken[1jRuMsNQhGr-LxcWl5VxdA]",
-      "ExponentPushToken[je3EcfOl6f3gpnDBiI43cD]"
-    ]
-    try {
-      const request = {
-        to: token,
-        title: "ExponentPushToken",
-        body: "ExponentPushToken",
-  
-      };
-      await axios.post("push-notification", request);
-    } catch (error) {
-      console.error("Error sending notification:", error);
-    }
   };
 
   if (loading) return <Loading />;
@@ -179,7 +167,6 @@ const Dashboard = ({ users }) => {
             className="title"
           >
             <h1>Dashboard</h1>
-            <button onClick={() => sendN()}>send</button>
           </motion.div>
 
           <motion.div

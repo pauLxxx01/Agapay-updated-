@@ -1,37 +1,33 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { io } from 'socket.io-client';
-import { AuthContext } from './authContext'; // Import AuthContext
+import React, { createContext, useState, useEffect, useContext } from "react";
+import { io } from "socket.io-client";
+import { AuthContext } from "./authContext"; // Import AuthContext
 
 const SocketContext = createContext();
 
 export const SocketProvider = ({ children }) => {
-  const [state] = useContext(AuthContext); // Get auth state from context
-  const token = state.token; // Access token from the auth context
+  const [state] = useContext(AuthContext);
+  const token = state.token;
 
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
+    const defaultApiUrl = "http://192.168.18.42:8080";
+
     if (token) {
-      // Create socket connection using the token
-      const socketConnection = io("http://192.168.18.90:8080", {
+      const socketConnection = io(defaultApiUrl, {
         query: { token: token },
+        transports: ["websocket"],
       });
 
-      // Event listeners
+      // Handle the connection event
       socketConnection.on("connect", () => {
-        console.log("Connected to server");
+        console.log("Connected to WebSocket server:", socketConnection.id);
+        socketConnection.emit("register"); // Emit register event after connecting
       });
 
+      // Handle disconnection
       socketConnection.on("disconnect", () => {
-        console.log("Disconnected from server");
-      });
-
-      socketConnection.on("userConnected", (data) => {
-        if (Object.keys(data).length === 0) {
-          console.log("User connected with no additional data.");
-        } else {
-          console.log("User connected:", data);
-        }
+        console.log("Disconnected from WebSocket server.");
       });
 
       // Set the socket connection to the state
@@ -42,8 +38,10 @@ export const SocketProvider = ({ children }) => {
         socketConnection.disconnect();
         console.log("Socket disconnected");
       };
+    } else {
+      console.log("No token provided. Not connecting to WebSocket server.");
     }
-  }, [token]);
+  }, [token]); // Recreate the connection if token changes
 
   return (
     <SocketContext.Provider value={{ socket }}>

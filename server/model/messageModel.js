@@ -3,19 +3,17 @@ const { Schema } = mongoose;
 
 const messageSchema = new mongoose.Schema(
   {
-    sender: {
-      type: String,
-    },
-    senderId: {
-      type: Schema.Types.ObjectId,
-    },
-    message: {
-      type: String,
-    },
     room: {
-      type: Schema.Types.ObjectId,
-      ref: "Report",
+      type: String,
+      required: true,
     },
+    content: [
+      {
+        sender: { type: String, required: true },
+        message: { type: String, required: true },
+        timestamp: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );
