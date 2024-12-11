@@ -35,9 +35,8 @@ export const SocketProvider = ({ children }) => {
 
       newSocket.on("connect", () => {
         console.log("Connected to socket server");
-        setError(null); // Clear any previous errors
+        setError(null); 
       });
-
       newSocket.on("connect_error", () => {
         setError("Failed to connect to the socket server.");
         setSocket(null);

@@ -31,7 +31,7 @@ const Login = () => {
   const [admin, setAdmin] = useState([]);
 
   //verify
-  const [verify, setVerify] = useState(false);
+  const [verify, setVerify] = useState(null);
 
   // dialog states
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -42,7 +42,7 @@ const Login = () => {
   const handleOpenDialog = (event) => {
     event.preventDefault(); // prevent default form submission
     axios
-      .post("http://localhost:8080/admin/auth/login", { name, password })
+      .post("/login", { name, password })
       .then((response) => {
         console.log("Login Account:", { name, password });
         console.log("Admin ID: ", response.data.admin._id);
@@ -50,15 +50,18 @@ const Login = () => {
 
         // Store Admin ID in state and localStorage
         const adminId = response.data.admin._id;
+        const isVerified = response.data.admin.isVerified;
+
         setAdminID(adminId);
         localStorage.setItem("adminID", adminId);
         localStorage.setItem("@auth", JSON.stringify(response.data));
 
         // Handle verification
-        setVerify(response.data.admin.isVerified);
+        setVerify(isVerified);
         setAdmin(response.data.admin);
+      
 
-        if (!verify) {
+        if (!isVerified) {
           setDialogOpen(true); // Open dialog if not verified
           toast.info(
             "Please verify your account with the OTP sent to your email."
@@ -74,6 +77,8 @@ const Login = () => {
         toast.error(error.response?.data?.message || "Login failed");
       });
   };
+
+
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
