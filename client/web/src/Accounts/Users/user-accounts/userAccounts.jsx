@@ -13,6 +13,8 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import Error from "../../../components/error/error";
+import Loading from "../../../components/loading/loading";
 
 const UserAccounts = ({ users }) => {
   const [selectedUser, setSelectedUser] = useState(null);
@@ -110,12 +112,6 @@ const UserAccounts = ({ users }) => {
 
   // Handle update operation
   const handleUpdate = async (id) => {
-    const formattedPhoneNumber = formatPhilippinePhoneNumber(phoneNumber);
-    const formattedAltPhoneNumber = formatPhilippinePhoneNumber(altPhoneNumber);
-    const formattedParentPhoneNumber = formatPhilippinePhoneNumber(parentPhone);
-    const formattedParentAltPhoneNumber =
-      formatPhilippinePhoneNumber(parentAltPhone);
-
     try {
       await axios.put(`/userUpdate/parentUpdate/${id}`, {
         role: role,
@@ -123,9 +119,9 @@ const UserAccounts = ({ users }) => {
         email,
         password,
         account_id: accountId,
-        phone_number: formattedPhoneNumber,
+        phone_number: phoneNumber,
 
-        alt_phone_number: formattedAltPhoneNumber,
+        alt_phone_number: altPhoneNumber,
         degree: degree,
         school_year: schoolYear,
         alt_address: altAddress,
@@ -136,9 +132,9 @@ const UserAccounts = ({ users }) => {
         parentName,
         parentAddress,
         parentRelationship,
-        parentPhone: formattedParentPhoneNumber,
+        parentPhone: parentPhone,
 
-        parentAltPhone: formattedParentAltPhoneNumber,
+        parentAltPhone: parentAltPhone,
         parentAltAddress: parentAltAddress,
       });
 
@@ -191,12 +187,13 @@ const UserAccounts = ({ users }) => {
 
   // Close update modal
   const closeUpdateModal = () => {
+    
     setModalOpen(false);
     setSelectedUser(null);
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
+  if (loading) return <Loading />
+  if (error) return <Error message={error}/>
   console.log(users);
   return (
     <div className="admin-accounts">

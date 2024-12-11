@@ -103,7 +103,7 @@ const OTPDialog = ({ open, onClose, onConfirm, adminID, admin }) => {
           toast.success("Data successfully verified!"); // Show success alert
           navigate("/home/dashboard"); // Navigate to homepage
         } else {
-          alert("Verification failed. Please try again."); // Handle failure case
+          toast.alert("Verification failed. Please try again."); // Handle failure case
         }
         setLoading(false);
       } catch (error) {
@@ -111,7 +111,7 @@ const OTPDialog = ({ open, onClose, onConfirm, adminID, admin }) => {
         setLoading(false);
       }
     } else {
-      alert("Please enter a valid 6-digit OTP."); // Handle invalid OTP length
+      toast.alert("Please enter a valid 6-digit OTP."); // Handle invalid OTP length
     }
   };
 

@@ -49,7 +49,7 @@ const viewReports = () => {
       try {
         //message
         const userMessageId = await axios.get(
-          `http://localhost:8080/admin/auth/user/message/specific/${id}`
+          `/user/message/specific/${id}`
         );
         if (userMessageId.data.data.img) {
           userMessageId.data.data.img = `http://localhost:8080/images/${userMessageId.data.data.img}`;
@@ -60,7 +60,7 @@ const viewReports = () => {
 
         //user
         const userResponse = await axios.get(
-          `http://localhost:8080/admin/auth/user/account/specific/${senderId}`
+          `/user/account/specific/${senderId}`
         );
         setUserInfo(userResponse.data.user);
         const parentId = userResponse.data.user.parent;
@@ -69,7 +69,7 @@ const viewReports = () => {
 
         //parent
         const parentResponse = await axios.get(
-          `http://localhost:8080/admin/auth/user/parent/specific/${parentId}`
+          `/user/parent/specific/${parentId}`
         );
         console.log("parent response : ", parentResponse);
         setParents(parentResponse);

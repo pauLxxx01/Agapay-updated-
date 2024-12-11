@@ -26,8 +26,8 @@ const reportSchema = new mongoose.Schema(
       type: String,
       default: "0%",
     },
-    message:{
-      type: String
+    message: {
+      type: String,
     },
     chat: [
       {
@@ -45,13 +45,12 @@ const reportSchema = new mongoose.Schema(
         type: Schema.Types.ObjectId,
         ref: "Responder",
       },
+      
     ],
-    senderId: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
+    senderId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   { timestamps: true }
 );

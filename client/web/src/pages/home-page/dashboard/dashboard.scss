@@ -38,7 +38,7 @@
   .count {
     font-size: 42px;
   }
-  .box1 {
+  .fire {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -52,7 +52,7 @@
       transform: scale(1.05);
     }
   }
-  .box2 {
+  .natural {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -62,11 +62,11 @@
 
     &:hover {
       color: $soft-color;
-      background-color: chocolate;
+      background-color:rgb(210, 105, 30);
       transform: scale(1.05);
     }
   }
-  .box3 {
+  .biological {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -80,7 +80,7 @@
       transform: scale(1.05);
     }
   }
-  .box4 {
+  .medical {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -94,7 +94,7 @@
       color: $soft-color;
     }
   }
-  .box5 {
+  .utility {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -109,16 +109,16 @@
       transform: scale(1.05);
     }
   }
-  .box6 {
+  .crime {
     display: flex;
     flex-direction: column;
     align-items: center;
     letter-spacing: 1px;
     font-size: 16px;
-    background-color: rgba(255, 255, 0, 0.26);
+    background-color:#F7B32D;
 
     &:hover {
-      background-color: #e1ad01;
+      background-color: #936200;
       transform: scale(1.05);
       color: $soft-color;
     }

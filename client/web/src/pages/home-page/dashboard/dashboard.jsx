@@ -10,15 +10,17 @@ import { motion } from "framer-motion";
 import { useSocket } from "../../../socket/Socket.jsx";
 import { useContext } from "react";
 import { AuthContext } from "../../../context/authContext.jsx";
+import EmergencyBox from "./../../../components/emergencyBox/emergencybox";
+import { emergencyType } from "../../../newData.js";
 
 const Dashboard = () => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [state, , , users] = useContext(AuthContext);
+  const [state, , users] = useContext(AuthContext);
 
-  console.log(state, 'users');
+  console.log(state, "users");
   const { socket } = useSocket();
 
   const [modalOpen, setModalOpen] = useState({
@@ -33,25 +35,29 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const messagesResponse = await axios.get(
-          `http://localhost:8080/admin/auth/user/messages`
-        );
+        const messagesResponse = await axios.get(`/user/messages`);
         setMessages(messagesResponse.data.messages);
         setLoading(false);
       } catch (error) {
-        setError("Error fetching data");
-      } finally {
+        setError(error.response?.data?.message || "Error fetching data");
         setLoading(false);
       }
     };
     fetchData();
-    if(socket) {
+
+    if (socket) {
       socket.on("report", (reportData) => {
-        
-      })
+        setMessages((prevMessages) => [...prevMessages, reportData.messages]);
+
+        console.log("From socket: ", reportData);
+      });
     }
 
-  }, []);
+    
+    return () => {
+      socket?.off("report");
+    };
+  }, [socket]);
 
   // Define `filteredMessage` outside `findUserMessage`
   const filteredMessage = (type) => {
@@ -68,14 +74,6 @@ const Dashboard = () => {
     });
   };
 
-  // Now `filteredMessage` will work for each type
-  const fireList = filteredMessage("Fire");
-  const medicalList = filteredMessage("Medical");
-  const naturalList = filteredMessage("Natural");
-  const biologicalList = filteredMessage("Biological");
-  const crimeList = filteredMessage("Crime");
-  const utilityList = filteredMessage("Utility");
-
   const isAnyModalOpen = Object.values(modalOpen).some((isOpen) => isOpen);
 
   useEffect(() => {
@@ -85,7 +83,6 @@ const Dashboard = () => {
 
     toggleBodyScroll();
 
-    // Cleanup function to reset body overflow on unmount
     return () => {
       document.body.style.overflowY = "auto";
     };
@@ -111,54 +108,20 @@ const Dashboard = () => {
             isAnyModalOpen ? "overflow-hidden" : ""
           }`}
         >
-          {modalOpen.fire && (
-            <Modal
-              setOpenModal={() => handleModalClose("fire")}
-              title="Fire Emergency"
-              data={fireList}
-              users={users}
-            />
-          )}
-          {modalOpen.natural && (
-            <Modal
-              setOpenModal={() => handleModalClose("natural")}
-              title="Natural Hazard"
-              data={naturalList}
-              users={users}
-            />
-          )}
-          {modalOpen.biological && (
-            <Modal
-              setOpenModal={() => handleModalClose("biological")}
-              title="Biological Hazard"
-              users={users}
-              data={biologicalList}
-            />
-          )}
-          {modalOpen.medical && (
-            <Modal
-              setOpenModal={() => handleModalClose("medical")}
-              title="Medical Assistance"
-              data={medicalList}
-              users={users}
-            />
-          )}
-          {modalOpen.utility && (
-            <Modal
-              setOpenModal={() => handleModalClose("utility")}
-              title="Utility failure"
-              users={users}
-              data={utilityList}
-            />
-          )}
-          {modalOpen.crime && (
-            <Modal
-              setOpenModal={() => handleModalClose("crime")}
-              title="Crime and Violence"
-              users={users}
-              data={crimeList}
-            />
-          )}
+          {emergencyType.map(({ type, key }) => {
+            const list = filteredMessage(type);
+            return (
+              modalOpen[key] && (
+                <Modal
+                  key={key}
+                  setOpenModal={() => handleModalClose(key)}
+                  title={`${type} Emergency`}
+                  data={list}
+                  users={users}
+                />
+              )
+            );
+          })}
 
           <motion.div
             variants={fadeIn("down", 0.1)}
@@ -175,48 +138,18 @@ const Dashboard = () => {
             whileInView="show"
             className="dashboard"
           >
-            <motion.div
-              className="box box1"
-              onClick={() => handleModalOpen("fire")}
-            >
-              <span className="emergency count">{`${fireList.length}`}</span>
-              <span className="emergency">Fire Emergency</span>
-            </motion.div>
-            <motion.div
-              className="box box2"
-              onClick={() => handleModalOpen("natural")}
-            >
-              <span className="emergency count">{`${naturalList.length}`}</span>
-              <span className="emergency">Natural Hazard</span>
-            </motion.div>
-            <motion.div
-              className="box box3"
-              onClick={() => handleModalOpen("biological")}
-            >
-              <span className="emergency count">{`${biologicalList.length}`}</span>
-              <span className="emergency">Biological Hazard</span>
-            </motion.div>
-            <motion.div
-              className="box box4"
-              onClick={() => handleModalOpen("medical")}
-            >
-              <span className="emergency count">{`${medicalList.length}`}</span>
-              <span className="emergency">Medical Assistance</span>
-            </motion.div>
-            <motion.div
-              className="box box5"
-              onClick={() => handleModalOpen("utility")}
-            >
-              <span className="emergency count">{`${utilityList.length}`}</span>
-              <span className="emergency">Utility failure</span>
-            </motion.div>
-            <motion.div
-              className="box box6"
-              onClick={() => handleModalOpen("crime")}
-            >
-              <span className="emergency count">{`${crimeList.length}`}</span>
-              <span className="emergency">Crime and Violence</span>
-            </motion.div>
+            {emergencyType.map(({ type, key, label }) => {
+              const list = filteredMessage(type);
+              return (
+                <EmergencyBox
+                  key={key}
+                  type={label}
+                  box={type}
+                  count={list.length}
+                  onClick={() => handleModalOpen(key)}
+                />
+              );
+            })}
           </motion.div>
         </div>
       ) : (

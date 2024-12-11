@@ -37,7 +37,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/agapay/logo/logo.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.paulflancia01.Agapay"
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -2,7 +2,8 @@ import { motion } from "framer-motion";
 import { fadeIn } from "../../variants";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import './table.scss';
+import "./table.scss";
+import useFilteredMessages from "../filterMessageBySender/filterMessage";
 const Table = ({ messages, users, headerTable, filterStatus }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -18,6 +19,7 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
   };
 
   const filteredUsers = useMemo(() => {
+    0;
     if (!messages || !users) return [];
     return messages
       .filter((data) =>
@@ -84,7 +86,7 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
   const getFilteredUsersByStatus = () => {
     return filteredUsers.filter((user) => filterStatus.includes(user.respond));
   };
-  
+
   const lastIndex = currentPage * recordsPerPage;
   const firstIndex = lastIndex - recordsPerPage;
   const currentUsers = getFilteredUsersByStatus().slice(firstIndex, lastIndex);
@@ -130,11 +132,8 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search..."
         />
-   
-
       </motion.div>
 
-      
       <motion.table
         variants={fadeIn("up", 0.1)}
         initial="hidden"
@@ -167,10 +166,10 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
               <td colSpan={headerTable.length}>No data</td>
             </tr>
           ) : (
-            currentUsers.map((data) => (
+            currentUsers.map((data, index)=> (
               <tr
                 className="items-row"
-                key={data.messageID}
+                key={`${index}-${data._id}`}
                 onClick={() => handleRowClick(data)}
               >
                 {headerTable.map((header, index) => {
@@ -200,7 +199,7 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
                     );
                   }
 
-                  return <td key={index}>{data[columnLabel] || "No Data"}</td>;
+                  return <td key={`${columnLabel}-${index}`}>{data[columnLabel] || "No Data"}</td>;
                 })}
               </tr>
             ))

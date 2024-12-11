@@ -1,52 +1,85 @@
 import Message from "../../assets/icons/navbar/message.svg";
 import Account from "../../assets/icons/navbar/account.svg";
 import "./navbar.scss";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useSocket } from "../../socket/Socket";
 import { useEffect } from "react";
+import { AuthContext } from "../../context/authContext";
+import useFilteredMessages from "../filterMessageBySender/filterMessage";
 
 const navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [data, setData] = useState([]);
+
+  const navigate = useNavigate();
 
   // Initialize state with data from local storage
-  const [notificationCount, setNotificationCount] = useState(
-    () => parseInt(localStorage.getItem("notificationCount")) || 0
-  );
+  const [notificationCount, setNotificationCount] = useState(5);
+  const [notifications, setNotifications] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const notificationsPerPage = 6;
 
-  const [notification, setNotification] = useState([]);
-  const { socket } = useSocket();
+  const [, messages, users] = useContext(AuthContext);
 
-  console.log("data notif: ", notification);
-  useEffect(() => {
-    if (socket) {
-      socket.on("report", (notif) => {
-        console.log("Notification received:", notif);
-        setNotificationCount((prev) => {
-          const newCount = prev + 1;
-          localStorage.setItem("notificationCount", newCount);
-          return newCount;
-        });
-        setNotification([notif]);
-      });
-    }
-  }, [socket]);
-
+  const filteredMessages = useFilteredMessages(messages, users);
 
   const handleDropdownClick = () => {
     setIsOpen(!isOpen);
+    setIsAccountOpen(false);
+    setCurrentPage(1);
+    // handleNotification();
   };
 
   const handleAccountDropdownClick = () => {
     setIsAccountOpen(!isAccountOpen);
+    setIsOpen(false);
   };
 
   const handleNotification = () => {
     setNotificationCount(0);
-    localStorage.setItem("notificationCount", 0);
   };
+
+  // Pagination logic
+  const indexOfLastNotification = currentPage * notificationsPerPage;
+  const indexOfFirstNotification =
+    indexOfLastNotification - notificationsPerPage;
+  const currentNotifications = filteredMessages.slice(
+    indexOfFirstNotification,
+    indexOfLastNotification
+  );
+
+  const handleRowClick = (data) => {
+    if (data.respond === "in-progress") {
+      setIsOpen(false);
+      console.log("Received " + data.respond);
+      navigate(`/home/report/in-progress/${data.messageID}`, {
+        state: { id: data },
+      });
+    } else if (data.respond === "pending") {
+      setIsOpen(false);
+      navigate(`/home/report/${data.messageID}`);
+    } else {
+      setIsOpen(false);
+      navigate(`/home/report`);
+    }
+  };
+
+  // Change page
+  const nextPage = () => {
+    if (currentPage * notificationsPerPage < filteredMessages.length) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   return (
     <div className="navbar">
       <Link className="logo" to="/home/dashboard">
@@ -54,10 +87,58 @@ const navbar = () => {
       </Link>
       <div className="icons">
         <div className="notification">
-          <NotificationsIcon fontSize="large" onClick={handleNotification} />
-          {notificationCount >= 1 ? <span>{notificationCount}</span> : null}
+          <NotificationsIcon fontSize="large" onClick={handleDropdownClick} />
+          {notificationCount >= 1 && (
+            <span className="notifCount">{notificationCount}</span>
+          )}
         </div>
-
+        {/* Notification Dropdown */}
+        {isOpen && (
+          <div className="notification-dropdown">
+            <div className="notification-dropdown-header">
+              <h3>Notifications</h3>
+              <span>{messages.length}</span>
+            </div>
+            {currentNotifications.length > 0 ? (
+              currentNotifications.map((notif, index) => (
+                <div
+                  onClick={() => handleRowClick(notif)}
+                  className="notification-item"
+                  key={index}
+                >
+                  <div className="notification-info">
+                    <div className="notification-details">
+                      <h3>{notif.emergency}</h3>
+                      <span>{notif.name}</span>
+                      <span>{notif.account_id}</span>
+                    </div>
+                    <div className="notification-date">
+                      <span>{notif.createdAt}</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div>No new notifications</div>
+            )}
+            {/* Pagination Controls */}
+            <div className="pagination">
+              <button onClick={prevPage} disabled={currentPage === 1}>
+                Previous
+              </button>
+              <span>Page {currentPage}</span>
+              <button
+                onClick={nextPage}
+                disabled={
+                  currentPage * notificationsPerPage >=
+                  messages.length - notificationsPerPage
+                }
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
         <div className="account">
           <div className="account-dropdown">
             <img

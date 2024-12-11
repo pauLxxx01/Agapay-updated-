@@ -23,7 +23,6 @@ const TransactionHistory = ({ navigation }) => {
   const { socket } = useSocket();
   const [report, setReport] = useState([]);
   const [state] = useContext(AuthContext);
- 
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -51,23 +50,26 @@ const TransactionHistory = ({ navigation }) => {
   }, [state.user._id]);
 
   useEffect(() => {
-    const handleProgressUpdate = (data) => {
-      console.log("Progress Update Received: ", data);
-
-      setReport((prevReports) =>
-        prevReports.map((reportItem) =>
-          reportItem._id === data.id
-            ? { ...reportItem, percentage: data.percentage }
-            : reportItem
-        )
-      );
-    };
-
-    socket.on("progressUpdate", handleProgressUpdate);
+ 
+    socket.on("progressUpdate", (message) => {
+      console.log("update: message ", message.messages);
+      setReport((prevReports) => {
+        const reportExist = prevReports.some(
+          (rpt) => rpt._id === message.messages._id
+        );
+        if (reportExist) {
+          return prevReports.map((rpt) =>
+            rpt._id === message.messages._id ? message.messages : rpt
+          );
+        } else {
+          return [...prevReports, message.messages];
+        }
+      });
+    });
 
     // Cleanup on unmount
     return () => {
-      socket.off("progressUpdate", handleProgressUpdate);
+      socket.off("progressUpdate");
     };
   }, [socket]);
 
@@ -115,7 +117,7 @@ const TransactionHistory = ({ navigation }) => {
     navigation.navigate("ShowProgress", {
       details: detail,
     });
-  };  
+  };
 
   return (
     <View style={styles.container}>

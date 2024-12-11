@@ -6,8 +6,7 @@ import { Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 import MenuIcon from "@mui/icons-material/MenuOpen";
 import CloseIcon from "@mui/icons-material/Close";
-import { ToastContainer } from "react-toastify";
-import Notification from "../components/notification/notification.jsx";
+
 const Screen = () => {
   return (
     <div className="main-screen">
@@ -60,17 +59,16 @@ const Layout = () => {
                 </div>
               </div>
               <div className={`menuDrawer ${menuOpen ? "open" : "closed"}`}>
-                <Menu/>
+                <Menu />
               </div>
             </>
           ) : (
-            <Menu/>
+            <Menu />
           )}
         </div>
 
         <div className="contentContainer">
           <Outlet />
-          <Notification />
         </div>
       </div>
       <Footer className="footer" />

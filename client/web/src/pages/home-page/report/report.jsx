@@ -5,14 +5,15 @@ import { motion } from "framer-motion";
 import { fadeIn, zoomIn } from "../../../variants";
 import { headerTableGeneral } from "../../../newData";
 import Loading from "../../../components/loading/loading";
-import { AuthContext, AuthProvider } from "../../../context/authContext";
+import { AuthContext } from "../../../context/authContext";
 import Table from "../../../components/table/table";
+
 
 const Report = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [, messages, users] = useContext(AuthContext);
 
-  const [, , messages, users] = useContext(AuthContext);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -34,8 +35,6 @@ const Report = () => {
     return data.reduce(
       (acc, item) => {
         const status = item.respond.toLowerCase();
-
-        // Check for valid statuses and increment the appropriate counter
         if (status === "pending") {
           acc.total++;
           acc.pending++;
@@ -43,19 +42,22 @@ const Report = () => {
           acc.total++;
           acc.inProgress++;
         }
-
         return acc;
       },
       { inProgress: 0, pending: 0, total: 0 }
     );
   };
 
+  const handleUpdate = () => {
+
+    
+
+  }
   const responseCount = messages
     ? count(messages)
     : { inProgress: 0, pending: 0, total: 0 };
 
   if (loading) return <Loading />;
-
   if (error) return <p>{error}</p>;
 
   return (
@@ -106,8 +108,11 @@ const Report = () => {
           </motion.div>
         </div>
       </div>
+      <button onClick={handleUpdate}>hi</button>
+
       <div className="user-table">
         <Table
+          key={messages.length + users.length}
           messages={messages}
           users={users}
           headerTable={headerTableGeneral}

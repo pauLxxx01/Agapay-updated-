@@ -3,7 +3,7 @@ import axios from "axios";
 import "./admin.scss";
 import { useNavigate } from "react-router-dom";
 import formatPhilippinePhoneNumber from "../../helper/phoneFormat";
-
+import { toast, ToastContainer } from "react-toastify";
 const Admin = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -14,36 +14,27 @@ const Admin = () => {
 
   const handleUpload = (e) => {
     e.preventDefault();
-
-    // Format the phone number before sending to the database
-    const formattedPhoneNumber = formatPhilippinePhoneNumber(phoneNumber);
-    console.log(formattedPhoneNumber);
-
     axios
       .post("http://localhost:8080/admin/auth/register", {
         email,
         name,
         password,
-        phoneNumber: formattedPhoneNumber,
+        phoneNumber,
       })
       .then((res) => {
         console.log("Data sent: ", {
           email,
           name,
           password,
-          phoneNumber: formattedPhoneNumber,
+          phoneNumber,
         });
         console.log(res);
+        toast.success("Registered successful!");
         navigate("/login");
       })
       .catch((error) => {
-        if (error.response) {
-          console.error("Error response: ", error.response.data);
-          alert(error.response.data.message);
-          window.location.reload();
-        } else {
-          console.error("Error message:", error.message);
-        }
+        console.error("Error response: ", error.response.data);
+        toast.error(error.response.data.message);
       });
   };
 

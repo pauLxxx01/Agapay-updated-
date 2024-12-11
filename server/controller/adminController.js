@@ -6,6 +6,7 @@ const JWT = require("jsonwebtoken");
 const registerController = async (req, res) => {
   try {
     const { name, password, phoneNumber, email } = req.body;
+    const phoneNumberRegex = /^[0-9]{11}$/;
 
     if (!email) {
       return res.status(400).send({
@@ -26,7 +27,13 @@ const registerController = async (req, res) => {
         message: "Password must be at least 8 characters long",
       });
     }
-    if (!phoneNumber || phoneNumber.length === 11) {
+    if (!phoneNumber) {
+      return res.status(400).send({
+        success: false,
+        message: "Phone number is required",
+      });
+    }
+    if (!phoneNumberRegex.test(phoneNumber)) {
       return res.status(400).send({
         success: false,
         message:
@@ -43,6 +50,23 @@ const registerController = async (req, res) => {
       });
     }
 
+    const existingEmail = await adminModel.findOne({ email: email });
+    if (existingEmail) {
+      return res.status(400).send({
+        success: false,
+        message: "Email already exists",
+      });
+    }
+
+    const existingNumber = await adminModel.findOne({
+      phoneNumber: phoneNumber,
+    });
+    if (existingNumber) {
+      return res.status(400).send({
+        success: false,
+        message: "Phone number already exists",
+      });
+    }
     //hashed passowrd
     const hashedPassword = await hashPassword(password);
 
@@ -102,9 +126,13 @@ const loginControllers = async (req, res) => {
     }
 
     //Token JWT
-    const token = JWT.sign({ _id: admin._id, name: admin.name, role: admin.role }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
+    const token = JWT.sign(
+      { _id: admin._id, name: admin.name, role: admin.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      }
+    );
 
     // SendVerificationCode(admin.email, verificationToken);
 

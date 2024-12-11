@@ -44,49 +44,11 @@ const ShowProgress = ({ navigation, route }) => {
 
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const loadSound = async () => {
-    try {
-      const { sound } = await Audio.Sound.createAsync(
-        require("../../../../assets/mp3/notification_sound.mp3")
-      );
-      setSound(sound); // Store the loaded sound object
-    } catch (error) {
-      console.error("Error loading sound:", error);
-    }
-  };
-
-  const playSound = async () => {
-    try {
-      if (sound) {
-        await sound.playAsync();
-      }
-    } catch (error) {
-      console.log("Error playing sound:", error);
-    }
-  };
-
   useEffect(() => {
     const matchInfos = progressReportInformation.find(
       (info) => report[0]?.percentage == info.percentage
     );
     setCurrentMessage(matchInfos?.message || "Progress underway...");
-
-    const handleUpdate = (data) => {
-      loadSound();
-      playSound();
-      setReport((prevReports) =>
-        prevReports.map((reportItem) =>
-          reportItem._id === data.id
-            ? { ...reportItem, percentage: data.percentage }
-            : reportItem
-        )
-      );
-
-      const matchingInfo = progressReportInformation.find(
-        (info) => data.percentage <= info.percentage
-      );
-      setCurrentMessage(matchingInfo?.message || "Progress underway...");
-    };
 
     const fetchAdmins = async () => {
       try {
@@ -100,7 +62,21 @@ const ShowProgress = ({ navigation, route }) => {
     };
     fetchAdmins();
 
-    socket.on("progressUpdate", handleUpdate);
+    socket.on("progressUpdate", (message) => {
+      console.log("update: message ", message.messages);
+      setReport((prevReports) => {
+        const reportExist = prevReports.some(
+          (rpt) => rpt._id === message.messages._id
+        );
+        if (reportExist) {
+          return prevReports.map((rpt) =>
+            rpt._id === message.messages._id ? message.messages : rpt
+          );
+        } else {
+          return [...prevReports, message.messages];
+        }
+      });
+    });
 
     socket.on("receiveMessage", (message) => {
       console.log("New message received: ", message);
@@ -109,13 +85,12 @@ const ShowProgress = ({ navigation, route }) => {
 
     return () => {
       socket.off("receiveMessage");
-      socket.off("progressUpdate", handleUpdate);
+      socket.off("progressUpdate");
     };
   }, [socket, report]);
 
   useEffect(() => {
     if (currentMessage) {
-      playSound();
       Animated.timing(fadeAnim, {
         toValue: 0, // Fade out to 0 opacity
         duration: 500, // Fade out duration

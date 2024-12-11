@@ -21,7 +21,6 @@ import { motion } from "framer-motion";
 import { zoomIn } from "../../../variants";
 
 import "./login.scss";
-import { useSocket } from "../../../socket/Socket";
 
 const Login = () => {
   const [name, setName] = useState("");
@@ -40,34 +39,26 @@ const Login = () => {
 
   const navigate = useNavigate();
 
-  const { setToken } = useSocket();
-
   const handleOpenDialog = (event) => {
     event.preventDefault(); // prevent default form submission
     axios
       .post("http://localhost:8080/admin/auth/login", { name, password })
       .then((response) => {
         console.log("Login Account:", { name, password });
-        console.log("Admin Info: ", response.data.admin);
         console.log("Admin ID: ", response.data.admin._id);
         console.log("Verification: ", response.data.admin.isVerified);
-        console.log("Token: ", response.data.token);
 
         // Store Admin ID in state and localStorage
         const adminId = response.data.admin._id;
         setAdminID(adminId);
         localStorage.setItem("adminID", adminId);
-        
         localStorage.setItem("@auth", JSON.stringify(response.data));
-
-        // Store token in context (global state)
-        setToken(response.data.token);
 
         // Handle verification
         setVerify(response.data.admin.isVerified);
         setAdmin(response.data.admin);
 
-        if (!response.data.admin.isVerified) {
+        if (!verify) {
           setDialogOpen(true); // Open dialog if not verified
           toast.info(
             "Please verify your account with the OTP sent to your email."

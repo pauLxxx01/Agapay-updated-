@@ -9,8 +9,9 @@ import Loading from "../../../components/loading/loading";
 const History = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [, , messages, users] = useContext(AuthContext);
+  const [, messages, users] = useContext(AuthContext);
   const filterStatus = "completed";
+  
   useEffect(() => {
     const fetchData = async () => {
       try {

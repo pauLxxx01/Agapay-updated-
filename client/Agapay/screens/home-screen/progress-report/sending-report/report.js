@@ -89,8 +89,11 @@ const Progress = ({ navigation, route }) => {
         return;
       }
       const percentage = 10;
+      const respond = "pending";
       const formData = new FormData();
+
       formData.append("emergency", name);
+      formData.append("respond", respond);
       formData.append("location", selectedValue);
       formData.append("percentage", percentage);
       capturedPhotos.forEach((photo) => {

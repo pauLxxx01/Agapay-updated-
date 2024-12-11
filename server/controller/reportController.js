@@ -5,7 +5,8 @@ const messageModel = require("../model/messageModel");
 
 const sendReportToAdmin = async (req, res) => {
   try {
-    const { emergency, location, message, senderId, percentage } = req.body;
+    const { emergency, location, message, senderId, percentage, respond } =
+      req.body;
 
     if (!req.file) {
       console.error("No file uploaded!.");
@@ -48,27 +49,33 @@ const sendReportToAdmin = async (req, res) => {
       img: req.file ? req.file.filename : null, // Check if req.file exists
       message,
       senderId,
+      respond,
     });
 
     const savedMessage = await newMessage.save();
 
-    // Save the new message ID to the user's messages array
-    user.report_data = user.report_data || []; // Ensure messages array exists
-    user.report_data.push(savedMessage._id); // Add the new message ID
+    user.report_data = user.report_data || []; 
+    user.report_data.push(savedMessage._id); 
     await user.save(); // Save the updated user document
 
     const newRoom = new messageModel({
       room: savedMessage._id,
     });
     await newRoom.save();
-    
+
+    const createdAt = savedMessage.createdAt;
+
     sendReport(
       emergency,
       location,
       message,
       senderId,
       percentage,
-      req.file.filename
+
+      req.file.filename,
+      respond,
+      createdAt,
+      user
     );
 
     console.log(user.message);
@@ -145,7 +152,16 @@ const updateReportMessage = async (req, res) => {
       { new: true, runValidators: true } // `new: true` returns the updated document, `runValidators` ensures validation
     );
 
-    updateProgress(userId, percentage, id);
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+
+    updateProgress(updatedMessage, user);
 
     if (!updatedMessage) {
       return res.status(404).json({ message: "Message not found" });

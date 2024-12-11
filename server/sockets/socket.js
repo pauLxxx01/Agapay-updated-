@@ -5,6 +5,7 @@ const colors = require("colors");
 const adminModel = require("../model/adminModel");
 const userModel = require("../model/userModel");
 const messageModel = require("../model/messageModel");
+const reportModel = require("../model/reportModel");
 
 let activeSockets = []; // Object to store sockets by user ID
 
@@ -116,9 +117,14 @@ async function sendReport(
   message,
   senderId,
   percentage,
-  img
+  img,
+  respond,
+  createdAt,
+  user
 ) {
   try {
+    const updateReport = await reportModel.findOneAndUpdate({});
+
     const admins = await adminModel.find({ role: "admin" });
 
     admins.forEach((admin) => {
@@ -126,15 +132,23 @@ async function sendReport(
 
       if (socket) {
         socket.emit("report", {
-          emergency,
-          location,
-          message,
-          senderId,
-          percentage,
-          img,
-        }); // Send detailed report
-        console.log(`Socket: ${socket}`);
+          messages: {
+            emergency,
+            location,
+            message,
+            senderId,
+            percentage,
+            img,
+            respond,
+            createdAt,
+          },
+          users: user,
+        });
+
+        // Send detailed report
+
         console.log(`Report sent to admin ${admin.name} --- ${senderId}`);
+        console.log(`Respond progress: ${respond} / ${percentage}`);
       } else {
         console.log(`Admin ${admin.name} is not connected`);
       }
@@ -163,7 +177,7 @@ async function sendAnnouncementToUser(
           date,
           department,
           duration,
-          isHidden
+          isHidden,
         }); // Send announcement
         console.log(`Socket: ${socket}`);
         console.log(`Announcement sent to user ${user.name}`);
@@ -175,7 +189,6 @@ async function sendAnnouncementToUser(
     console.error("Error sending announcement to users:", error);
   }
 }
-
 
 async function updatedAnnouncement(announcement) {
   try {
@@ -206,20 +219,14 @@ async function sendMessages(message, sender, senderId, room) {
     console.error("Error sending message", error);
   }
 }
-async function updateProgress(userId, percentage, id) {
+async function updateProgress(updatedMessage, user) {
   try {
-    // Find the socket for the specific user
-    const socket = activeSockets[userId];
-
-    if (socket) {
-      // Emit the progress update to the specific user
-      socket.emit("progressUpdate", { userId, percentage, id });
-      console.log(
-        `Progress updated for user ${userId} messageId: ${id}  ~~ percent: ${percentage}`
-      );
-    } else {
-      console.log(`No active socket found for user ${userId}`);
-    }
+    // Emit the progress update to the specific user
+    global.io.emit("progressUpdate", {
+      messages: updatedMessage,
+      users: user,
+    });
+    console.log(`Progress update completed successfully`);
   } catch (error) {
     console.error("Error updating progress:", error);
   }
