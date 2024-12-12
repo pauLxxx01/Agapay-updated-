@@ -19,6 +19,13 @@ const AuthProvider = ({ children }) => {
 
   const [messages, setMessages] = useState(null);
   const [users, setUsers] = useState(null);
+
+  const [notifCount, setNotifCount] = useState(() => {
+    // Retrieve from localStorage or default to 0
+    const savedCount = localStorage.getItem("notifCount");
+    return savedCount ? JSON.parse(savedCount) : 0;
+  });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -68,6 +75,9 @@ const AuthProvider = ({ children }) => {
         const now = Date.now();
         const timeSinceLastReport = now - lastReportTime;
 
+        localStorage.setItem("notifCount", JSON.stringify(notifCount + 1));
+        setNotifCount((prevNotifCount) => prevNotifCount + 1);
+
         console.log("New report received: ", message);
         if (timeSinceLastReport > 2000) {
           const sound = new Audio(soundAlert);
@@ -82,11 +92,13 @@ const AuthProvider = ({ children }) => {
 
       socket.on("progressUpdate", (message) => {
         console.log("Progress update received: ", message);
-      
+
         setMessages((prevMessages) => {
           // Check if a message with the same _id exists
-          const messageExists = prevMessages.some((msg) => msg._id === message.messages._id);
-      
+          const messageExists = prevMessages.some(
+            (msg) => msg._id === message.messages._id
+          );
+
           if (messageExists) {
             // Update the message with the same _id
             return prevMessages.map((msg) =>
@@ -97,11 +109,13 @@ const AuthProvider = ({ children }) => {
             return [...prevMessages, message.messages];
           }
         });
-      
+
         setUsers((prevUsers) => {
           // Check if a user with the same _id exists
-          const userExists = prevUsers.some((user) => user._id === message.users._id);
-      
+          const userExists = prevUsers.some(
+            (user) => user._id === message.users._id
+          );
+
           if (userExists) {
             // Update the user with the same _id
             return prevUsers.map((user) =>
@@ -113,14 +127,16 @@ const AuthProvider = ({ children }) => {
           }
         });
       });
-      
+
       // Cleanup on component unmount
       return () => {
         socket.off("progressUpdate");
         socket.off("report");
       };
     }
-  }, [socket, lastReportTime]);
+
+
+  }, [socket, lastReportTime, notifCount]);
 
   if (error) {
     return <Error message={errorMessage.message} />;
@@ -129,7 +145,7 @@ const AuthProvider = ({ children }) => {
     return <Loading />;
   }
   return (
-    <AuthContext.Provider value={[state, messages, users]}>
+    <AuthContext.Provider value={[state, messages, users, notifCount, setNotifCount]}>
       {children}
     </AuthContext.Provider>
   );

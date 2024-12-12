@@ -12,21 +12,23 @@ import useFilteredMessages from "../filterMessageBySender/filterMessage";
 const navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const [data, setData] = useState([]);
 
   const navigate = useNavigate();
 
   // Initialize state with data from local storage
-  const [notificationCount, setNotificationCount] = useState(5);
-  const [notifications, setNotifications] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const notificationsPerPage = 6;
 
-  const [, messages, users] = useContext(AuthContext);
+  const [, messages, users, notifCount, setNotifCount] = useContext(AuthContext);
 
   const filteredMessages = useFilteredMessages(messages, users);
 
   const handleDropdownClick = () => {
+
+    localStorage.setItem("notifCount", JSON.stringify(0));
+    setNotifCount(0)
+
+
     setIsOpen(!isOpen);
     setIsAccountOpen(false);
     setCurrentPage(1);
@@ -36,10 +38,6 @@ const navbar = () => {
   const handleAccountDropdownClick = () => {
     setIsAccountOpen(!isAccountOpen);
     setIsOpen(false);
-  };
-
-  const handleNotification = () => {
-    setNotificationCount(0);
   };
 
   // Pagination logic
@@ -88,15 +86,13 @@ const navbar = () => {
       <div className="icons">
         <div className="notification">
           <NotificationsIcon fontSize="large" onClick={handleDropdownClick} />
-          {notificationCount >= 1 && (
-            <span className="notifCount">{notificationCount}</span>
-          )}
+          {notifCount >= 1 && <span className="notifCount">{notifCount}</span>}
         </div>
         {/* Notification Dropdown */}
         {isOpen && (
           <div className="notification-dropdown">
             <div className="notification-dropdown-header">
-              <h3>Notifications</h3>
+              <h3>Notifications {notifCount}</h3>
               <span>{messages.length}</span>
             </div>
             {currentNotifications.length > 0 ? (

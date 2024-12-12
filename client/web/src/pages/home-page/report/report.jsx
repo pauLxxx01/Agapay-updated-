@@ -48,11 +48,6 @@ const Report = () => {
     );
   };
 
-  const handleUpdate = () => {
-
-    
-
-  }
   const responseCount = messages
     ? count(messages)
     : { inProgress: 0, pending: 0, total: 0 };
@@ -108,7 +103,7 @@ const Report = () => {
           </motion.div>
         </div>
       </div>
-      <button onClick={handleUpdate}>hi</button>
+ 
 
       <div className="user-table">
         <Table

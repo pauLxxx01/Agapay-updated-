@@ -34,7 +34,7 @@ const Ongoing = () => {
 
   console.log(socket, "socket");
 
-  console.log("passed Id: ", JSON.stringify(message));
+  console.log("passed Id: ",passedId );
 
   const [parents, setParents] = useState([]);
   const [progress, setProgress] = useState("");
@@ -42,6 +42,7 @@ const Ongoing = () => {
   //error
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
 
   if (!passedId) {
     return <div>No datass available.</div>;

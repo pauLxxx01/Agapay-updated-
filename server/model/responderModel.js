@@ -8,19 +8,27 @@ const responderSchema = new mongoose.Schema(
       required: [true, "Please add name"],
       trim: true,
     },
+    account_id: {
+      type: String,
+
+    },
     phone: {
       type: String,
       required: [true, "Please add phone number"],
       unique: true,
     },
-    role: {
+    emergency_role: {
       type: String,
       required: true,
     },
-    messageId: [
+    university_office: {
+      type: String,
+      required: true,
+    },
+    report: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Message",
+        ref: "Report",
       },
     ],
   },

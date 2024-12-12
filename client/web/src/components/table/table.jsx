@@ -84,7 +84,9 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
 
   // Filter based on selected status
   const getFilteredUsersByStatus = () => {
-    return filteredUsers.filter((user) => filterStatus.includes(user.respond));
+    return filteredUsers.filter(
+      (user) => filterStatus.includes(user.respond) && user.emergency
+    );
   };
 
   const lastIndex = currentPage * recordsPerPage;
@@ -108,6 +110,7 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
   const handleRowClick = (data) => {
     if (data.respond === "in-progress") {
       console.log("Received " + data.respond);
+      console.log("Received success " + data);
       navigate(`/home/report/in-progress/${data.messageID}`, {
         state: { id: data },
       });
@@ -166,7 +169,7 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
               <td colSpan={headerTable.length}>No data</td>
             </tr>
           ) : (
-            currentUsers.map((data, index)=> (
+            currentUsers.map((data, index) => (
               <tr
                 className="items-row"
                 key={`${index}-${data._id}`}
@@ -199,7 +202,11 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
                     );
                   }
 
-                  return <td key={`${columnLabel}-${index}`}>{data[columnLabel] || "No Data"}</td>;
+                  return (
+                    <td key={`${columnLabel}-${index}`}>
+                      {data[columnLabel] || "No Data"}
+                    </td>
+                  );
                 })}
               </tr>
             ))

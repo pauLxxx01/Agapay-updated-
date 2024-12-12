@@ -43,6 +43,8 @@ const viewReports = () => {
 
   const [userInfo, setUserInfo] = useState([]);
 
+  console.log("userInfo", userInfo);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);

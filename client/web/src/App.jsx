@@ -85,7 +85,7 @@ function App() {
           element: <Responder />,
         },
         {
-          path: "admin/responder/accounts",
+          path: "/admin/responder/accounts",
           element: <ResponderAccounts />,
         },
       ],

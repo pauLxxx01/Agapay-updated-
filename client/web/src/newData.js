@@ -4,8 +4,8 @@ export const emergencyType = [
   { type: "Fire", key: "fire", label: "Fire Emergency" },
   { type: "Natural", key: "natural", label: "Natural Hazard" },
   { type: "Biological", key: "biological", label: "Biological Hazard" },
-  { type: "Medical", key: "medical", label: "Medical Assistance"},
-  { type: "Utility", key: "utility", label: "Utility Failure"},
+  { type: "Medical", key: "medical", label: "Medical Assistance" },
+  { type: "Utility", key: "utility", label: "Utility Failure" },
   { type: "Crime", key: "crime", label: "Crime & Violence" },
 ];
 
@@ -125,48 +125,39 @@ export const headerTableAnnounce = [
 //responder - register
 export const responsibilities = [
   {
-    title: "School Resource Officer (SRO) Responsibilities:",
-    description:
-      "A law enforcement officer assigned to a school to provide security, enforce laws, and foster positive relationships between students and police. SROs are trained to handle emergencies, including active shooter situations and other threats.",
+    title: " Information & Communications Technology Department",
+    description: "<Link for department>",
   },
   {
-    title: "Emergency Preparedness Coordinator Responsibilities:",
-    description:
-      "Develops and implements emergency response plans, conducts drills (e.g., fire drills, lockdown drills), and trains staff on emergency procedures. This role is crucial for ensuring that the school community is prepared for various scenarios.",
+    title: "Health and Safety Office",
+    description: "<Link for department>",
   },
   {
-    title: "First Aid Responders Responsibilities:",
-    description:
-      "Staff members trained in first aid and CPR who can provide immediate medical assistance to students or staff during health emergencies or accidents until professional medical help arrives.",
+    title: "Admission Office",
+    description: "<Link for department>",
   },
   {
-    title: "Evacuation Coordinator Responsibilities:",
-    description:
-      "Oversees the evacuation process during emergencies such as fires or natural disasters. This person ensures that all students and staff are accounted for and safely relocated to designated assembly points.",
+    title: "Community Relations Department",
+    description: "<Link for department>",
   },
   {
-    title: "Crisis Management Team Responsibilities:",
-    description:
-      "A group of designated staff members responsible for managing specific aspects of an emergency response. This team may include the principal, counselors, teachers, and other key personnel who coordinate communication and support during a crisis.",
+    title: "Corporate Planning and Development Office",
+    description: "<Link for department>",
   },
   {
-    title: "Communication Officer Responsibilities:",
-    description:
-      "Manages internal and external communication during an emergency, providing updates to parents, staff, and emergency services as necessary. This role is critical for disseminating accurate information quickly.",
+    title: "Data Protection Office",
+    description: "<Link for department>",
   },
   {
-    title: "Mental Health Support Staff Responsibilities:",
-    description:
-      "Counselors or psychologists who provide emotional support to students and staff affected by an emergency. They help address trauma and facilitate recovery after a crisis.",
+    title: "General Services Department",
+    description: "<Link for department>",
   },
   {
-    title: "Safety Patrols or Student Leaders Responsibilities:",
-    description:
-      "Trained student volunteers who assist in guiding peers during evacuations or emergencies, helping to maintain order and ensure safety.",
+    title: "Medical and Dental Services",
+    description: "<Link for department>",
   },
   {
-    title: "Facilities Manager Responsibilities:",
-    description:
-      "Responsible for ensuring that the physical environment of the school is safe during emergencies, including maintaining safety equipment (like fire extinguishers) and overseeing building evacuations.",
+    title: "Human Resource Department",
+    description: "<Link for department>",
   },
 ];

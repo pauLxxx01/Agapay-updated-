@@ -164,6 +164,32 @@ const registerUserController = async (req, res) => {
       
     } = req.body;
 
+    const phoneNumberRegex = /^[0-9]{11}$/;
+    if (!phoneNumberRegex.text(phone_number)) {
+      return res.status(400).send({
+        success: false,
+        message: "Invalid phone number format",
+      });
+    }
+    if (!phoneNumberRegex.text(alt_phone_number)) {
+      return res.status(400).send({
+        success: false,
+        message: "Invalid phone number format",
+      });
+    }
+    if (!phoneNumberRegex.test(parentPhone)) {
+      return res.status(400).send({
+        success: false,
+        message: "Invalid phone number format",
+      });
+    }
+    if (!phoneNumberRegex.test(parentAltPhone)) {
+      return res.status(400).send({
+        success: false,
+        message: "Invalid phone number format",
+      });
+    }
+
     // Validate required fields
     const requiredFields = [
       // for parent
