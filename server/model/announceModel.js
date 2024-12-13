@@ -28,10 +28,7 @@ const announcementSchema = new mongoose.Schema(
       type: Schema.Types.ObjectId,
       ref: "Admin",
     },
-    isHidden: {
-      type: Boolean,
-      default: false,
-    },
+    hiddenBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   {
     timestamps: true,

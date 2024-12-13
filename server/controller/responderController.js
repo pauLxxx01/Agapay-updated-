@@ -19,7 +19,7 @@ const registerResponder = async (req, res) => {
     }
 
     if (!phone) {
-      return res.status(400).send({
+      return res.status(400)  .send({
         success: false,
         message: "Phone number is required!",
       });

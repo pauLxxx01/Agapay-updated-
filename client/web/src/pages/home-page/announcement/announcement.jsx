@@ -16,13 +16,14 @@ import {
   Grow,
   Typography,
 } from "@mui/material";
+import { useSocket } from "../../../socket/Socket";
+import Table from './../../../components/table/table';
 
 const Announcement = () => {
-  const [state, , , users] = useContext(AuthContext);
-  console.log(users);
-
+  const [state, , users] = useContext(AuthContext);
+  const { socket } = useSocket();
   const [usersToken, setUserToken] = useState(null);
-  console.log(usersToken);
+
   const [announce, setAnnounce] = useState("");
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,24 +49,35 @@ const Announcement = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get("/get-announcement");
-        console.log(response.data);
+        console.log("fetched announcement: ", response.data);
         setAnnounce(response.data.announcements);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching data:", error);
         setLoading(false);
+        console.error("Error fetching data:", error);
       }
     };
+
     fetchData();
+    if (socket) {
+      console.log("Socket connected");
+      socket.on("announcement", (data) => {
+        console.log("New announcement received:", data);
+        setAnnounce((prevAnnounce) => [...prevAnnounce, data]);
+      });
+    }
+
     if (users) {
       const tokens = users
         .filter((user) => user.pushToken)
         .map((user) => user.pushToken);
 
-      console.log(tokens);
-      setUserToken(tokens);
+      setUserToken(tokens || []);
     }
-  }, [users]);
+    return () => {
+      socket.off("announcement");
+    };
+  }, [users, socket]);
 
   if (loading) {
     return <Loading />;
@@ -105,17 +117,14 @@ const Announcement = () => {
 
     setDuration(`${start} - ${end}`);
     setCreator(state.admin._id);
-    console.log(`${start} - ${end}`);
     try {
-      setLoading(true);
-
       const request = {
         to: usersToken,
         title: "New notification",
         body: `Announcement from ${department}!`,
         data: { screen: "Announcement", details: null },
       };
-      await axios.post("push-notification", request);
+      await axios.post("/push-notification", request);
 
       // Make the POST request
       await axios.post("/send-announcement", {
@@ -134,8 +143,6 @@ const Announcement = () => {
       console.log("Announcement successfully sent.");
     } catch (error) {
       console.error("Error sending announcement:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -337,6 +344,7 @@ const Announcement = () => {
             placeholder="Search announcement"
           />
         </motion.div>
+      
         <motion.table
           variants={fadeIn("up", 0.1)}
           initial="hidden"
@@ -347,7 +355,7 @@ const Announcement = () => {
             <tr>
               {headerTableAnnounce.map((header, index) => (
                 <th
-                  key={index}
+                  key={header.Label +index}
                   onClick={
                     header.Label === "ANNOUNCE CREATED"
                       ? () =>

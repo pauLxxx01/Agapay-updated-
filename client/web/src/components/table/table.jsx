@@ -110,7 +110,7 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
   const handleRowClick = (data) => {
     if (data.respond === "in-progress") {
       console.log("Received " + data.respond);
-      console.log("Received success " + data);
+      console.log("Received success " + JSON.stringify(data));
       navigate(`/home/report/in-progress/${data.messageID}`, {
         state: { id: data },
       });

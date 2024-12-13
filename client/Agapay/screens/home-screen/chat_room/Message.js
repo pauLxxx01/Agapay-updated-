@@ -34,7 +34,8 @@ const Message = ({ route }) => {
   useEffect(() => {
     if (data) {
       setRoom(data._id);
-      console.log("Room updated!");
+      console.log("Room updated!", data._id || data.id);
+      
     }
 
     const fetchData = async () => {
@@ -94,7 +95,7 @@ const Message = ({ route }) => {
       return;
     }
 
-    const senderId = data?.senderId?.toString();
+    const senderId = data?.senderId?.toString() || data?.userId?.toString();
     if (!senderId) {
       console.error("Sender ID is undefined. Cannot send message.");
       return;

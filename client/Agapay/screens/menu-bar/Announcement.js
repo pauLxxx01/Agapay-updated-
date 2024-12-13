@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,17 +10,17 @@ import {
   Modal,
   Dimensions,
   SafeAreaView,
-  Button,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import axios from "axios";
 import { useSocket } from "../../context/socketContext";
+import { AuthContext } from "../../context/authContext";
+
 const { width, height } = Dimensions.get("window");
 
 const Announcement = ({ navigation }) => {
   const { socket } = useSocket();
-
-  console.log(socket.connected);
+  const [state] = useContext(AuthContext);
   const [announcements, setAnnouncements] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredAnnouncements, setFilteredAnnouncements] = useState([]);
@@ -29,102 +29,56 @@ const Announcement = ({ navigation }) => {
   const [searchVisible, setSearchVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
-
   const [pinnedId, setPinnedId] = useState(null); // Tracks the pinned announcement's ID
+
+  const userId = state.user._id;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await axios.get("/get-announcement");
+        const response = await axios.post("/announcement/user", userId);
 
-        // Sorting the announcements
-        const sortedAnnouncements = sortAnnouncements(data.announcements);
-
-        console.log(sortedAnnouncements);
-
-        // Filtering out announcements where isHidden is false
+        const sortedAnnouncements = sortAnnouncements(
+          response.data.announcements
+        );
         const visibleAnnouncements = sortedAnnouncements.filter(
-          (announcement) => !announcement.isHidden
+          (announcement) =>
+            !announcement.isHidden && !announcement.hiddenBy.includes(userId)
         );
 
-        // Set announcements in state
         setAnnouncements(visibleAnnouncements);
-        setFilteredAnnouncements(visibleAnnouncements);
       } catch (error) {
         console.error("Error fetching announcements:", error);
       }
     };
     fetchData();
 
-    // Real-time updates for hide-status
-    socket.on("hide-status", (updatedAnnouncement) => {
-      setAnnouncements((prev) => {
-        // Map through existing announcements to update the one that matches the _id
-        const updatedAnnouncements = prev.map((a) =>
-          a._id === updatedAnnouncement._id
-            ? { ...a, isHidden: updatedAnnouncement.isHidden }
-            : a
-        );
-
-        // Ensure not appending the updatedAnnouncement if it already exists in the list
-        const isAlreadyPresent = updatedAnnouncements.some(
-          (a) => a._id === updatedAnnouncement._id
-        );
-
-        if (!isAlreadyPresent) {
-          updatedAnnouncements.push(updatedAnnouncement);
-        }
-
-        return updatedAnnouncements;
-      });
-    });
-
     socket.on("announcement", (data) => {
-      // Check if the announcement already exists
       setAnnouncements((prev) => {
         const existingAnnouncement = prev.find((a) => a._id === data._id);
         if (existingAnnouncement) {
-          // Update the existing announcement
-          return prev.map((a) =>
-            a._id === data._id ? { ...a, isHidden: data.isHidden } : a
-          );
+          return prev.map((a) => (a._id === data._id ? { ...a, ...data } : a));
         } else {
-          // Append the new announcement
           return [...prev, data];
         }
       });
       console.log("Announcement received:", data);
     });
 
+    socket.on("hide-status", (updatedAnnouncement) => {
+      setAnnouncements((prev) => {
+        if (updatedAnnouncement.hiddenBy.includes(userId)) {
+          return prev.filter((a) => a._id !== updatedAnnouncement._id);
+        }
+        return prev;
+      });
+    });
+
     return () => {
       socket.off("hide-status");
-      socket.off("announcemnt");
+      socket.off("announcement");
     };
-  }, [socket]);
-
-  useEffect(() => {
-    // Filter announcements to only show those that are not hidden
-    const visibleAnnouncements = announcements.filter(
-      (announcement) => !announcement.isHidden
-    );
-    setFilteredAnnouncements(visibleAnnouncements);
-  }, [announcements]);
-
-  // useEffect(() => {
-  //   socket.on("hide-status", (updatedAnnouncement) => {
-  //     setAnnouncements((prev) =>
-  //       prev.map((a) =>
-  //         a._id === updatedAnnouncement._id
-  //           ? { ...a, isHidden: updatedAnnouncement.isHidden }
-  //           : a
-  //       )
-  //     );
-  //   });
-
-  //   return () => {
-  //     socket.off("hide-status");
-  //   };
-  // }, []);
+  }, [socket, userId]);
 
   const sortAnnouncements = (announcements) => {
     return announcements.sort((a, b) => {
@@ -138,34 +92,9 @@ const Announcement = ({ navigation }) => {
     if (!selectedAnnouncement) return;
 
     try {
-      const { data } = await axios.put(
-        `/announcement/toggle-hide/${selectedAnnouncement._id}`
-      );
-      console.log(
-        `Announcement toggle data: ${data.announcement._id}, isHidden: ${data.announcement.isHidden}`
-      );
-
-      // Real-time updates for hide-status
-      socket.on("hide-status", (updatedAnnouncement) => {
-        setAnnouncements((prev) => {
-          //matches the _id
-          const updatedAnnouncements = prev.map((a) =>
-            a._id === updatedAnnouncement._id
-              ? { ...a, isHidden: updatedAnnouncement.isHidden }
-              : a
-          );
-          // Ensure not appending the updatedAnnouncement if it already exists in the list
-          const isAlreadyPresent = updatedAnnouncements.some(
-            (a) => a._id === updatedAnnouncement._id
-          );
-
-          if (!isAlreadyPresent) {
-            updatedAnnouncements.push(updatedAnnouncement);
-          }
-          return updatedAnnouncements;
-        });
+      await axios.put(`/announcement/toggle-hide/${selectedAnnouncement._id}`, {
+        userId,
       });
-
       setConfirmDeleteVisible(false);
       setMenuVisible(false);
     } catch (error) {
@@ -220,6 +149,7 @@ const Announcement = ({ navigation }) => {
       { text: "Delete", onPress: () => toggleHide() },
     ]);
   };
+
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.announcementCard}
@@ -257,7 +187,7 @@ const Announcement = ({ navigation }) => {
                 setSearchVisible(true);
               }}
             >
-              <Icon name="search" size={24} color="#800000" />
+              <Icon name="search" size={38} color="#800000" />
             </TouchableOpacity>
           )}
           {searchVisible && (
@@ -283,7 +213,11 @@ const Announcement = ({ navigation }) => {
       </View>
 
       <FlatList
-        data={filteredAnnouncements}
+        data={
+          filteredAnnouncements.length > 0
+            ? filteredAnnouncements
+            : announcements
+        }
         renderItem={renderItem}
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContent}
@@ -344,7 +278,6 @@ const Announcement = ({ navigation }) => {
             >
               {selectedAnnouncement && (
                 <Text style={styles.modalButtonTextBottom}>
-                  {" "}
                   {selectedAnnouncement._id === pinnedId ? "Unpin" : "Pin"}
                 </Text>
               )}
@@ -368,19 +301,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   header: {
+    backgroundColor: "white",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "flex-end",
-    padding: width * 0.04,
-    height: height * 0.12,
-  },
-  headerText: {
-    fontSize: width * 0.05,
-    fontWeight: "bold",
-    color: "#800000",
   },
   headerIcons: {
     flexDirection: "row",
+    alignItems: "center",
+  
     backgroundColor: "#F0F0F0",
     padding: 8,
     borderRadius: 50,
@@ -393,155 +323,120 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-
     backgroundColor: "#F0F0F0",
     paddingLeft: width * 0.05,
   },
   searchInput: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#800000",
+    height: 40,
+    marginRight: 10,
     flex: 1,
-    borderRadius: 10,
-  },
-  listContent: {
-    padding: width * 0.05,
   },
   announcementCard: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: "#F6F6F6",
-    borderRadius: 10,
-    marginVertical: height * 0.01,
-    padding: width * 0.04,
+    padding: 15,
+    marginBottom: 5,
+    backgroundColor: "#ffffff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
   },
   flag: {
-    width: width * 0.04,
+    width: 5,
     height: "100%",
     backgroundColor: "#800000",
-    borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10,
-    marginRight: width * 0.04,
   },
   announcementContent: {
     flex: 1,
+    marginLeft: 15,
+  },
+  departmentText: {
+    color: "#555",
+    fontSize: 16,
   },
   titleRow: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
   },
-  departmentText: {
-    color: "#444",
-    fontSize: width * 0.045,
-  },
   titleText: {
-    fontSize: width * 0.05,
+    fontSize: 18,
     fontWeight: "bold",
-    color: "#000",
-    marginRight: width * 0.02,
   },
   dateText: {
-    fontSize: width * 0.04,
-    color: "#888",
-    marginTop: height * 0.005,
+    color: "#aaa",
+    fontSize: 14,
   },
   pinIcon: {
-    color: "#F7B32D",
-    position: "absolute",
-    top: height * -0.08,
-    left: width * 0.6,
-    backgroundColor: "maroon",
-    borderRadius: 100,
-    padding: 4,
+    color: "#800000",
+  },
+  listContent: {
+    padding: width * 0.05,
   },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
   },
   modalContent: {
-    backgroundColor: "#fff",
-    padding: width * 0.05,
+    backgroundColor: "#ffffff",
     borderRadius: 10,
-    width: "80%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    padding: 20,
+    width: width - 40,
+    maxHeight: height - 150,
   },
   modalTopic: {
-    fontSize: width * 0.06,
+    fontSize: 20,
     fontWeight: "bold",
   },
-  modalDate: {
-    fontSize: width * 0.045,
-    marginBottom: height * 0.01,
-  },
   modalDepartment: {
-    marginBottom: height * 0.03,
+    fontSize: 16,
+    marginVertical: 5,
+  },
+  modalDate: {
+    fontSize: 14,
+    color: "#555",
   },
   modalDuration: {
-    fontSize: width * 0.045,
-    marginBottom: height * 0.02,
+    fontSize: 14,
+    color: "#555",
   },
   modalMessage: {
-    fontSize: width * 0.045,
-    marginBottom: height * 0.02,
+    fontSize: 16,
+    marginVertical: 10,
   },
   closeButton: {
-    paddingVertical: height * 0.015,
-    paddingHorizontal: width * 0.1,
     backgroundColor: "#800000",
-    borderRadius: 20,
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     alignItems: "center",
   },
   closeButtonText: {
     color: "#fff",
-    fontSize: width * 0.045,
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: height * 0.01,
-    borderRadius: 10,
-    alignItems: "center",
-    marginHorizontal: 10,
-  },
-  modalButtonText: {
-    fontSize: width * 0.045,
-    marginBottom: height * 0.03,
-    textAlign: "center",
+    fontSize: 16,
   },
   modalContainerBottom: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
   },
   modalContentBottom: {
-    width: "80%",
-    backgroundColor: "white",
-    borderRadius: 15,
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
     padding: 20,
-    alignItems: "center",
   },
   modalButtonBottom: {
-    padding: height * 0.01,
-    backgroundColor: "#800000",
-    borderRadius: 10,
-    width: "100%",
+    paddingVertical: 15,
     alignItems: "center",
-    marginVertical: height * 0.004,
   },
   modalButtonTextBottom: {
-    color: "#fff",
-    textAlign: "center",
-    fontSize: width * 0.045,
-    fontWeight: "bold",
-    width: "100%",
+    fontSize: 16,
+    color: "#800000",
   },
 });
+
 export default Announcement;

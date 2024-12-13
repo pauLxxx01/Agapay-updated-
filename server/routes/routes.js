@@ -50,6 +50,7 @@ const {
   sendAnnouncement,
   getAnnouncement,
   toggleHide,
+  getUserAnnouncement,
 } = require("../controller/announcementController");
 const { sendMessage, getMessage } = require("../controller/messageController");
 
@@ -124,11 +125,14 @@ router.post("/user/feedback", sendFeedback);
 
 //chat
 router.post("/chats", sendMessage);
+
 router.get("/chats/:id", getMessage);
 
 //announcement
 router.post("/send-announcement", sendAnnouncement);
 router.get("/get-announcement", getAnnouncement);
+
+router.post("/announcement/user", getUserAnnouncement);
 router.put("/announcement/toggle-hide/:id", toggleHide);
 
 module.exports = router;

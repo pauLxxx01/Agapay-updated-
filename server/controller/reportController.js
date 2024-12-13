@@ -2,6 +2,7 @@ const userModel = require("../model/userModel");
 const ReportModel = require("../model/reportModel");
 const { sendReport, updateProgress } = require("../sockets/socket");
 const messageModel = require("../model/messageModel");
+const responderModel = require("../model/responderModel");
 
 const sendReportToAdmin = async (req, res) => {
   try {
@@ -54,8 +55,8 @@ const sendReportToAdmin = async (req, res) => {
 
     const savedMessage = await newMessage.save();
 
-    user.report_data = user.report_data || []; 
-    user.report_data.push(savedMessage._id); 
+    user.report_data = user.report_data || [];
+    user.report_data.push(savedMessage._id);
     await user.save(); // Save the updated user document
 
     const newRoom = new messageModel({
@@ -143,12 +144,12 @@ const getSpecificReportMessage = async (req, res) => {
 
 const updateReportMessage = async (req, res) => {
   const { id } = req.params; // Assuming the ID comes from the request parameters
-  const { respond, percentage, userId } = req.body; // Assuming the respond data comes from the request body
+  const { respond, percentage, userId, responderId } = req.body; // Assuming the respond data comes from the request body
 
   try {
     const updatedMessage = await ReportModel.findByIdAndUpdate(
       id,
-      { respond, percentage },
+      { respond, percentage, responder: responderId },
       { new: true, runValidators: true } // `new: true` returns the updated document, `runValidators` ensures validation
     );
 
@@ -160,6 +161,20 @@ const updateReportMessage = async (req, res) => {
       });
     }
 
+    const responder = await responderModel.findById(responderId);
+    if (!responder) {
+      console.log("Responder not found");
+    }
+    if (responder) {
+      console.log(`Responder: ${responder}`);
+      responder.report = responder.report || [];
+      // Check if the report ID already exists in the responder's report array
+      if (!responder.report.includes(id)) {
+        responder.report.push(id); 
+      }
+
+      await responder.save(); // Save the updated responder document
+    }
 
     updateProgress(updatedMessage, user);
 

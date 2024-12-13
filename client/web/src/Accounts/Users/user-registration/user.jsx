@@ -70,12 +70,6 @@ const User = () => {
       return;
     }
 
-    const formattedPhoneNumber = formatPhilippinePhoneNumber(phoneNumber);
-    const formattedAltPhoneNumber = formatPhilippinePhoneNumber(altPhoneNumber);
-    const formattedParentPhoneNumber = formatPhilippinePhoneNumber(parentPhone);
-    const formattedParentAltPhoneNumber =
-      formatPhilippinePhoneNumber(parentAltPhone);
-
     axios
       .post("/user/register", {
         role: role,
@@ -83,9 +77,9 @@ const User = () => {
         email,
         password,
         account_id: accountId,
-        phone_number: formattedPhoneNumber,
+        phone_number: phoneNumber,
 
-        alt_phone_number: formattedAltPhoneNumber,
+        alt_phone_number: altPhoneNumber,
         degree: degree,
         school_year: schoolYear,
         alt_address: altAddress,
@@ -96,9 +90,9 @@ const User = () => {
         parentName,
         parentAddress,
         parentRelationship,
-        parentPhone: formattedParentPhoneNumber,
+        parentPhone: parentPhone,
 
-        parentAltPhone: formattedParentAltPhoneNumber,
+        parentAltPhone: parentAltPhone,
         parentAltAddress: parentAltAddress,
       })
       .then((res) => {
@@ -108,18 +102,22 @@ const User = () => {
           email,
           password,
           account_id: accountId,
-          phone_number: formattedPhoneNumber,
-          alt_phone_number: formattedAltPhoneNumber,
-          degree,
+          phone_number: phoneNumber,
+
+          alt_phone_number: altPhoneNumber,
+          degree: degree,
           school_year: schoolYear,
           alt_address: altAddress,
+
           department,
           address,
+
           parentName,
           parentAddress,
           parentRelationship,
-          parentPhone: formattedParentPhoneNumber,
-          parentAltPhone: formattedParentAltPhoneNumber,
+          parentPhone: parentPhone,
+
+          parentAltPhone: parentAltPhone,
           parentAltAddress: parentAltAddress,
         });
 

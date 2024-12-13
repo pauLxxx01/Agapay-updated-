@@ -144,8 +144,11 @@ const responderAccounts = () => {
             <div key={responder._id} className="admin-card">
               <div className="admin-info">
                 <h3 className="admin-name">{responder.name}</h3>
+                <p className="admin-phone">{responder.emergency_role}</p>
                 <p className="admin-phone">{responder.phone}</p>
-                <p className="admin-phone">{responder.role}</p>
+               
+            
+                <p className="admin-phone">{responder.university_office}</p>
               </div>
               <button className="btn" onClick={() => openModal(responder)}>
                 Update

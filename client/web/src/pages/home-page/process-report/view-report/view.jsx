@@ -43,22 +43,20 @@ const viewReports = () => {
 
   const [userInfo, setUserInfo] = useState([]);
 
-  console.log("userInfo", userInfo);
+  const [infos, setInfos] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         //message
-        const userMessageId = await axios.get(
-          `/user/message/specific/${id}`
-        );
+        const userMessageId = await axios.get(`/user/message/specific/${id}`);
         if (userMessageId.data.data.img) {
           userMessageId.data.data.img = `http://localhost:8080/images/${userMessageId.data.data.img}`;
         }
         const senderId = userMessageId.data.data.senderId;
-        setMessages(userMessageId);
-        console.log("message response : ", userMessageId.data.data.img);
+        setMessages( userMessageId.data.data);
+        console.log("message response : ", userMessageId.data.data);
 
         //user
         const userResponse = await axios.get(
@@ -66,15 +64,16 @@ const viewReports = () => {
         );
         setUserInfo(userResponse.data.user);
         const parentId = userResponse.data.user.parent;
-        setUsers(userResponse);
-        console.log("user response :", userResponse);
+        setUsers(userResponse.data.user);
+        console.log("user response :", userResponse.data.user);
+        const user = userResponse.data.user;
 
         //parent
         const parentResponse = await axios.get(
           `/user/parent/specific/${parentId}`
         );
-        console.log("parent response : ", parentResponse);
-        setParents(parentResponse);
+        console.log("parent response : ", parentResponse.data.parent);
+        setParents(parentResponse.data.parent);
       } catch (error) {
         setError(`Error fetching data: ${error.message}`);
         console.error(error); // Log the error for debugging
@@ -86,25 +85,37 @@ const viewReports = () => {
     fetchData();
   }, [id]);
 
+  const combinedData = {
+    ...users,
+    emergency: messages.emergency,
+    respond: messages.respond,
+    messageID: messages._id,
+    report_data: Array.isArray(users.report_data)
+      ? users.report_data.filter((id) => id !== messages._id)
+      : [],
+    createdAt: new Date(users.createdAt).toLocaleString(),
+    updatedAt: new Date(messages.updatedAt).toLocaleString(),
+  };
+  
+  console.log("combined users: " + JSON.stringify(combinedData))
+
   const handleUpdate = async (id) => {
     try {
       const requestData = {
         respond: "in-progress",
-        percentage: 40, 
-        userId: userInfo._id, 
-        id: id
+        percentage: 40,
+        userId: userInfo._id,
+        id: id,
       };
 
       const sendNotif = {
         to: `${userInfo.pushToken}`,
         title: "New Notification",
         body: "Tap to see details!",
-        data: { screen: "Transaction", 
-          details: null 
-        },
+        data: { screen: "Transaction", details: null },
       };
 
-      await axios.post('push-notification', sendNotif)
+      await axios.post("/push-notification", sendNotif);
 
       // Use template literals for the URL
       const apiEndpoint = `/user/message/update/${id}`;
@@ -113,7 +124,7 @@ const viewReports = () => {
       await axios.put(apiEndpoint, requestData);
 
       // Navigate after successful request
-      navigate(`/home/report/in-progress/${id}`, { state: { id: userInfo } });
+      navigate(`/home/report/in-progress/${id}`, { state: { id: combinedData } });
     } catch (error) {
       // Provide more descriptive error handling
       console.error(`Error updating message for ID ${id}:`, error);
@@ -123,21 +134,19 @@ const viewReports = () => {
     try {
       const requestData = {
         respond: "completed",
-        percentage: 100, 
-        userId: userInfo._id, 
-        id: id
+        percentage: 100,
+        userId: userInfo._id,
+        id: id,
       };
 
       const sendNotif = {
         to: `${userInfo.pushToken}`,
         title: "New Notification",
         body: "Transaction is already completed!",
-        data: { screen: "Transaction", 
-          details: null 
-        },
+        data: { screen: "Transaction", details: null },
       };
 
-      await axios.post('push-notification', sendNotif)
+      await axios.post("push-notification", sendNotif);
 
       // Use template literals for the URL
       const apiEndpoint = `/user/message/update/${id}`;
@@ -155,7 +164,6 @@ const viewReports = () => {
   const handleClickOpen = () => {
     setOpen(true);
   };
-  
 
   const handleClickAlready = () => {
     setOpenAlready(true);
@@ -180,27 +188,27 @@ const viewReports = () => {
         <div className="container-box">
           <div className="box box0">
             <div className="icon">
-              {messages && messages.data.data.emergency ? (
-                messages.data.data.emergency.split(" ")[0].toLowerCase() ===
+              {messages && messages.emergency ? (
+                messages.emergency.split(" ")[0].toLowerCase() ===
                 "fire" ? (
                   <img src={Fire} alt="Fire Emergency" className="icon" />
-                ) : messages.data.data.emergency.split(" ")[0].toLowerCase() ===
+                ) : messages.emergency.split(" ")[0].toLowerCase() ===
                   "medical" ? (
                   <img src={Medical} alt="Medical Emergency" className="icon" />
-                ) : messages.data.data.emergency.split(" ")[0].toLowerCase() ===
+                ) : messages.emergency.split(" ")[0].toLowerCase() ===
                   "natural" ? (
                   <img src={Natural} alt="Natural Disaster" className="icon" />
-                ) : messages.data.data.emergency.split(" ")[0].toLowerCase() ===
+                ) : messages.emergency.split(" ")[0].toLowerCase() ===
                   "biological" ? (
                   <img
                     src={Biological}
                     alt="Biological Hazard"
                     className="icon"
                   />
-                ) : messages.data.data.emergency.split(" ")[0].toLowerCase() ===
+                ) : messages.emergency.split(" ")[0].toLowerCase() ===
                   "utility" ? (
                   <img src={Utility} alt="Utility Issue" className="icon" />
-                ) : messages.data.data.emergency.split(" ")[0].toLowerCase() ===
+                ) : messages.emergency.split(" ")[0].toLowerCase() ===
                   "crime" ? (
                   <img src={Crime} alt="Crime" className="icon" />
                 ) : (
@@ -212,57 +220,57 @@ const viewReports = () => {
             </div>
             <div className="titles">
               <span>Report Details</span>
-              <span>{messages.data.data.emergency}</span>
+              <span>{messages.emergency}</span>
             </div>
           </div>
           <div className="box box1">
             <div className="image">
               <span>Captured of incident</span>
-              <img src={messages.data.data.img} alt={messages.data.data.img} />
+              <img src={messages.img} alt={messages.img} />
             </div>
           </div>
           <div className="box box2">
             <div className="content-table">
               <div className="user">
-                <span>{users.data.user.role}</span>
+                <span>{users.role}</span>
                 <ul>
-                  {users.data.user.name && (
+                  {users.name && (
                     <li>
-                      <strong>Name: </strong> {users.data.user.name}
+                      <strong>Name: </strong> {users.name}
                     </li>
                   )}
-                  {users.data.user.userId && (
+                  {users.userId && (
                     <li>
                       <strong>Stundet Account: </strong>{" "}
-                      {users.data.user.userId}
+                      {users.userId}
                     </li>
                   )}
-                  {users.data.user.phoneNumber && (
+                  {users.phoneNumber && (
                     <li>
                       <strong>Phone Number: </strong>{" "}
-                      {users.data.user.phoneNumber}
+                      {users.phoneNumber}
                     </li>
                   )}
-                  {users.data.user.department && (
+                  {users.department && (
                     <li>
-                      <strong>Department: </strong> {users.data.user.department}{" "}
+                      <strong>Department: </strong> {users.department}{" "}
                       Department
                     </li>
                   )}
                 </ul>
               </div>
               <div className="guardian">
-                <span>{parents.data.parent.relationship}</span>
+                <span>{parents.relationship}</span>
                 <ul>
-                  {parents.data.parent.name && (
+                  {parents.name && (
                     <li>
-                      <strong>Name: </strong> {parents.data.parent.name}
+                      <strong>Name: </strong> {parents.name}
                     </li>
                   )}
-                  {parents.data.parent.phone && (
+                  {parents.phone && (
                     <li>
                       <strong>Phone Number: </strong>{" "}
-                      {parents.data.parent.phone}
+                      {parents.phone}
                     </li>
                   )}
                 </ul>
@@ -273,7 +281,7 @@ const viewReports = () => {
             <div className="location">
               <span>Nearby</span>
               <div className="locationBox">
-                <p>{messages.data.data.location}</p>
+                <p>{messages.location}</p>
               </div>
             </div>
           </div>
@@ -282,7 +290,7 @@ const viewReports = () => {
             <div className="message">
               <span>Message</span>
               <div className="textBox">
-                <p>{messages.data.data.message}</p>
+                <p>{messages.message}</p>
               </div>
             </div>
           </div>
@@ -331,7 +339,7 @@ const viewReports = () => {
               Cancel
             </Button>
             <Button
-              onClick={() => handleUpdate(messages.data.data._id, users)}
+              onClick={() => handleUpdate(messages._id, users)}
               size="medium"
               color="success"
               variant="contained"
@@ -371,7 +379,7 @@ const viewReports = () => {
               Cancel
             </Button>
             <Button
-              onClick={() => handleAlreadyUpdate(messages.data.data._id, users)}
+              onClick={() => handleAlreadyUpdate(messages._id, users)}
               size="medium"
               color="success"
               variant="contained"

@@ -18,14 +18,17 @@ import { useSocket } from "../../context/socketContext";
 import ProgressBar from "./../../components/progress_bar/progressBar";
 
 import { AuthContext } from "../../context/authContext";
+import LoadingScreen from "../../components/loading/loading";
 
 const TransactionHistory = ({ navigation }) => {
   const { socket } = useSocket();
   const [report, setReport] = useState([]);
   const [state] = useContext(AuthContext);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchMessages = async () => {
+      setLoading(true);
       try {
         const response = await axios.get("/user/messages");
         response.data.messages.forEach((message) => {
@@ -37,7 +40,9 @@ const TransactionHistory = ({ navigation }) => {
         );
         console.log(filteredMessages, "filteredMessages");
         setReport(filteredMessages);
+        setLoading(false);
       } catch (error) {
+        setLoading(false);
         console.error("Error fetching messages: ", error);
         Alert.alert(
           "Error",
@@ -119,6 +124,11 @@ const TransactionHistory = ({ navigation }) => {
     });
   };
 
+  if(loading) {
+    return (
+     <LoadingScreen />
+    );
+  }
   return (
     <View style={styles.container}>
       {report.length === 0 ? (

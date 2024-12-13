@@ -198,6 +198,9 @@ const Responder = () => {
                   <option value="Human Resource Department">
                     Human Resource Department
                   </option>
+                  <option value="Office of Student Affairs & Services">
+                  Office of Student Affairs & Services
+                  </option>
                 </select>
               </div>
 

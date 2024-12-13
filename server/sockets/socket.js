@@ -159,32 +159,34 @@ async function sendReport(
 }
 
 async function sendAnnouncementToUser(
+  _id,
   title,
+  topic,
   description,
   date,
   department,
   duration,
-  isHidden
+  hiddenBy,
+  createdAt
 ) {
   try {
-    const users = await userModel.find();
-    users.forEach((user) => {
-      const socket = activeSockets[user._id];
-      if (socket) {
-        socket.emit("announcement", {
-          title,
-          description,
-          date,
-          department,
-          duration,
-          isHidden,
-        }); // Send announcement
-        console.log(`Socket: ${socket}`);
-        console.log(`Announcement sent to user ${user.name}`);
-      } else {
-        console.log(`User ${user.name} is not connected`);
-      }
-    });
+    global.io.emit("announcement", {
+      _id,
+      title,
+      topic,
+      description,
+      date,
+      department,
+      duration,
+      hiddenBy,
+      createdAt,
+    }); // Send announcement
+    console.log(
+      `id: ${_id} title: ${title} topic: ${topic} description: ${description} date: ${date} duration: ${duration}`
+    );
+    console.log(
+      `hiddenBy: ${hiddenBy} createdAt: ${createdAt} department: ${department}`
+    );
   } catch (error) {
     console.error("Error sending announcement to users:", error);
   }
@@ -193,6 +195,7 @@ async function sendAnnouncementToUser(
 async function updatedAnnouncement(announcement) {
   try {
     global.io.emit("hide-status", announcement);
+    console.log(`Announcement update ${announcement}`);
   } catch (error) {
     console.error("Error updating announcement:", error);
   }

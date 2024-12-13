@@ -23,7 +23,7 @@ const sendAnnouncement = async (req, res) => {
         message: "Admin not found",
       });
     }
-    const isHidden = false;
+    const hiddenBy = [];
     const newAnnouncement = new announceModel({
       title,
       description,
@@ -32,16 +32,29 @@ const sendAnnouncement = async (req, res) => {
       duration,
       topic,
       creator: admin._id,
-      isHidden
+      hiddenBy,
     });
 
+    console.log("NEW ",newAnnouncement);
     const savedAnnouncement = await newAnnouncement.save();
+    const createdAt = savedAnnouncement.createdAt;
+    const _id = savedAnnouncement._id;
 
     admin.announcement = admin.announcement || [];
     admin.announcement.push(savedAnnouncement._id);
     await admin.save();
 
-    sendAnnouncementToUser(title, description, date, department, duration, isHidden);
+    sendAnnouncementToUser(
+      _id,
+      title,
+      topic,
+      description,
+      date,
+      department,
+      duration,
+      hiddenBy,
+      createdAt,
+    );
 
     res.status(200).send({
       success: true,
@@ -60,7 +73,30 @@ const sendAnnouncement = async (req, res) => {
 
 const getAnnouncement = async (req, res) => {
   try {
-    const announcements = await announceModel.find({ isHidden: false });
+    const announcements = await announceModel.find();
+    res.status(200).send({
+      success: true,
+      message: "Announcements retrieved successfully",
+      announcements,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      success: false,
+      message: "Internal Server Error",
+      error: error,
+    });
+  }
+};
+
+const getUserAnnouncement = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    const announcements = await announceModel.find({
+      hiddenBy: { $ne: userId },
+    });
+
     res.status(200).send({
       success: true,
       message: "Announcements retrieved successfully",
@@ -78,6 +114,7 @@ const getAnnouncement = async (req, res) => {
 
 const toggleHide = async (req, res) => {
   try {
+    const  {userId}  = req.body;
     const announcement = await announceModel.findById(req.params.id);
     if (!announcement) {
       return res.status(404).send({
@@ -85,10 +122,22 @@ const toggleHide = async (req, res) => {
         message: "Announcement not found",
       });
     }
-    announcement.isHidden = !announcement.isHidden;
+
+    if (announcement.hiddenBy.includes(userId)) {
+      return res.status(400).send({
+        success: false,
+        message: "You have already hidden this announcement.",
+      });
+    }
+
+  announcement.hiddenBy.push(userId);
     await announcement.save();
 
-    updatedAnnouncement(announcement);
+    // announcement.isHidden = !announcement.isHidden;
+    // await announcement.save();
+    console.log("new announcement: ",announcement)
+
+     updatedAnnouncement(announcement);
 
     res.status(200).send({
       success: true,
@@ -107,5 +156,6 @@ const toggleHide = async (req, res) => {
 module.exports = {
   sendAnnouncement,
   getAnnouncement,
+  getUserAnnouncement,
   toggleHide,
 };

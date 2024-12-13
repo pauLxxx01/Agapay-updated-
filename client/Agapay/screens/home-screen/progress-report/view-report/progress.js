@@ -18,6 +18,7 @@ import { getFullScreenHeight } from "../../../../components/getFullScreen";
 import axios from "axios";
 import { progressReportInformation } from "../../../../infoData/data";
 import { Audio } from "expo-av"; // Importing Audio from expo-av
+import LoadingScreen from "../../../../components/loading/loading";
 
 const isSmallDevice = getFullScreenHeight() < 375;
 
@@ -27,7 +28,9 @@ const ShowProgress = ({ navigation, route }) => {
 
   const [report, setReport] = useState(() => {
     if (details) {
-      return [{ _id: details._id, percentage: details.percentage }];
+      return [
+        { _id: details._id, id: details.id, percentage: details.percentage },
+      ];
     }
     console.warn("User data is missing, initializing with defaults.");
     return [{ _id: "unknown", percentage: 0 }];
@@ -38,51 +41,73 @@ const ShowProgress = ({ navigation, route }) => {
   const [admins, setAdmins] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentMessage, setCurrentMessage] = useState("");
-
+  const [loading, setLoading] = useState(false);
   const fadeAnim = useState(new Animated.Value(1))[0];
   const [sound, setSound] = useState(null);
 
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    const matchInfos = progressReportInformation.find(
-      (info) => report[0]?.percentage == info.percentage
-    );
-    setCurrentMessage(matchInfos?.message || "Progress underway...");
-
-    const fetchAdmins = async () => {
+    const initialize = async () => {
+      setLoading(true);
+      console.log(report);
+      const percentage = String(report[0]?.percentage);  
+      console.log("percentage: ", percentage);
       try {
-        const adminResponse = await axios.get("/getAdmin");
-        const adminData = adminResponse.data.admin;
-        console.log("Admin List:", adminData);
-        setAdmins(adminData || []);
+        // Match current progress
+        const matchInfos = progressReportInformation.find(
+          (info) => String(info.percentage)  === percentage
+        );
+
+        console.log("match infos: ", matchInfos);
+
+        setCurrentMessage(matchInfos?.message || "Progress underway...");
+
+        // Fetch admin data
+        const fetchAdmins = async () => {
+          try {
+            const adminResponse = await axios.get("/getAdmin");
+            const adminData = adminResponse.data.admin;
+            // console.log("Admin List:", adminData);
+            setAdmins(adminData || []);
+          } catch (error) {
+            console.error("Error fetching admins:", error);
+          }
+        };
+
+        await fetchAdmins(); // Wait for admin fetch to complete
+
+        // Set up socket listeners
+        socket.on("progressUpdate", (message) => {
+          console.log("update: message ", message.messages);
+          setReport((prevReports) => {
+            const reportExist = prevReports.some(
+              (rpt) => rpt._id === message.messages._id
+            );
+            if (reportExist) {
+              return prevReports.map((rpt) =>
+                rpt._id === message.messages._id ? message.messages : rpt
+              );
+            } else {
+              return [...prevReports, message.messages];
+            }
+          });
+        });
+
+        socket.on("receiveMessage", (message) => {
+          console.log("New message received: ", message);
+          setUnreadCount((prevCount) => prevCount + 1);
+        });
       } catch (error) {
-        console.error("Error fetching admins:", error);
+        console.error("Error during initialization:", error);
+      } finally {
+        setLoading(false); // Ensure loading is false after everything
       }
     };
-    fetchAdmins();
 
-    socket.on("progressUpdate", (message) => {
-      console.log("update: message ", message.messages);
-      setReport((prevReports) => {
-        const reportExist = prevReports.some(
-          (rpt) => rpt._id === message.messages._id
-        );
-        if (reportExist) {
-          return prevReports.map((rpt) =>
-            rpt._id === message.messages._id ? message.messages : rpt
-          );
-        } else {
-          return [...prevReports, message.messages];
-        }
-      });
-    });
+    initialize();
 
-    socket.on("receiveMessage", (message) => {
-      console.log("New message received: ", message);
-      setUnreadCount((prevCount) => prevCount + 1);
-    });
-
+    // Cleanup socket listeners on unmount
     return () => {
       socket.off("receiveMessage");
       socket.off("progressUpdate");
@@ -124,6 +149,9 @@ const ShowProgress = ({ navigation, route }) => {
       );
     }
   };
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   const renderAdmin = ({ item }) => (
     <TouchableOpacity

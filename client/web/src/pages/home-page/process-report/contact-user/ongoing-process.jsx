@@ -20,6 +20,8 @@ import {
   Typography,
 } from "@mui/material";
 import { useSocket } from "../../../../socket/Socket";
+import { toast } from "react-toastify";
+import Error from "../../../../components/error/error";
 
 const Ongoing = () => {
   const { id } = useParams(); // Access the dynamic parameter
@@ -27,14 +29,9 @@ const Ongoing = () => {
   const passedId = location.state?.id;
   const [message, setMessage] = useState([]);
   const { socket } = useSocket();
-  const dialogContentRef = useRef(null);
 
   const [openChat, setOpenChat] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
-
-  console.log(socket, "socket");
-
-  console.log("passed Id: ",passedId );
 
   const [parents, setParents] = useState([]);
   const [progress, setProgress] = useState("");
@@ -43,6 +40,7 @@ const Ongoing = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const dialogContentRef = useRef(null);
 
   if (!passedId) {
     return <div>No datass available.</div>;
@@ -56,12 +54,12 @@ const Ongoing = () => {
   const [selectedResponderId, setSelectedResponderId] = useState("");
 
   const [selectedOptionalInfo, setSelectedOptionalInfo] = useState(null);
-  const [selectedOptionalId, setSelectedOptionalId] = useState("");
+  const [selectedOptionalName, setSelectedOptionalName] = useState("");
 
   const [selectedOfficeInfo, setSelectedOfficeInfo] = useState(null);
-  const [selectedOfficeId, setSelectedOfficeId] = useState("");
+  const [selectedOfficeName, setSelectedOfficeId] = useState("");
 
-  console.log(selectedOfficeId, "selectedOffice");
+  console.log("Option selected office: ", selectedOfficeName);
 
   const handleChangeDropdown = (e) => {
     const selectedId = e.target.value;
@@ -73,7 +71,7 @@ const Ongoing = () => {
   };
 
   const handleChangeDropdownLocation = (e) => {
-    setSelectedOptionalId("");
+    setSelectedOptionalName("");
 
     setSelectedOptionalInfo(null);
 
@@ -82,15 +80,21 @@ const Ongoing = () => {
     setSelectedOfficeId(selectedIdOffice);
 
     const selectedOffice = responder.find(
-      (res) => res.universityOffice === selectedIdOffice
+      (res) => res.university_office === selectedIdOffice
     );
-    setSelectedOfficeInfo(selectedOffice.universityOffice);
-    console.log("Selected Office:", selectedOffice.universityOffice); // Log the office info
+    if (!selectedOffice) {
+      toast.info("No available Responder in selected office");
+      console.warn(`No matching office found for ID: ${selectedIdOffice}`);
+      setSelectedOfficeInfo("None");
+    } else {
+      setSelectedOfficeInfo(selectedOffice.university_office || "None");
+      console.log("Selected Office:", selectedOffice.university_office);
+    }
   };
 
   const handleChangeDropdownOptional = (e) => {
     const selectedOId = e.target.value;
-    setSelectedOptionalId(selectedOId);
+    setSelectedOptionalName(selectedOId);
 
     // Find the selected optional responder based on their ID
     const selectedOptional = responder.find((res) => res._id === selectedOId);
@@ -100,7 +104,7 @@ const Ongoing = () => {
 
   const clearSelection = () => {
     setSelectedResponderId("");
-    setSelectedOptionalId("");
+    setSelectedOptionalName("");
     setSelectedResponderInfo("");
     setSelectedOfficeInfo(null);
 
@@ -112,7 +116,7 @@ const Ongoing = () => {
     setIsOptionalEnabled(event.target.checked);
     if (!event.target.checked) {
       setSelectedOptionalInfo(null);
-      setSelectedOptionalId("");
+      setSelectedOptionalName("");
     }
   };
 
@@ -126,13 +130,10 @@ const Ongoing = () => {
     otw: false,
     ota: false,
   });
-  const [room, setRoom] = useState("");
   const [chat, setChat] = useState("");
-  const [messages, setMessages] = useState([]);
 
   const [userChats, setUserChats] = useState([]);
 
-  console.log(messages, "message details: ");
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -146,12 +147,8 @@ const Ongoing = () => {
         const responderResponse = await axios.get(
           "/admin/responder/getResponder"
         );
-        console.log(responderResponse.data.data, "responder response");
+        console.log("responder response: ", responderResponse.data.data);
         setResponder(responderResponse.data.data);
-
-        const messageResponse = await axios.get(`/user/message/specific/${id}`);
-        console.log("message response: ", messageResponse.data.data);
-        setMessages(messageResponse.data.data);
 
         const chatResponse = await axios.get(`/chats/${id}`);
         console.log("chats ", chatResponse.data.data);
@@ -224,9 +221,9 @@ const Ongoing = () => {
         dialogContentRef.current.scrollHeight;
     }
   };
+
   useEffect(() => {
     if (openChat) {
-      console.log("helo");
       scrollToBottom();
     }
   }, [userChats, userChats]);
@@ -249,20 +246,7 @@ const Ongoing = () => {
   };
 
   if (loading) return <Loading />;
-  if (error)
-    return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          textAlign: "center",
-          flexDirection: "column",
-        }}
-      >
-        <p>⚠️⚠️⚠️</p>
-        <h3> {error}</h3>
-      </div>
-    );
+  if (error) return <Error message={error} />;
 
   const handlePrevious = () => {
     setDirection("previous");
@@ -276,9 +260,10 @@ const Ongoing = () => {
   const handleCancel = () => {
     setOpenDialog(false);
   };
+
   const handleUpdate = async (id) => {
     try {
-      const data = {
+      const newData = {
         percentage: progress,
         userId: passedId._id,
         id: id,
@@ -289,11 +274,21 @@ const Ongoing = () => {
         body: "Tap to see details!",
         data: {
           screen: "ShowProgress",
-          details: message,
+          details: newData,
         },
       };
       await axios.post("/push-notification", sendNotif);
-      await axios.put(`/user/message/update/${id}`, data);
+      await axios.put(`/user/message/update/${id}`, newData);
+
+      if (direction == "next" && currentStep === 2) {
+        await axios.put(`/user/message/update/${id}`, {
+          percentage: progress,
+          userId: passedId._id,
+          id: id,
+          responderId: selectedResponderId,
+        });
+        console.log("Success");
+      }
 
       if (direction == "next" && currentStep < 5) {
         const newStep = currentStep + 1;
@@ -308,7 +303,7 @@ const Ongoing = () => {
       }
       setOpenDialog(false);
     } catch (error) {
-      console.error("Error updating progress:", error.message);
+      console.error("Error updating progress:", error);
     }
   };
 
@@ -322,6 +317,7 @@ const Ongoing = () => {
 
     alert("Done Transaction!");
   };
+  console.log("selected: ", selectedResponderId);
 
   return (
     <div className="Ongoing-container">
@@ -445,7 +441,7 @@ const Ongoing = () => {
                               {responder
                                 .filter(
                                   (responderObj) =>
-                                    responderObj.emergencyRole ===
+                                    responderObj.emergency_role ===
                                     passedId.emergency
                                 )
                                 .map((responderObj) => (
@@ -474,7 +470,7 @@ const Ongoing = () => {
                               {/* Optional */}
                               <div className="dropdown-container-optional">
                                 <select
-                                  value={selectedOfficeId}
+                                  value={selectedOfficeName}
                                   onChange={handleChangeDropdownLocation}
                                   disabled={!isOptionalEnabled} // Disables if checkbox is not checked
                                 >
@@ -517,7 +513,7 @@ const Ongoing = () => {
                                   </option>
                                 </select>
                                 <select
-                                  value={selectedOptionalId}
+                                  value={selectedOptionalName}
                                   onChange={handleChangeDropdownOptional}
                                   disabled={!isOptionalEnabled} // Disables if checkbox is not checked
                                 >
@@ -528,8 +524,8 @@ const Ongoing = () => {
                                   {responder
                                     .filter(
                                       (responderObj) =>
-                                        responderObj.universityOffice ===
-                                        selectedOfficeId
+                                        responderObj.university_office ===
+                                        selectedOfficeName
                                     )
                                     .map((responderObj) => (
                                       <option
@@ -566,7 +562,7 @@ const Ongoing = () => {
                             />
                             <CustomTooltip
                               title="University Office"
-                              value={selectedResponderInfo.universityOffice}
+                              value={selectedResponderInfo.university_office}
                             />
                           </div>
                         )}
@@ -589,7 +585,7 @@ const Ongoing = () => {
                             />
                             <CustomTooltip
                               title="University Office"
-                              value={selectedOptionalInfo.universityOffice}
+                              value={selectedOptionalInfo.university_office}
                             />
                           </div>
                         )}
@@ -640,7 +636,89 @@ const Ongoing = () => {
 
                 {currentStep === 3 && (
                   <div className="form-group">
-                    <label htmlFor="otw">On-The-Way</label>
+                    <div className="form1">
+                      <div className="user-container">
+                        <div className="header-info">
+                          <h2>call immediately!</h2>
+                        </div>
+                        <div className="icon">
+                          <Call
+                            style={{
+                              fontSize: 90,
+                              color: "white",
+                              backgroundColor: "maroon",
+                              borderRadius: "100%",
+                              padding: "8px",
+                              margin: "4px",
+                            }}
+                          />
+                        </div>
+                        <div className="info">
+                          <div className="info-container">
+                            <div className="qr-user">
+                              {passedId.phone_number && (
+                                <QRCode
+                                  size={100}
+                                  bgColor="transparent"
+                                  fgColor="black"
+                                  value={
+                                    passedId.phone_number ||
+                                    "No contact number found"
+                                  }
+                                />
+                              )}
+                            </div>
+                            <div className="infobox user">
+                              <div className="identify">
+                                <p>{passedId.role}</p>
+                              </div>
+                              <div className="identity">
+                                <span>{passedId.name}</span>
+                                <span>{passedId.phone_number}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="info-container">
+                            <div className="infobox parent">
+                              <div className="identify">
+                                <p>{parents.relationship} </p>
+                              </div>
+                              <div className="identity">
+                                <span>{parents.name}</span>
+                                <span>{parents.phone}</span>
+                              </div>
+                            </div>
+                            <div className="qr-parent">
+                              {parents.phone && (
+                                <QRCode
+                                  size={100}
+                                  bgColor="transparent"
+                                  fgColor="black"
+                                  value={
+                                    parents.phone || "No contact number found"
+                                  }
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="form2">
+                      <div className="steps-container">
+                        <h3>{progress}</h3>
+                        <h2>STEP: {currentStep}</h2>
+                        <p className="subtitle">
+                          {" "}
+                          - Call the user to confirm their identity & concerns
+                        </p>
+                        <p className="subtitle">
+                          {" "}
+                          - Call to inform the user's {parents.relationship} and
+                          aware of the situation
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
                 {currentStep === 4 && (
@@ -729,30 +807,33 @@ const Ongoing = () => {
               </DialogTitle>
               <DialogContent
                 ref={dialogContentRef}
-                sx={{ maxHeight: "400px", overflowY: "auto"}}
+                sx={{ maxHeight: "400px", overflowY: "auto" }}
               >
                 <div className="message-list">
                   {userChats.length > 0 ? (
-                    userChats.map((msg, index) => (
-                      <div
-                        key={msg.id}
-                        className={
-                          msg.sender.toLowerCase() === "admin"
-                            ? "message-sent"
-                            : "message-received"
-                        }
-                      >
-                        <span
+                    userChats.map((msg) => {
+                      console.log(msg); // Log the message object
+                      return (
+                        <div
+                          key={msg._id} // Ensure each message has a unique key using _id
                           className={
                             msg.sender.toLowerCase() === "admin"
                               ? "message-sent"
                               : "message-received"
                           }
                         >
-                          <span className="chatText">{msg.message}</span>
-                        </span>
-                      </div>
-                    ))
+                          <span
+                            className={
+                              msg.sender.toLowerCase() === "admin"
+                                ? "message-sent"
+                                : "message-received"
+                            }
+                          >
+                            <span className="chatText">{msg.message}</span>
+                          </span>
+                        </div>
+                      );
+                    })
                   ) : (
                     <p className="no-messages">No Messages</p>
                   )}

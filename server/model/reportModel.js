@@ -9,7 +9,7 @@ const reportSchema = new mongoose.Schema(
         "Fire Emergency",
         "Medical Assistance",
         "Natural Hazard",
-        "Crime / Violence",
+        "Crime & Violence",
         "Biological Hazard",
         "Utility Failure",
       ],
@@ -40,13 +40,11 @@ const reportSchema = new mongoose.Schema(
       enum: ["completed", "in-progress", "pending"],
       default: "pending",
     },
-    responder: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Responder",
-      },
-      
-    ],
+    responder: {
+      type: Schema.Types.ObjectId,
+      ref: "Responder",
+    },
+
     senderId: {
       type: Schema.Types.ObjectId,
       ref: "User",
