@@ -12,13 +12,14 @@ import ViewReports from "./pages/home-page/process-report/view-report/view";
 import OngoingReports from "./pages/home-page/process-report/contact-user/ongoing-process.jsx";
 import Announcement from "./pages/home-page/announcement/announcement.jsx";
 import History from "./pages/home-page/history/history.jsx";
+import Responder from "./pages/home-page/responder/responder.jsx";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
 import { Screen, Layout } from "./layout/layout.jsx";
-import Responder from "./Accounts/Responder/responder-registration/responder-register.jsx";
+import ResponderRegister from "./Accounts/Responder/responder-registration/responder-register.jsx";
 import ResponderAccounts from "./Accounts/Responder/responder-accounts/responder-display";
 
 import { ToastContainer } from "react-toastify"; // Import ToastContainer
@@ -82,7 +83,7 @@ function App() {
         },
         {
           path: "/admin/responder/registration",
-          element: <Responder />,
+          element: <ResponderRegister />,
         },
         {
           path: "/admin/responder/accounts",
@@ -139,6 +140,14 @@ function App() {
           element: (
             <PrivateRoute>
               <History />
+            </PrivateRoute>
+          ),
+        },
+        {
+          path: "/home/responder",
+          element: (
+            <PrivateRoute>
+              <Responder />
             </PrivateRoute>
           ),
         },

@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import "./view.scss";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { zoomIn } from "../../../../variants";
 
@@ -17,22 +17,41 @@ import Fire from "../../../../assets/emergencies/fire.png";
 import Natural from "../../../../assets/emergencies/natural.png";
 import Biological from "../../../../assets/emergencies/biological.png";
 import Medical from "../../../../assets/emergencies/medical.png";
-import Utility from "../../../../assets/emergencies/facilities.png";
+import Facility from "../../../../assets/emergencies/facilities.png";
 import Crime from "../../../../assets/emergencies/crime.png";
 import Loading from "./../../../../components/loading/loading";
 import { Typography } from "@mui/material";
+import { AuthContext } from "../../../../context/authContext";
 
 const viewReports = () => {
   const { id } = useParams();
-  const [users, setUsers] = useState([]);
 
+  const [, messages, users] = useContext(AuthContext);
+  console.log("id", id)
+  console.log("messages: ", messages);
+  console.log("user", users);
   const navigate = useNavigate();
 
   //for parent
   const [parents, setParents] = useState([]);
 
-  //messages
-  const [messages, setMessages] = useState([]);
+
+  const filteredMessage = messages.find((msg) => msg._id === id);
+  const filteredUser = users.find((user) => user.report_data.includes(id));
+
+  console.log("filtered message: ", filteredMessage);
+  console.log("filtered user: ", filteredUser);
+
+  if (
+    filteredMessage &&
+    typeof filteredMessage.img === "string" &&
+    filteredMessage.img
+  ) {
+    // Only append the base URL if it doesn't already have it
+    if (!filteredMessage.img.startsWith("http://localhost:8080/images/")) {
+      filteredMessage.img = `http://localhost:8080/images/${filteredMessage.img}`;
+    }
+  }
 
   //error
   const [loading, setLoading] = useState(true);
@@ -49,26 +68,8 @@ const viewReports = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        //message
-        const userMessageId = await axios.get(`/user/message/specific/${id}`);
-        if (userMessageId.data.data.img) {
-          userMessageId.data.data.img = `http://localhost:8080/images/${userMessageId.data.data.img}`;
-        }
-        const senderId = userMessageId.data.data.senderId;
-        setMessages( userMessageId.data.data);
-        console.log("message response : ", userMessageId.data.data);
+        const parentId = filteredUser.parent;
 
-        //user
-        const userResponse = await axios.get(
-          `/user/account/specific/${senderId}`
-        );
-        setUserInfo(userResponse.data.user);
-        const parentId = userResponse.data.user.parent;
-        setUsers(userResponse.data.user);
-        console.log("user response :", userResponse.data.user);
-        const user = userResponse.data.user;
-
-        //parent
         const parentResponse = await axios.get(
           `/user/parent/specific/${parentId}`
         );
@@ -86,30 +87,25 @@ const viewReports = () => {
   }, [id]);
 
   const combinedData = {
-    ...users,
-    emergency: messages.emergency,
-    respond: messages.respond,
-    messageID: messages._id,
-    report_data: Array.isArray(users.report_data)
-      ? users.report_data.filter((id) => id !== messages._id)
-      : [],
-    createdAt: new Date(users.createdAt).toLocaleString(),
-    updatedAt: new Date(messages.updatedAt).toLocaleString(),
+    ...filteredUser,
+    ...filteredMessage,
   };
-  
-  console.log("combined users: " + JSON.stringify(combinedData))
 
-  const handleUpdate = async (id) => {
+  console.log("combined users: " + JSON.stringify(combinedData));
+
+  const handleUpdate = async (id, user) => {
     try {
+      console.log("update with id: ", id)
+      console.log("user details: ", user)
       const requestData = {
         respond: "in-progress",
         percentage: 40,
-        userId: userInfo._id,
+        userId: user._id,
         id: id,
       };
 
       const sendNotif = {
-        to: `${userInfo.pushToken}`,
+        to: `${user.pushToken}`,
         title: "New Notification",
         body: "Tap to see details!",
         data: { screen: "Transaction", details: null },
@@ -124,23 +120,23 @@ const viewReports = () => {
       await axios.put(apiEndpoint, requestData);
 
       // Navigate after successful request
-      navigate(`/home/report/in-progress/${id}`, { state: { id: combinedData } });
+      navigate(`/home/report/in-progress/${id}`);
     } catch (error) {
       // Provide more descriptive error handling
       console.error(`Error updating message for ID ${id}:`, error);
     }
   };
-  const handleAlreadyUpdate = async (id) => {
+  const handleAlreadyUpdate = async (id, user) => {
     try {
       const requestData = {
         respond: "completed",
         percentage: 100,
-        userId: userInfo._id,
+        userId: user._id,
         id: id,
       };
 
       const sendNotif = {
-        to: `${userInfo.pushToken}`,
+        to: `${user.pushToken}`,
         title: "New Notification",
         body: "Transaction is already completed!",
         data: { screen: "Transaction", details: null },
@@ -188,27 +184,27 @@ const viewReports = () => {
         <div className="container-box">
           <div className="box box0">
             <div className="icon">
-              {messages && messages.emergency ? (
-                messages.emergency.split(" ")[0].toLowerCase() ===
+              {filteredMessage && filteredMessage.emergency ? (
+                filteredMessage.emergency.split(" ")[0].toLowerCase() ===
                 "fire" ? (
                   <img src={Fire} alt="Fire Emergency" className="icon" />
-                ) : messages.emergency.split(" ")[0].toLowerCase() ===
+                ) : filteredMessage.emergency.split(" ")[0].toLowerCase() ===
                   "medical" ? (
                   <img src={Medical} alt="Medical Emergency" className="icon" />
-                ) : messages.emergency.split(" ")[0].toLowerCase() ===
+                ) : filteredMessage.emergency.split(" ")[0].toLowerCase() ===
                   "natural" ? (
                   <img src={Natural} alt="Natural Disaster" className="icon" />
-                ) : messages.emergency.split(" ")[0].toLowerCase() ===
+                ) : filteredMessage.emergency.split(" ")[0].toLowerCase() ===
                   "biological" ? (
                   <img
                     src={Biological}
                     alt="Biological Hazard"
                     className="icon"
                   />
-                ) : messages.emergency.split(" ")[0].toLowerCase() ===
-                  "utility" ? (
-                  <img src={Utility} alt="Utility Issue" className="icon" />
-                ) : messages.emergency.split(" ")[0].toLowerCase() ===
+                ) : filteredMessage.emergency.split(" ")[0].toLowerCase() ===
+                  "facility" ? (
+                  <img src={Facility} alt="Facility Issue" className="icon" />
+                ) : filteredMessage.emergency.split(" ")[0].toLowerCase() ===
                   "crime" ? (
                   <img src={Crime} alt="Crime" className="icon" />
                 ) : (
@@ -220,40 +216,38 @@ const viewReports = () => {
             </div>
             <div className="titles">
               <span>Report Details</span>
-              <span>{messages.emergency}</span>
+              <span>{filteredMessage.emergency}</span>
             </div>
           </div>
           <div className="box box1">
             <div className="image">
               <span>Captured of incident</span>
-              <img src={messages.img} alt={messages.img} />
+              <img src={filteredMessage.img} alt={filteredMessage.img} />
             </div>
           </div>
           <div className="box box2">
             <div className="content-table">
               <div className="user">
-                <span>{users.role}</span>
+                <span>{filteredUser.role}</span>
                 <ul>
-                  {users.name && (
+                  {filteredUser.name && (
                     <li>
-                      <strong>Name: </strong> {users.name}
+                      <strong>Name: </strong> {filteredUser.name}
                     </li>
                   )}
-                  {users.userId && (
+                  {filteredUser.account_id && (
                     <li>
-                      <strong>Stundet Account: </strong>{" "}
-                      {users.userId}
+                      <strong>Stundet Account: </strong> {filteredUser.account_id}
                     </li>
                   )}
-                  {users.phoneNumber && (
+                  {filteredUser.phone_number && (
                     <li>
-                      <strong>Phone Number: </strong>{" "}
-                      {users.phoneNumber}
+                      <strong>Phone Number: </strong> {filteredUser.phone_number}
                     </li>
                   )}
-                  {users.department && (
+                  {filteredUser.department && (
                     <li>
-                      <strong>Department: </strong> {users.department}{" "}
+                      <strong>Department: </strong> {filteredUser.department}{" "}
                       Department
                     </li>
                   )}
@@ -269,8 +263,17 @@ const viewReports = () => {
                   )}
                   {parents.phone && (
                     <li>
-                      <strong>Phone Number: </strong>{" "}
-                      {parents.phone}
+                      <strong>Phone Number: </strong> {parents.phone}
+                    </li>
+                  )}
+                     {parents.alt_phone && (
+                    <li>
+                      <strong>Secondray Phone Number: </strong> {parents.alt_phone}
+                    </li>
+                  )}
+                   {parents.address && (
+                    <li>
+                      <strong>Address: </strong> {parents.address}
                     </li>
                   )}
                 </ul>
@@ -281,7 +284,7 @@ const viewReports = () => {
             <div className="location">
               <span>Nearby</span>
               <div className="locationBox">
-                <p>{messages.location}</p>
+                <p>{filteredMessage.location}</p>
               </div>
             </div>
           </div>
@@ -290,7 +293,7 @@ const viewReports = () => {
             <div className="message">
               <span>Message</span>
               <div className="textBox">
-                <p>{messages.message}</p>
+                <p>{filteredMessage.message}</p>
               </div>
             </div>
           </div>
@@ -339,7 +342,7 @@ const viewReports = () => {
               Cancel
             </Button>
             <Button
-              onClick={() => handleUpdate(messages._id, users)}
+              onClick={() => handleUpdate(filteredMessage._id, filteredUser)}
               size="medium"
               color="success"
               variant="contained"
@@ -379,7 +382,7 @@ const viewReports = () => {
               Cancel
             </Button>
             <Button
-              onClick={() => handleAlreadyUpdate(messages._id, users)}
+              onClick={() => handleAlreadyUpdate(filteredMessage._id, filteredUser)}
               size="medium"
               color="success"
               variant="contained"

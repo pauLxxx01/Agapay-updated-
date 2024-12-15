@@ -100,35 +100,6 @@ export default function Login({ navigation }) {
     }
   };
 
-  // const handleSubmit = async () => {
-
-  //   try {
-  //     if (!userId || !password) {
-  //       const timer = setTimeout(() => {
-
-  //         Alert.alert(
-  //           "Alert",
-  //           "Please provide both student number and password!"
-  //         );
-  //       }, 1000);
-  //       return () => clearTimeout(timer);
-  //     }
-  //     console.log("Please")
-  //     const user_id = userId.toUpperCase()
-  //     const { data } = await axios.post(`/mobile/user/login`, {
-  //       account_id: user_id,
-  //       password,
-  //     });
-  //     console.log("data: ", data.user._id);
-
-  //   } catch (error) {
-
-  //     Alert.alert(
-  //       "Login failed",
-  //       error.response.data.message || "An error occurred. Please try again."
-  //     );
-  //   }
-  // };
 
   const getLocalStorageData = async () => {
     let dataString = await AsyncStorage.getItem("@auth");

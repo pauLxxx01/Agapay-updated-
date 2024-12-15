@@ -61,9 +61,9 @@ const emergencies = [
   },
   {
     id: "3",
-    type: "Utility Failure",
+    type: "Facility Failure",
     img: require("../assets/emergencies/maroon/maroonfacility.png"),
-    title: "UTILITY\nFAILURE",
+    title: "FACILITY\nFAILURE",
     reminder: {
       text1: "1. Avoid touching unfamiliar things",
       text2: "2. Do not try to fix things you are unsure of",

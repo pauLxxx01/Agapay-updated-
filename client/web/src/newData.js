@@ -5,7 +5,7 @@ export const emergencyType = [
   { type: "Natural", key: "natural", label: "Natural Hazard" },
   { type: "Biological", key: "biological", label: "Biological Hazard" },
   { type: "Medical", key: "medical", label: "Medical Assistance" },
-  { type: "Utility", key: "utility", label: "Utility Failure" },
+  { type: "Facility", key: "facility", label: "Facility Failure" },
   { type: "Crime", key: "crime", label: "Crime & Violence" },
 ];
 
@@ -161,3 +161,26 @@ export const responsibilities = [
     description: "<Link for department>",
   },
 ];
+
+export const responderTable = [
+  {
+    id: 1,
+    KEY: "name",
+    Label: "Name"
+  },
+  {
+    id: 2,
+    KEY: "account_id",
+    Label: "Account ID"
+  },
+  {
+    id: 3,
+    KEY: "university_office",
+    Label: "University Office"
+  },
+  {
+    id: 4,
+      KEY: "emergency_role",
+    Label: "Emergency Role"
+  }
+]

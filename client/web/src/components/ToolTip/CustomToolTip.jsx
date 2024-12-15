@@ -8,7 +8,7 @@ const CustomTooltip = ({ title, value, qrValue }) => {
       PopperProps={{
         sx: {
           "& .MuiTooltip-tooltip": {
-            backgroundColor: "maroon", // Change the background color
+            backgroundColor: "maroon", 
             color: "white", // Change the text color
           },
         },
@@ -27,7 +27,7 @@ const CustomTooltip = ({ title, value, qrValue }) => {
         </div>
       }
     >
-      <p>{value}</p>
+      <p style={{ display: "flex", flexDirection: "column", textAlign: "center" }}>{value}</p>
     </Tooltip>
   );
 };

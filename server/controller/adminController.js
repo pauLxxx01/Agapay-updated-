@@ -195,6 +195,50 @@ const deleteAdmin = async (req, res) => {
   }
 };
 
+const logoutAdmin = async (req, res) => {
+  try {
+    const id = req.params.id;  // Extract id from the route parameters
+    const { isVerified } = req.body;  // Extract isVerified from the request body
+
+    // Ensure that the isVerified is a boolean value
+    if (typeof isVerified !== 'boolean') {
+      return res.status(400).send({
+        success: false,
+        message: "Invalid value for isVerified, it must be a boolean",
+      });
+    }
+
+    // Find the admin by their id
+    const adminExist = await adminModel.findById(id);
+    if (!adminExist) {
+      return res.status(404).send({
+        success: false,
+        message: "Admin not found",
+      });
+    }
+
+    // Update the admin's isVerified status
+    adminExist.isVerified = isVerified;
+
+    // Save the updated admin object
+    await adminExist.save();
+
+    // Return a success response with the updated admin data
+    return res.status(200).json({
+      success: true,
+      message: "Admin verification status updated",
+      admin: adminExist,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({
+      success: false,
+      message: "Error updating admin",
+    });
+  }
+};
+
+
 const updateAdmin = async (req, res) => {
   try {
     const id = req.params.id;
@@ -233,4 +277,5 @@ module.exports = {
   getAdmin,
   deleteAdmin,
   updateAdmin,
+  logoutAdmin
 };

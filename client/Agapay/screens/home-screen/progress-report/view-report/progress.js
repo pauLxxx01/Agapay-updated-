@@ -196,7 +196,9 @@ const ShowProgress = ({ navigation, route }) => {
         </TouchableOpacity>
         {unreadCount > 0 && (
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>{unreadCount}</Text>
+            <Text style={styles.badgeText}>{unreadCount}
+  
+            </Text>
           </View>
         )}
 

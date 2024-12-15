@@ -27,7 +27,10 @@ const Announcement = () => {
   const [announce, setAnnounce] = useState("");
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [sortDirection, setSortDirection] = useState("desc");
+  const recordsPerPage = 5;
+
 
   const [isModalOpen, setModalOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
@@ -106,6 +109,25 @@ const Announcement = () => {
         : new Date(a.createdAt) - new Date(b.createdAt)
     );
 
+
+    const lastIndex = currentPage * recordsPerPage;
+  const firstIndex = lastIndex - recordsPerPage;
+  const currentUsers = filteredAnnounces.slice(firstIndex, lastIndex);
+  const totalPages = Math.ceil(
+    filteredAnnounces.length / recordsPerPage
+  );
+
+  const handlePageChange = (page) => setCurrentPage(page);
+
+  const prePage = (e) => {
+    e.preventDefault();
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const nextPage = (e) => {
+    e.preventDefault();
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString();
@@ -322,7 +344,7 @@ const Announcement = () => {
         </Dialog>
 
         <motion.div
-          variants={fadeIn("up", 0.1)}
+          variants={fadeIn("down", 0.1)}
           initial="hidden"
           whileInView="show"
           className="btnAnnounce"
@@ -400,6 +422,104 @@ const Announcement = () => {
             )}
           </tbody>
         </motion.table>
+         {totalPages > 1 && (
+        <motion.div
+          variants={fadeIn("right", 0.1)}
+          initial="hidden"
+          whileInView={"show"}
+          className="containerNav"
+        >
+          <nav>
+            <ul className="pagination-modal">
+              {currentPage > 1 && (
+                <li className="page-items">
+                  <button className="page-links" onClick={prePage}>
+                    Previous
+                  </button>
+                </li>
+              )}
+              {(() => {
+                const pageNumbers = [];
+                const maxVisiblePages = 3; // Adjust for your desired truncation window
+                const halfVisible = Math.floor(maxVisiblePages / 2);
+
+                let startPage = Math.max(1, currentPage - halfVisible);
+                let endPage = Math.min(totalPages, currentPage + halfVisible);
+
+                if (currentPage <= halfVisible) {
+                  endPage = Math.min(maxVisiblePages, totalPages);
+                }
+                if (currentPage + halfVisible >= totalPages) {
+                  startPage = Math.max(1, totalPages - maxVisiblePages + 1);
+                }
+
+                if (startPage > 1) {
+                  pageNumbers.push(
+                    <li key="first" className="page-items">
+                      <button
+                        className="page-links"
+                        onClick={() => handlePageChange(1)}
+                      >
+                        1
+                      </button>
+                    </li>
+                  );
+                  if (startPage > 2) {
+                    pageNumbers.push(
+                      <li key="start-ellipsis" className="page-items ellipsis">
+                        ...
+                      </li>
+                    );
+                  }
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                  pageNumbers.push(
+                    <li
+                      key={i}
+                      onClick={() => handlePageChange(i)}
+                      className={`page-items ${
+                        currentPage === i ? "active" : ""
+                      }`}
+                    >
+                      <button className="page-links">{i}</button>
+                    </li>
+                  );
+                }
+
+                if (endPage < totalPages) {
+                  if (endPage < totalPages - 1) {
+                    pageNumbers.push(
+                      <li key="end-ellipsis" className="page-items ellipsis">
+                        ...
+                      </li>
+                    );
+                  }
+                  pageNumbers.push(
+                    <li key="last" className="page-items">
+                      <button
+                        className="page-links"
+                        onClick={() => handlePageChange(totalPages)}
+                      >
+                        {totalPages}
+                      </button>
+                    </li>
+                  );
+                }
+
+                return pageNumbers;
+              })()}
+              {currentPage < totalPages && (
+                <li className="page-items">
+                  <button className="page-links" onClick={nextPage}>
+                    Next
+                  </button>
+                </li>
+              )}
+            </ul>
+          </nav>
+        </motion.div>
+      )}
       </div>
     </div>
   );

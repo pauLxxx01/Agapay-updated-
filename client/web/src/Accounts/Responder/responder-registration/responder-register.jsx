@@ -147,13 +147,13 @@ const Responder = () => {
                   </option>
                   <option value="Fire Emergency">Fire Emergency</option>
                   <option value="Natural Hazard">Natural Hazard</option>
-                  <option value="CABiological HazardFA">
+                  <option value="Biological Hazard">
                     Biological Hazard
                   </option>
-                  <option value="Medical Asssistance">
-                    Medical Asssistance
+                  <option value="Medical Assistance">
+                    Medical Assistance
                   </option>
-                  <option value="Utility Failure">Utility Failure</option>
+                  <option value="Facility Failure">Facility Failure</option>
                   <option value="Crime & Violence">Crime & Violence</option>
                 </select>
               </div>
@@ -200,6 +200,9 @@ const Responder = () => {
                   </option>
                   <option value="Office of Student Affairs & Services">
                   Office of Student Affairs & Services
+                  </option>
+                  <option value="Group of security">
+                  Group of security
                   </option>
                 </select>
               </div>

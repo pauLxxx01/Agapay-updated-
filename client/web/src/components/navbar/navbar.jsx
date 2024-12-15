@@ -8,10 +8,13 @@ import { useSocket } from "../../socket/Socket";
 import { useEffect } from "react";
 import { AuthContext } from "../../context/authContext";
 import useFilteredMessages from "../filterMessageBySender/filterMessage";
+import axios from "axios";
+import Loading from "../loading/loading";
 
 const navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -19,15 +22,23 @@ const navbar = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const notificationsPerPage = 6;
 
-  const [, messages, users, notifCount, setNotifCount] = useContext(AuthContext);
+  const [state, messages, users, notifCount, setNotifCount] =
+    useContext(AuthContext);
+
+  useEffect(() => {
+    setLoading(true);
+
+    // Check if the state, messages, and users are ready
+    if (state && messages && users && messages.length > 0 && users.length > 0) {
+      setLoading(false); // Set loading to false once everything is ready
+    }
+  }, [state, messages, users]); // Dependencies
 
   const filteredMessages = useFilteredMessages(messages, users);
 
   const handleDropdownClick = () => {
-
     localStorage.setItem("notifCount", JSON.stringify(0));
-    setNotifCount(0)
-
+    setNotifCount(0);
 
     setIsOpen(!isOpen);
     setIsAccountOpen(false);
@@ -78,6 +89,34 @@ const navbar = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      localStorage.removeItem("@auth");
+      // Set isVerified to false
+      const isVerified = false;
+      const id = state.admin._id;
+
+      // Make the API call to update the admin's verification status
+      const response = await axios.put(`/logout/admin/${id}`, {
+        isVerified,
+      });
+
+      if (response.status === 200) {
+        // Optionally, clear localStorage and redirect user on successful logout
+        localStorage.removeItem("@auth");
+        window.location.href = "/"; 
+        window.location.reload();// Or use a react-router redirect if preferred
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
+      // Handle error (e.g., show an alert or message to the user)
+    }
+  };
+
+  if (loading) {
+    return <Loading /> 
+  }
+
   return (
     <div className="navbar">
       <Link className="logo" to="/home/dashboard">
@@ -92,7 +131,7 @@ const navbar = () => {
         {isOpen && (
           <div className="notification-dropdown">
             <div className="notification-dropdown-header">
-              <h3>Notifications {notifCount}</h3>
+              <h3>Notifications </h3>
               <span>{messages.length}</span>
             </div>
             {currentNotifications.length > 0 ? (
@@ -146,11 +185,11 @@ const navbar = () => {
             <span className="account-dropdown-btn"></span>
             {isAccountOpen && (
               <div className="account-dropdown-content">
-                <Link className="account-dropdown-links" to="/profile">
-                  <span className="text-dropdown">Profile</span>
-                </Link>
-
-                <Link className="account-dropdown-links" to="/">
+                <Link
+                  className="account-dropdown-links"
+                  to="/"
+                  onClick={handleLogout}
+                >
                   <span className="text-dropdown">Log out</span>
                 </Link>
               </div>

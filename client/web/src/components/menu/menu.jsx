@@ -20,7 +20,6 @@ const Menu = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-
   return (
     <div className="menu">
       <div className="item">
@@ -30,7 +29,10 @@ const Menu = () => {
             className={`listItem ${
               location.pathname === item.path ? "active" : ""
             }`}
-            onClick={() => navigate(item.path)}
+            onClick={() => {
+              navigate(item.path);
+              window.location.reload();
+            }}
           >
             <img src={item.icon} alt={`${item.title} icon`} className="icon" />
             <span className="listItemTitle">{item.title}</span>

@@ -1,16 +1,49 @@
 import { motion } from "framer-motion";
 import { fadeIn } from "../../variants";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./table.scss";
-import useFilteredMessages from "../filterMessageBySender/filterMessage";
+import DialogCompleted from "../dailogCompleted/dialog";
+import Loading from "../loading/loading";
+import Error from "../error/error";
+import axios from "axios";
+
 const Table = ({ messages, users, headerTable, filterStatus }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortDirection, setSortDirection] = useState("desc");
   const recordsPerPage = 5;
 
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogData, setDialogData] = useState({
+    message: null,
+    user: null,
+    responders: [],
+    parents: null,
+  });
+
+  const [parents, setParents] = useState(null);
+  const [responder, setResponder] = useState(null);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const responderResponse = await axios.get(
+          "/admin/responder/getResponder"
+        );
+
+        setResponder(responderResponse.data.data);
+      } catch (error) {
+        setError(error.massage);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleDateSortToggle = () => {
     setSortDirection((prevDirection) =>
@@ -70,6 +103,9 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
           createdAt: data.createdAt
             ? new Date(data.createdAt).toLocaleString()
             : null,
+          updatedAt: data.updatedAt
+            ? new Date(data.updatedAt).toLocaleString()
+            : null,
           messageID: data._id,
           respond: data.respond,
           emergency: data.emergency,
@@ -77,10 +113,33 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
       })
       .sort((a, b) =>
         sortDirection === "desc"
-          ? new Date(b.createdAt) - new Date(a.createdAt)
-          : new Date(a.createdAt) - new Date(b.createdAt)
+          ? new Date(b.updatedAt) - new Date(a.updatedAt)
+          : new Date(a.updatedAt) - new Date(b.updatedAt)
       );
   }, [messages, users, searchTerm, sortDirection]);
+
+  const openDialog = async (data) => {
+    console.log(data);
+    const filteredMessage = messages.find((msg) => msg._id === data.messageID);
+    const filteredSelectedUser = users.find((user) => user._id === data._id);
+    const filteredResponder = responder.filter((res) =>
+      filteredMessage.responder.includes(res._id)
+    );
+    const parentResponse = await axios.get(
+      `/user/parent/specific/${filteredSelectedUser.parent}`
+    );
+    console.log("messages: ", filteredMessage);
+    console.log("users: ", filteredSelectedUser);
+    console.log("responders: ", filteredResponder);
+    setDialogData({
+      message: filteredMessage,
+      user: filteredSelectedUser,
+      responders: filteredResponder,
+      parents: parentResponse.data.parent,
+    });
+
+    setIsDialogOpen(true);
+  };
 
   // Filter based on selected status
   const getFilteredUsersByStatus = () => {
@@ -117,10 +176,15 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
     } else if (data.respond === "pending") {
       navigate(`/home/report/${data.messageID}`);
     } else {
-      navigate(`/home/report`);
+      openDialog(data);
+      console.log("datas info: ", data);
     }
   };
 
+  const closeDialog = () => setIsDialogOpen(false);
+
+  if (loading) return <Loading />;
+  if (error) return <Error message={error} />;
   return (
     <>
       <motion.div
@@ -180,8 +244,8 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
                   if (columnLabel === "createdat") {
                     return (
                       <td key={index}>
-                        {data.createdAt
-                          ? new Date(data.createdAt).toLocaleString()
+                        {data.updatedAt
+                          ? new Date(data.updatedAt).toLocaleString()
                           : "No Data"}
                       </td>
                     );
@@ -311,6 +375,15 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
           </nav>
         </motion.div>
       )}
+
+      <DialogCompleted
+        messages={dialogData.message}
+        users={dialogData.user}
+        parents={dialogData.parents}
+        responders={dialogData.responders}
+        isOpen={isDialogOpen}
+        onClose={closeDialog}
+      />
     </>
   );
 };

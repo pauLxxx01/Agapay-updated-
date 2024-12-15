@@ -1,78 +1,104 @@
+// src/components/LineChartComponent.js
 
-import React, { PureComponent } from "react";
+import React, { useContext } from "react";
 import {
-  BarChart,
-  Bar,
-  Rectangle,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Bar,
+  BarChart,
+  LabelList,
 } from "recharts";
+import { AuthContext } from "../../context/authContext";
+import dayjs from "dayjs";
+import weekOfYear from "dayjs/plugin/weekOfYear"; // Import the weekOfYear plugin
+dayjs.extend(weekOfYear);
+// Sample data
 
-const colors = {
-  Fire: "#800000",
-  Medical: "#006e92",
-  Crime: "#eca20c",
-  Natural: "#368364",
-  Biological: "#FF5F1F",
-  Utility: "#919191",
-};
+const LineChartComponent = () => {
+  const [, messages] = useContext(AuthContext);
+  console.log(messages);
 
-const chart = () => {
+  const countMessagesPerDayByEmergency = (messages) => {
+    const countByDay = {};
+
+    // Group messages by the day and emergency type
+    messages.forEach((message) => {
+      const date = dayjs(message.createdAt).format("YYYY-MM-DD"); // Format date to YYYY-MM-DD
+      const emergency = message.emergency;
+
+      if (!countByDay[date]) {
+        countByDay[date] = {};
+      }
+
+      if (countByDay[date][emergency]) {
+        countByDay[date][emergency] += 1; // Increment the count for that emergency type
+      } else {
+        countByDay[date][emergency] = 1; // Initialize the count for that emergency type
+      }
+    });
+
+    // Convert the count object to an array suitable for Recharts
+    const result = [];
+    const allEmergencies = [...new Set(messages.map((msg) => msg.emergency))]; 
+
+    Object.keys(countByDay).forEach((date) => {
+      const dayData = { date };
+      allEmergencies.forEach((emergency) => {
+        dayData[emergency] = countByDay[date][emergency] || 0; // Add count for each emergency type, defaulting to 0
+      });
+      result.push(dayData);
+    });
+
+    return result;
+  };
+
+  // Processed data for the chart
+  const chartData = countMessagesPerDayByEmergency(messages);
+
+  // Color map for different emergency types
+  const emergencyColorMap = {
+    "Facility Failure": "gray",
+    "Medical Assistance": "rgb(48, 122, 206)",
+    "Natural Hazard": "rgb(210, 105, 30)",
+    "Fire Emergency": "maroon",
+    "Biological Hazard": "green",
+    "Crime & Violence": "#F7B32D",
+  };
+
+  const emergencyTypes = [...new Set(messages.map((msg) => msg.emergency))];
+
   return (
-    <ResponsiveContainer width="90%" height="90%">
-      <BarChart
-        width={500}
-        height={300}
-        data={dailyData}
-        margin={{
-          top: 5,
-          right: 5,
-          left: 5,
-          bottom: 5,
-        }}
-      >
-        <CartesianGrid strokeDasharray="5 3" />
-        <XAxis fontSize={12}/>
+    <ResponsiveContainer width="100%" height={200}>
+      <LineChart data={chartData}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis
+          dataKey="date"
+          orientation="bottom"
+          padding={{ left: 0, right: 0 }}
+          fontSize={12}
+        />
         <YAxis />
         <Tooltip />
         <Legend />
-        <Bar
-          dataKey="FIRE"
-          fill={colors.Fire}
-          activeBar={<Rectangle fill={colors.Fire} stroke={colors.Fire} />}
-        />
-        <Bar
-          dataKey="MEDICAL"
-          fill={colors.Medical}
-          activeBar={<Rectangle  fill={colors.Medical} stroke={colors.Medical} />}
-        />
-        <Bar
-          dataKey="CRIME"
-          fill={colors.Crime}
-          activeBar={<Rectangle  fill={colors.Crime} stroke={colors.Crime} />}
-        />
-        <Bar
-          dataKey="NATURAL"
-          fill={colors.Natural}
-          activeBar={<Rectangle fill={colors.Natural} stroke={colors.Natural} />}
-        />
-        <Bar
-          dataKey="BIOLOGICAL"
-          fill={colors.Biological}
-          activeBar={<Rectangle   fill={colors.Biological} stroke={colors.Biological} />}
-        />
-        <Bar
-          dataKey="UTILITY"
-          fill={colors.Utility}
-          activeBar={<Rectangle  fill={colors.Utility} stroke={colors.Utility} />}
-        />
-      </BarChart>
+        {emergencyTypes.map((emergency) => (
+          <Line
+            key={emergency}
+            type="monotone"
+            dataKey={emergency}
+            stroke={emergencyColorMap[emergency] || "#000000"}
+            dot={true}
+            activeDot={{ r: 10 }}
+          />
+        ))}
+      </LineChart>
     </ResponsiveContainer>
   );
 };
 
-export default chart;
+export default LineChartComponent;

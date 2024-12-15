@@ -12,15 +12,16 @@ import { useContext } from "react";
 import { AuthContext } from "../../../context/authContext.jsx";
 import EmergencyBox from "./../../../components/emergencyBox/emergencybox";
 import { emergencyType } from "../../../newData.js";
+import LineChartComponent from "../../../components/barChart/chart.jsx";
 
 const Dashboard = () => {
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const [state, , users] = useContext(AuthContext);
+  const [state, messages, users] = useContext(AuthContext);
 
-  console.log(state, "users");
+
+  console.log("messages: ",messages);
   const { socket } = useSocket();
 
   const [modalOpen, setModalOpen] = useState({
@@ -31,33 +32,6 @@ const Dashboard = () => {
     utility: false,
     crime: false,
   });
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const messagesResponse = await axios.get(`/user/messages`);
-        setMessages(messagesResponse.data.messages);
-        setLoading(false);
-      } catch (error) {
-        setError(error.response?.data?.message || "Error fetching data");
-        setLoading(false);
-      }
-    };
-    fetchData();
-
-    if (socket) {
-      socket.on("report", (reportData) => {
-        setMessages((prevMessages) => [...prevMessages, reportData.messages]);
-
-        console.log("From socket: ", reportData);
-      });
-    }
-
-    
-    return () => {
-      socket?.off("report");
-    };
-  }, [socket]);
 
   // Define `filteredMessage` outside `findUserMessage`
   const filteredMessage = (type) => {
@@ -150,7 +124,12 @@ const Dashboard = () => {
                 />
               );
             })}
+             <div className="box box8">
+            <LineChartComponent />
+           
+          </div>
           </motion.div>
+         
         </div>
       ) : (
         <p style={{ color: "red" }}>Disconnected from server</p>

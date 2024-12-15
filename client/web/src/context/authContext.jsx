@@ -19,6 +19,7 @@ const AuthProvider = ({ children }) => {
 
   const [messages, setMessages] = useState(null);
   const [users, setUsers] = useState(null);
+  const [responder, setResponder] = useState(null);
 
   const [notifCount, setNotifCount] = useState(() => {
     // Retrieve from localStorage or default to 0
@@ -33,7 +34,7 @@ const AuthProvider = ({ children }) => {
   const [lastReportTime, setLastReportTime] = useState(0);
   const { socket } = useSocket();
 
-  axios.defaults.baseURL = "http://192.168.18.42:8080/admin/auth";
+  axios.defaults.baseURL = "http://localhost:8080/admin/auth";
 
   useEffect(() => {
     const loadLocalData = async () => {
@@ -52,12 +53,15 @@ const AuthProvider = ({ children }) => {
 
     const fetchData = async () => {
       try {
-        const [usersResponse, messagesResponse] = await Promise.all([
-          axios.get(`/user/getUser `),
-          axios.get(`/user/messages`),
-        ]);
+        const [usersResponse, messagesResponse, responderResponse] =
+          await Promise.all([
+            axios.get(`/user/getUser `),
+            axios.get(`/user/messages`),
+            axios.get(`/admin/responder/getResponder`),
+          ]);
         setUsers(usersResponse.data.users);
-        setMessages(messagesResponse.data.messages);
+        setMessages(messagesResponse.data.messages); 
+        setResponder(responderResponse.data.data);
         setLoading(false);
       } catch (error) {
         setErrorMessage(error);
@@ -81,7 +85,7 @@ const AuthProvider = ({ children }) => {
         console.log("New report received: ", message);
         if (timeSinceLastReport > 2000) {
           const sound = new Audio(soundAlert);
-          sound.play();
+          sound.play()
           toast.success(message.messages.emergency);
 
           setMessages((prevMessages) => [...prevMessages, message.messages]);
@@ -134,8 +138,6 @@ const AuthProvider = ({ children }) => {
         socket.off("report");
       };
     }
-
-
   }, [socket, lastReportTime, notifCount]);
 
   if (error) {
@@ -145,7 +147,9 @@ const AuthProvider = ({ children }) => {
     return <Loading />;
   }
   return (
-    <AuthContext.Provider value={[state, messages, users, notifCount, setNotifCount]}>
+    <AuthContext.Provider
+      value={[state, messages, users, notifCount, setNotifCount, responder]}
+    >
       {children}
     </AuthContext.Provider>
   );

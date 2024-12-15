@@ -100,8 +100,9 @@ const OTPDialog = ({ open, onClose, onConfirm, adminID, admin }) => {
         console.log("Admin OTP verified:", verifyResponse);
         // Check if the response indicates success
         if (verifyResponse.data.success) {
+          window.location.reload();
           toast.success("Data successfully verified!"); // Show success alert
-          navigate("/home/dashboard"); // Navigate to homepage
+          navigate("/login"); // Navigate to homepage
         } else {
           toast.alert("Verification failed. Please try again."); // Handle failure case
         }

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import "./ongoing.scss";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Call from "@mui/icons-material/Call";
 
 import Loading from "../../../../components/loading/loading";
@@ -22,14 +22,17 @@ import {
 import { useSocket } from "../../../../socket/Socket";
 import { toast } from "react-toastify";
 import Error from "../../../../components/error/error";
+import { AuthContext } from "../../../../context/authContext";
+
+import DialogCompleted from "../../../../components/dailogCompleted/dialog";
 
 const Ongoing = () => {
   const { id } = useParams(); // Access the dynamic parameter
-  const location = useLocation();
-  const passedId = location.state?.id;
-  const [message, setMessage] = useState([]);
-  const { socket } = useSocket();
 
+  const { socket } = useSocket();
+  const navigate = useNavigate();
+
+  const [, messages, users] = useContext(AuthContext);
   const [openChat, setOpenChat] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
 
@@ -42,28 +45,35 @@ const Ongoing = () => {
 
   const dialogContentRef = useRef(null);
 
-  if (!passedId) {
-    return <div>No datass available.</div>;
-  }
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   //responder
   const [responder, setResponder] = useState([]);
   const [isOptionalEnabled, setIsOptionalEnabled] = useState(false);
 
   const [selectedResponderInfo, setSelectedResponderInfo] = useState(null);
-  const [selectedResponderId, setSelectedResponderId] = useState("");
+  const [selectedResponderId, setSelectedResponderId] = useState(null);
 
   const [selectedOptionalInfo, setSelectedOptionalInfo] = useState(null);
-  const [selectedOptionalName, setSelectedOptionalName] = useState("");
+  const [selectedOptionalName, setSelectedOptionalName] = useState(null);
+
+  const [selectedResponders, setSelectedResponders] = useState([]);
 
   const [selectedOfficeInfo, setSelectedOfficeInfo] = useState(null);
-  const [selectedOfficeName, setSelectedOfficeId] = useState("");
+  const [selectedOfficeName, setSelectedOfficeId] = useState(null);
 
-  console.log("Option selected office: ", selectedOfficeName);
+  const filteredMessage = messages.find((msg) => msg._id === id);
+  const filteredUser = users.find((user) => user.report_data.includes(id));
+  const filteredResponder = responder.filter((res) =>
+    filteredMessage.responder.includes(res._id)
+  );
+
+
 
   const handleChangeDropdown = (e) => {
     const selectedId = e.target.value;
     setSelectedResponderId(selectedId);
+    setSelectedResponders([selectedId]);
 
     // Find the selected responder object based on the selected ID
     const selectedResponder = responder.find((res) => res._id === selectedId);
@@ -76,7 +86,7 @@ const Ongoing = () => {
     setSelectedOptionalInfo(null);
 
     const selectedIdOffice = e.target.value;
-    console.log("Selected Office ID:", selectedIdOffice); // Log the selected office ID
+
     setSelectedOfficeId(selectedIdOffice);
 
     const selectedOffice = responder.find(
@@ -88,18 +98,17 @@ const Ongoing = () => {
       setSelectedOfficeInfo("None");
     } else {
       setSelectedOfficeInfo(selectedOffice.university_office || "None");
-      console.log("Selected Office:", selectedOffice.university_office);
     }
   };
 
   const handleChangeDropdownOptional = (e) => {
     const selectedOId = e.target.value;
     setSelectedOptionalName(selectedOId);
+    setSelectedResponders((prev) => [...prev, selectedOId]);
 
     // Find the selected optional responder based on their ID
     const selectedOptional = responder.find((res) => res._id === selectedOId);
     setSelectedOptionalInfo(selectedOptional); // Update optional responder info
-    console.log(selectedOptional, "selected optional --->");
   };
 
   const clearSelection = () => {
@@ -139,19 +148,18 @@ const Ongoing = () => {
       setLoading(true);
       try {
         const parentResponse = await axios.get(
-          `/user/parent/specific/${passedId.parent}`
+          `/user/parent/specific/${filteredUser.parent}`
         );
         setParents(parentResponse.data.parent);
-        console.log(parentResponse.data.parent, "parent response");
 
         const responderResponse = await axios.get(
           "/admin/responder/getResponder"
         );
-        console.log("responder response: ", responderResponse.data.data);
+
         setResponder(responderResponse.data.data);
 
         const chatResponse = await axios.get(`/chats/${id}`);
-        console.log("chats ", chatResponse.data.data);
+
         setUserChats(chatResponse.data?.data?.content || []);
 
         // Load saved step and process info from local storage based on ID
@@ -170,9 +178,6 @@ const Ongoing = () => {
           setProgress(85);
         }
         if (currentStep === 3) {
-          setProgress(95);
-        }
-        if (currentStep === 4) {
           setProgress(100);
         }
       } catch (error) {
@@ -261,15 +266,16 @@ const Ongoing = () => {
     setOpenDialog(false);
   };
 
-  const handleUpdate = async (id) => {
+  const handleUpdate = async (id, user) => {
     try {
+      console.log("new data", progress, user._id, id);
       const newData = {
         percentage: progress,
-        userId: passedId._id,
+        userId: user._id,
         id: id,
       };
       const sendNotif = {
-        to: `${passedId.pushToken}`,
+        to: `${user.pushToken}`,
         title: "New Notification",
         body: "Tap to see details!",
         data: {
@@ -277,17 +283,17 @@ const Ongoing = () => {
           details: newData,
         },
       };
+
       await axios.post("/push-notification", sendNotif);
       await axios.put(`/user/message/update/${id}`, newData);
 
       if (direction == "next" && currentStep === 2) {
-        await axios.put(`/user/message/update/${id}`, {
+        const updateResponse = await axios.put(`/user/message/update/${id}`, {
           percentage: progress,
-          userId: passedId._id,
+          userId: user._id,
           id: id,
-          responderId: selectedResponderId,
+          responderId: selectedResponders,
         });
-        console.log("Success");
       }
 
       if (direction == "next" && currentStep < 5) {
@@ -307,26 +313,32 @@ const Ongoing = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Report submitted:", processInfo);
 
+    const updateResponse = await axios.put(`/user/message/update/${id}`, {
+      percentage: progress,
+      userId: filteredUser._id,
+      respond: "completed",
+      id: id,
+    });
+    console.log("Update response: ", updateResponse);
+
+    toast.success("Done Transaction!");
+    navigate(`/home/history`);
     // Clear stored step and data for this specific ID
     localStorage.removeItem(`currentStep_${id}`);
     localStorage.removeItem(`processInfo_${id}`);
-
-    alert("Done Transaction!");
   };
-  console.log("selected: ", selectedResponderId);
 
   return (
     <div className="Ongoing-container">
-      {passedId ? (
+      {filteredUser ? (
         parents ? (
           <div className="container-box-ongoing">
             <div className="header">
               <h1>REPORT</h1>
-              <h4>{passedId.emergency}</h4>
+              <h4>{filteredMessage.emergency}</h4>
             </div>
             <div className="box box0">
               <form onSubmit={handleSubmit}>
@@ -352,13 +364,13 @@ const Ongoing = () => {
                         <div className="info">
                           <div className="info-container">
                             <div className="qr-user">
-                              {passedId.phone_number && (
+                              {filteredUser.phone_number && (
                                 <QRCode
                                   size={100}
                                   bgColor="transparent"
                                   fgColor="black"
                                   value={
-                                    passedId.phone_number ||
+                                    filteredUser.phone_number ||
                                     "No contact number found"
                                   }
                                 />
@@ -366,11 +378,11 @@ const Ongoing = () => {
                             </div>
                             <div className="infobox user">
                               <div className="identify">
-                                <p>{passedId.role}</p>
+                                <p>{filteredUser.role}</p>
                               </div>
                               <div className="identity">
-                                <span>{passedId.name}</span>
-                                <span>{passedId.phone_number}</span>
+                                <span>{filteredUser.name}</span>
+                                <span>{filteredUser.phone_number}</span>
                               </div>
                             </div>
                           </div>
@@ -435,14 +447,15 @@ const Ongoing = () => {
                               onChange={handleChangeDropdown}
                             >
                               <option value="" disabled>
-                                Select a responder for {passedId.emergency}
+                                Select a responder for{" "}
+                                {filteredMessage.emergency}
                               </option>
 
                               {responder
                                 .filter(
                                   (responderObj) =>
                                     responderObj.emergency_role ===
-                                    passedId.emergency
+                                    filteredMessage.emergency
                                 )
                                 .map((responderObj) => (
                                   <option
@@ -635,75 +648,96 @@ const Ongoing = () => {
                 )}
 
                 {currentStep === 3 && (
-                  <div className="form-group">
+                  <div className="form-group-report">
                     <div className="form1">
-                      <div className="user-container">
-                        <div className="header-info">
-                          <h2>call immediately!</h2>
-                        </div>
-                        <div className="icon">
-                          <Call
-                            style={{
-                              fontSize: 90,
-                              color: "white",
-                              backgroundColor: "maroon",
-                              borderRadius: "100%",
-                              padding: "8px",
-                              margin: "4px",
-                            }}
-                          />
-                        </div>
-                        <div className="info">
-                          <div className="info-container">
-                            <div className="qr-user">
-                              {passedId.phone_number && (
-                                <QRCode
-                                  size={100}
-                                  bgColor="transparent"
-                                  fgColor="black"
-                                  value={
-                                    passedId.phone_number ||
-                                    "No contact number found"
-                                  }
-                                />
-                              )}
-                            </div>
-                            <div className="infobox user">
-                              <div className="identify">
-                                <p>{passedId.role}</p>
-                              </div>
-                              <div className="identity">
-                                <span>{passedId.name}</span>
-                                <span>{passedId.phone_number}</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="info-container">
-                            <div className="infobox parent">
-                              <div className="identify">
-                                <p>{parents.relationship} </p>
-                              </div>
-                              <div className="identity">
-                                <span>{parents.name}</span>
-                                <span>{parents.phone}</span>
-                              </div>
-                            </div>
-                            <div className="qr-parent">
-                              {parents.phone && (
-                                <QRCode
-                                  size={100}
-                                  bgColor="transparent"
-                                  fgColor="black"
-                                  value={
-                                    parents.phone || "No contact number found"
-                                  }
-                                />
-                              )}
-                            </div>
+                      {filteredUser && (
+                        <div className="reports-container">
+                          <h3>User's Information</h3>
+                          <div className="information-container">
+                            <CustomTooltip
+                              title="Name"
+                              value={filteredUser.name}
+                            />
+                            <CustomTooltip
+                              title="Account ID"
+                              value={filteredUser.account_id}
+                            />
+                            <CustomTooltip
+                              title="Phone numuber"
+                              value={filteredUser.phone_number}
+                              qrValue={filteredUser.phone_number}
+                            />
+                            <CustomTooltip
+                              title="Phone number"
+                              value={filteredUser.alt_phone_number}
+                              qrValue={filteredUser.alt_phone_number}
+                            />
+                            <CustomTooltip
+                              title="User's Department"
+                              value={filteredUser.department}
+                            />
                           </div>
                         </div>
-                      </div>
+                      )}
+                      {parents && (
+                        <div className="reports-container">
+                          <h3>Parent's Information</h3>
+                          <div className="information-container">
+                            <CustomTooltip title="Name" value={parents.name} />
+                            <CustomTooltip
+                              title="Account ID"
+                              value={filteredUser.account_id}
+                            />
+                            <CustomTooltip
+                              title="Phone numuber"
+                              value={parents.phone}
+                              qrValue={parents.phone}
+                            />
+                            <CustomTooltip
+                              title="Phone number"
+                              value={parents.alt_phone}
+                              qrValue={parents.alt_phone}
+                            />
+                            <CustomTooltip
+                              title="Relationship"
+                              value={parents.relationship}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {filteredResponder.map((responder) => (
+                        <div className="info" key={responder._id}>
+                          <div className="reports-container">
+                            <h3>Responder's Information</h3>
+                            <div className="information-container">
+                              <CustomTooltip
+                                title="Name"
+                                value={responder.name}
+                              />
+                              <CustomTooltip
+                                title="Account ID"
+                                value={responder.account_id}
+                              />
+                              <CustomTooltip
+                                title="Phone numuber"
+                                value={responder.phone}
+                                qrValue={responder.phone}
+                              />
+                              <CustomTooltip
+                                title="University Office"
+                                value={responder.university_office}
+                              />
+                              <CustomTooltip
+                                title="Role"
+                                value={responder.emergency_role}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
+
                     <div className="form2">
                       <div className="steps-container">
                         <h3>{progress}</h3>
@@ -721,32 +755,36 @@ const Ongoing = () => {
                     </div>
                   </div>
                 )}
+
                 {currentStep === 4 && (
                   <div className="form-group">
                     <label htmlFor="ota">On-The-Air</label>
                   </div>
                 )}
+                <div className="button-group">
+                  <div className="buttons">
+                    {currentStep > 1 && (
+                      <button type="button" onClick={handlePrevious}>
+                        Previous
+                      </button>
+                    )}
+
+                    {currentStep < 3 ? (
+                      <button
+                        type="button"
+                        onClick={handleNext}
+                        disabled={currentStep === 2 && !selectedResponderId}
+                      >
+                        Next
+                      </button>
+                    ) : (
+                      <button type="submit">Submit</button>
+                    )}
+                  </div>
+                </div>
               </form>
 
               {/* button  */}
-
-              <div className="button-group">
-                <div className="buttons">
-                  {currentStep > 1 && (
-                    <button type="button" onClick={handlePrevious}>
-                      Previous
-                    </button>
-                  )}
-
-                  {currentStep < 5 ? (
-                    <button type="button" onClick={handleNext}>
-                      Next
-                    </button>
-                  ) : (
-                    <button type="submit">Submit</button>
-                  )}
-                </div>
-              </div>
 
               {/* Confirmation Dialog */}
               <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
@@ -764,7 +802,12 @@ const Ongoing = () => {
                   <Button onClick={() => handleCancel()} color="primary">
                     Cancel
                   </Button>
-                  <Button onClick={() => handleUpdate(id)} color="success">
+                  <Button
+                    onClick={() =>
+                      handleUpdate(filteredMessage._id, filteredUser)
+                    }
+                    color="success"
+                  >
                     Confirm
                   </Button>
                 </DialogActions>
@@ -786,6 +829,15 @@ const Ongoing = () => {
               </Badge>
             </div>
 
+            <DialogCompleted
+              messages={filteredMessage}
+              users={filteredUser}
+              parents={parents}
+              responders={filteredResponder}
+              isOpen={isDialogOpen}
+              onClose={handleSubmit}
+            />
+
             {/* Chat Modal */}
             <Dialog
               open={openChat}
@@ -801,8 +853,8 @@ const Ongoing = () => {
               </DialogActions>
               <DialogTitle>
                 <div className="header-chat">
-                  <span>{passedId.name} </span>
-                  <span>{passedId.account_id}</span>
+                  <span>{filteredUser.name} </span>
+                  <span>{filteredUser.account_id}</span>
                 </div>
               </DialogTitle>
               <DialogContent
@@ -857,6 +909,8 @@ const Ongoing = () => {
                 </button>
               </div>
             </Dialog>
+
+            <Dialog></Dialog>
           </div>
         ) : (
           <p>No parents available</p>

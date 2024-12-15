@@ -6,6 +6,7 @@ const {
   getAdmin,
   deleteAdmin,
   updateAdmin,
+  logoutAdmin,
 } = require("../controller/adminController");
 
 //for users
@@ -102,6 +103,7 @@ router.get("/findAdmin/:id");
 router.delete("/deleteAdmin/:id", deleteAdmin);
 router.put("/updateAdmin/:id", updateAdmin);
 router.post("/login", loginControllers);
+router.put("/logout/admin/:id", logoutAdmin)
 
 //Routes for message  (web)
 router.get("/user/messages", getReportMessages);

@@ -6,7 +6,7 @@ import lock from "../../../assets/icons/login-icon/lock.svg";
 import OTPDialog from "../../../components-screen/otp/dailog";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import soundAlert from "../../../assets/mp3/notification_sound.mp3";
 import {
   TextField,
   IconButton,
@@ -29,6 +29,7 @@ const Login = () => {
   const [checked, setChecked] = useState(false);
   const [adminID, setAdminID] = useState("");
   const [admin, setAdmin] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   //verify
   const [verify, setVerify] = useState(null);
@@ -39,46 +40,54 @@ const Login = () => {
 
   const navigate = useNavigate();
 
-  const handleOpenDialog = (event) => {
-    event.preventDefault(); // prevent default form submission
-    axios
-      .post("/login", { name, password })
-      .then((response) => {
-        console.log("Login Account:", { name, password });
-        console.log("Admin ID: ", response.data.admin._id);
-        console.log("Verification: ", response.data.admin.isVerified);
-
-        // Store Admin ID in state and localStorage
-        const adminId = response.data.admin._id;
-        const isVerified = response.data.admin.isVerified;
-
-        setAdminID(adminId);
-        localStorage.setItem("adminID", adminId);
-        localStorage.setItem("@auth", JSON.stringify(response.data));
-
-        // Handle verification
-        setVerify(isVerified);
-        setAdmin(response.data.admin);
-      
-
-        if (!isVerified) {
-          setDialogOpen(true); // Open dialog if not verified
-          toast.info(
-            "Please verify your account with the OTP sent to your email."
-          );
-        } else {
-          toast.success("Login successful!");
-          navigate("/home/dashboard");
-        }
-      })
-      .catch((error) => {
-        setDialogOpen(false); // Close dialog if there's an error
-        console.log("Error:", error.response?.data?.message || error.message);
-        toast.error(error.response?.data?.message || "Login failed");
-      });
+  const handleOpenDialog = async (event) => {
+    setLoading(true);
+    event.preventDefault(); // Prevent default form submission
+  
+    try {
+      // Sending the login request
+      const response = await axios.post("/login", { name, password });
+      const { admin } = response.data; // Destructure response to get admin data
+      const { _id: adminId, isVerified } = admin;
+  
+      // Log admin details
+      console.log("Login Account:", { name, password });
+      console.log("Admin ID: ", adminId);
+      console.log("Verification: ", isVerified);
+  
+      // Store Admin ID in state and localStorage
+      setAdminID(adminId);
+      localStorage.setItem("adminID", adminId);
+      localStorage.setItem("@auth", JSON.stringify(response.data));
+  
+      // Handle verification state
+      setVerify(isVerified);
+      setAdmin(admin);
+  
+      // If not verified, show verification prompt
+      if (!isVerified) {
+        const sound = new Audio(soundAlert);
+        sound.play();
+        setDialogOpen(true); // Open dialog if not verified
+        toast.info("Please verify your account with the OTP sent to your email.");
+      } else {
+        const sound = new Audio(soundAlert);
+        sound.play();
+        toast.success("Login successful!");
+        navigate("/home/dashboard");
+      }
+    } catch (error) {
+      // Handle errors gracefully
+      setDialogOpen(false); // Close dialog if there's an error
+  
+      const errorMessage = error.response?.data?.message || error.message;
+      console.log("Error:", errorMessage);
+      toast.error(errorMessage || "Login failed");
+    } finally {
+      // Set loading to false after the API request finishes (success or failure)
+      setLoading(false);
+    }
   };
-
-
 
   const handleCloseDialog = () => {
     setDialogOpen(false);

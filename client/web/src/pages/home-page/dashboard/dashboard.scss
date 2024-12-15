@@ -94,7 +94,7 @@
       color: $soft-color;
     }
   }
-  .utility {
+  .facility {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -115,10 +115,10 @@
     align-items: center;
     letter-spacing: 1px;
     font-size: 16px;
-    background-color:#F7B32D;
+    background-color:#f7b42d78;
 
     &:hover {
-      background-color: #936200;
+      background-color:#F7B32D;
       transform: scale(1.05);
       color: $soft-color;
     }
@@ -148,19 +148,25 @@
     cursor: default;
     color: $main-color;
     background-color: rgb(255, 255, 255);
-    grid-column: span 2;
-    grid-row: span 4;
+    grid-column: span 3;
+    grid-row: 3;
     border-right: 1px solid rgba(0, 0, 0, 0.127);
     border-bottom: 1px solid rgba(0, 0, 0, 0.127);
-    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+    transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
     h1 {
       font-size: 24px;
       color: $main-color;
       width: 10%;
     }
     &:hover {
-      transform: scale(0.9);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.405);
+      transform: scale(0.98);
+      box-shadow: 0 4px 8px rgba(54, 54, 54, 0.092);
     }
+  }
+  .chart-container{
+    display: flex;
+    flex-direction: column;
+    background-color: rgb(55, 100, 140);
+    width: 100%
   }
 }

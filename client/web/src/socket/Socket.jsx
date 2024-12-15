@@ -37,10 +37,7 @@ export const SocketProvider = ({ children }) => {
         console.log("Connected to socket server");
         setError(null); 
       });
-      newSocket.on("connect_error", () => {
-        setError("Failed to connect to the socket server.");
-        setSocket(null);
-      });
+ 
 
       return () => {
         newSocket.disconnect();
