@@ -24,7 +24,7 @@ const Home = () => {
             variants={zoomIn(0.2)}
             initial="hidden"
             whileInView={"show"}
-            className="box box1"
+            className="box-home box1"
           >
             <p>
               Helping others might not change the world, but it can change
@@ -37,7 +37,7 @@ const Home = () => {
             variants={zoomIn(0.2)}
             initial="hidden"
             whileInView={"show"}
-            className="box box2"
+            className="box-home box2"
           >
             <div className="hover">
               <img className="agapay-icon" src={Agapay} alt="agapay"></img>{" "}
@@ -53,6 +53,7 @@ const Home = () => {
           className="specification-container"
         >
           <div className="specification">
+          <div className="marquee-wrapper">
             {[
               {
                 title: "User  Friendly",
@@ -67,12 +68,6 @@ const Home = () => {
                   "To develop a system that is resistant to cyber threats, including advanced encryption, robust firewalls, and regular security updates.",
               },
               {
-                title: "Real-Time Updates",
-                icon: realtime,
-                description:
-                  "To develop a system that can handle real-time updates and alerts with minimal latency.",
-              },
-              {
                 title: "Geolocation",
                 icon: geolocation,
                 description:
@@ -84,6 +79,7 @@ const Home = () => {
                 description:
                   "To develop a system that can handle real-time updates and alerts with minimal latency.",
               },
+              
             ].map((spec, index) => (
               <div key={index} className={`box box${index + 1}-specs`}>
                 <span>{spec.title}</span>
@@ -91,6 +87,7 @@ const Home = () => {
                 <p>{spec.description}</p>
               </div>
             ))}
+             </div>
           </div>
         </motion.div>
       </div>
