@@ -53,7 +53,15 @@ const Announcement = () => {
       try {
         const response = await axios.get("/get-announcement");
         console.log("fetched announcement: ", response.data);
-        setAnnounce(response.data.announcements);
+
+        const sortedAnnouncements = response.data.announcements;
+        const visibleAnnouncements = sortedAnnouncements.filter(
+          (announcement) =>
+            !announcement.isHidden &&
+            !announcement.hiddenBy.includes(state.admin._id)
+        );
+
+        setAnnounce(visibleAnnouncements);
         setLoading(false);
       } catch (error) {
         setLoading(false);
@@ -68,6 +76,15 @@ const Announcement = () => {
         console.log("New announcement received:", data);
         setAnnounce((prevAnnounce) => [...prevAnnounce, data]);
       });
+
+      socket.on("hide-status", (updatedAnnounce) => {
+        setAnnounce((prevAnnounce) => {
+          if (updatedAnnounce.hiddenBy.includes(state.admin._id)) {
+            return prevAnnounce.filter((a) => a._id !== updatedAnnounce._id);
+          }
+          return prevAnnounce;
+        });
+      });
     }
 
     if (users) {
@@ -78,6 +95,7 @@ const Announcement = () => {
       setUserToken(tokens || []);
     }
     return () => {
+      socket.off("hide-status");
       socket.off("announcement");
     };
   }, [users, socket]);
@@ -101,15 +119,24 @@ const Announcement = () => {
   };
   const handleUnhide = (data) => {
     // Remove the current user's ID from hiddenBy array
-    data.hiddenBy = data.hiddenBy.filter(id => id !== state.admin._id);
+    data.hiddenBy = data.hiddenBy.filter((id) => id !== state.admin._id);
   };
 
-  const handleHide = (data) => {
- console.log(state.admin._id);
-    data.hiddenBy.push(state.admin._id);
-  
- 
+  const handleHide = async (data) => {
+    if (!data) return;
+
+    try {
+      await axios.put(`/announcement/toggle-hide/${data._id}`, {
+        userId: state.admin._id,
+      });
+
+      console.log("Successfully toggle!");
+    } catch (error) {
+      console.error("Error toggling hide status:", error);
+      Alert.alert("Error", "Failed to toggle announcement visibility.");
+    }
   };
+
   const filteredAnnounces = announce
     .filter(
       (data) =>
@@ -212,14 +239,14 @@ const Announcement = () => {
 
       <div className="announcement-container">
         {isModalViewOpen && (
-          <motion.div
-            variants={zoomIn(0.1)}
-            initial="hidden"
-            whileInView="show"
-            className="modal"
-          >
+          <div>
             <div className="modal">
-              <div className="modal-content">
+              <motion.div
+                variants={zoomIn(0.1)}
+                initial="hidden"
+                whileInView="show"
+                className="modal-content"
+              >
                 <div className="modal-header">
                   <h2>Announcement Details</h2>
 
@@ -253,20 +280,20 @@ const Announcement = () => {
                     <p>{topic}</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {isModalOpen && (
-          <motion.div
-            variants={zoomIn(0.1)}
-            initial="hidden"
-            whileInView="show"
-            className="modal"
-          >
+          <div>
             <div className="modal">
-              <div className="form-container-announce">
+              <motion.div
+                variants={zoomIn(0.1)}
+                initial="hidden"
+                whileInView="show"
+                className="form-container-announce"
+              >
                 <form className="announce-form" onSubmit={handleToConfirm}>
                   <div className="header-container">
                     <h2>Announcement</h2>
@@ -387,9 +414,9 @@ const Announcement = () => {
                     </button>
                   </div>
                 </form>
-              </div>
+              </motion.div>
             </div>
-          </motion.div>
+          </div>
         )}
 
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
