@@ -9,17 +9,15 @@
   color: $soft-color;
   padding-bottom: 24px;
   width: 100%;
-  
+  text-transform: uppercase;
   letter-spacing: 2px;
   justify-content: center;
-  color: rgba(128, 128, 128, 0.5);
+  color:maroon
 }
-
 
 //dashboard
 
 .dashboard {
-
   z-index: 1;
   top: 89px;
   display: grid;
@@ -33,46 +31,46 @@
     padding: 16px 16px;
     border-radius: 12px;
     cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
+    transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+  }
+  .box:hover {
+    transform: scale(1.05) !important;
   }
   .count {
     font-size: 42px;
   }
+
   .fire {
     display: flex;
     flex-direction: column;
     align-items: center;
     letter-spacing: 1px;
     font-size: 16px;
-    background-color: rgba(128, 0, 0, 0.342);
-
+    background-color: rgba(128, 0, 0, 0.788);
     &:hover {
-      color: $soft-color;
       background-color: maroon;
-      transform: scale(1.05);
     }
   }
+
   .natural {
     display: flex;
     flex-direction: column;
     align-items: center;
     letter-spacing: 1px;
     font-size: 16px;
-    background-color: rgba(210, 105, 30, 0.363);
-
+    background-color: rgb(210, 105, 30);
     &:hover {
-      color: $soft-color;
-      background-color:rgb(210, 105, 30);
-      transform: scale(1.05);
+      background-color: rgba(210, 105, 30, 0.747);
     }
   }
+
   .biological {
     display: flex;
     flex-direction: column;
     align-items: center;
     letter-spacing: 1px;
     font-size: 16px;
-    background-color: rgba(0, 128, 0, 0.308);
+    background-color: rgba(0, 119, 0, 0.747);
 
     &:hover {
       color: $soft-color;
@@ -86,7 +84,7 @@
     align-items: center;
     letter-spacing: 1px;
     font-size: 16px;
-    background-color: rgba(1, 103, 138, 0.418);
+    background-color: rgba(1, 104, 138, 0.856);
 
     &:hover {
       background-color: rgb(48, 122, 206);
@@ -101,7 +99,7 @@
 
     letter-spacing: 1px;
     font-size: 16px;
-    background-color: rgba(128, 128, 128, 0.384);
+    background-color: rgba(128, 128, 128, 0.808);
 
     &:hover {
       color: $soft-color;
@@ -115,16 +113,16 @@
     align-items: center;
     letter-spacing: 1px;
     font-size: 16px;
-    background-color:#f7b42d78;
+    background-color: #f7b42dad;
 
     &:hover {
-      background-color:#F7B32D;
+      background-color: #f7b32d;
       transform: scale(1.05);
       color: $soft-color;
     }
   }
   .box7 {
-   margin-top: 22px;
+    margin-top: 22px;
     cursor: default;
     color: $main-color;
     background-color: rgba(255, 255, 255, 0.486);
@@ -144,7 +142,7 @@
     }
   }
   .box8 {
-   margin-top: 22px;
+    margin-top: 22px;
     cursor: default;
     color: $main-color;
     background-color: rgb(255, 255, 255);
@@ -163,10 +161,10 @@
       box-shadow: 0 4px 8px rgba(54, 54, 54, 0.092);
     }
   }
-  .chart-container{
+  .chart-container {
     display: flex;
     flex-direction: column;
     background-color: rgb(55, 100, 140);
-    width: 100%
+    width: 100%;
   }
 }

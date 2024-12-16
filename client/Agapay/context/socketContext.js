@@ -11,7 +11,7 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const defaultApiUrl = "http://192.168.18.57:8080";
+    const defaultApiUrl = "http://192.168.18.42:8080";
 
     if (token) {
       const socketConnection = io(defaultApiUrl, {

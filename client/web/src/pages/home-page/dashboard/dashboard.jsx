@@ -124,10 +124,10 @@ const Dashboard = () => {
                 />
               );
             })}
-             <div className="box box8">
-            <LineChartComponent />
+            {/*  <div className="box box8">
+            <LineChartComponent /> 
            
-          </div>
+          </div>*/}
           </motion.div>
          
         </div>

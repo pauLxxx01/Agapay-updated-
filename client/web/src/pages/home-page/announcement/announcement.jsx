@@ -17,7 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useSocket } from "../../../socket/Socket";
-import Table from './../../../components/table/table';
+import Table from "./../../../components/table/table";
 
 const Announcement = () => {
   const [state, , users] = useContext(AuthContext);
@@ -31,7 +31,7 @@ const Announcement = () => {
   const [sortDirection, setSortDirection] = useState("desc");
   const recordsPerPage = 5;
 
-
+  const [isModalViewOpen, setIsModalViewOpen] = useState(false);
   const [isModalOpen, setModalOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
 
@@ -88,8 +88,28 @@ const Announcement = () => {
 
   const handleRowClick = (data) => {
     console.log(data);
+    setIsModalViewOpen(true);
+    setTitle(data.title);
+    setDescription(data.description);
+    setStart(data.start);
+    setEnd(data.end);
+    setTopic(data.topic);
+    setDuration(data.duration);
+    setDate(data.date);
+    setDepartment(data.department);
+    setCreator(data.creator);
+  };
+  const handleUnhide = (data) => {
+    // Remove the current user's ID from hiddenBy array
+    data.hiddenBy = data.hiddenBy.filter(id => id !== state.admin._id);
   };
 
+  const handleHide = (data) => {
+ console.log(state.admin._id);
+    data.hiddenBy.push(state.admin._id);
+  
+ 
+  };
   const filteredAnnounces = announce
     .filter(
       (data) =>
@@ -109,13 +129,10 @@ const Announcement = () => {
         : new Date(a.createdAt) - new Date(b.createdAt)
     );
 
-
-    const lastIndex = currentPage * recordsPerPage;
+  const lastIndex = currentPage * recordsPerPage;
   const firstIndex = lastIndex - recordsPerPage;
   const currentUsers = filteredAnnounces.slice(firstIndex, lastIndex);
-  const totalPages = Math.ceil(
-    filteredAnnounces.length / recordsPerPage
-  );
+  const totalPages = Math.ceil(filteredAnnounces.length / recordsPerPage);
 
   const handlePageChange = (page) => setCurrentPage(page);
 
@@ -173,6 +190,7 @@ const Announcement = () => {
   };
   const closeUpdateModal = (e) => {
     e.preventDefault();
+    setIsModalViewOpen(false);
     setOpenDialog(false);
     setModalOpen(false);
   };
@@ -191,7 +209,55 @@ const Announcement = () => {
       >
         <h1>Announcement</h1>
       </motion.div>
+
       <div className="announcement-container">
+        {isModalViewOpen && (
+          <motion.div
+            variants={zoomIn(0.1)}
+            initial="hidden"
+            whileInView="show"
+            className="modal"
+          >
+            <div className="modal">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h2>Announcement Details</h2>
+
+                  <button onClick={closeUpdateModal} className="close-btn">
+                    &times;
+                  </button>
+                </div>
+                <div className="modal-body">
+                  <div className="info-item">
+                    <h3>Title:</h3>
+                    <p>{title}</p>
+                  </div>
+                  <div className="info-item">
+                    <h3>Description:</h3>
+                    <p>{description}</p>
+                  </div>
+                  <div className="info-item">
+                    <h3>Date:</h3>
+                    <p>{formatDate(date)}</p>
+                  </div>
+                  <div className="info-item">
+                    <h3>Department:</h3>
+                    <p>{department}</p>
+                  </div>
+                  <div className="info-item">
+                    <h3>Duration:</h3>
+                    <p>{duration}</p>
+                  </div>
+                  <div className="info-item">
+                    <h3>Topic:</h3>
+                    <p>{topic}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {isModalOpen && (
           <motion.div
             variants={zoomIn(0.1)}
@@ -354,6 +420,17 @@ const Announcement = () => {
           </div>
         </motion.div>
         <motion.div
+          variants={zoomIn(0.1)}
+          initial="hidden"
+          whileInView="show"
+          className="count-container"
+        >
+          <div className="count-announcement">
+            <span className="dataCount">{filteredAnnounces.length}</span>
+            <span className="dataCount">Total Announcements</span>
+          </div>
+        </motion.div>
+        <motion.div
           variants={fadeIn("up", 0.1)}
           initial="hidden"
           whileInView="show"
@@ -366,7 +443,7 @@ const Announcement = () => {
             placeholder="Search announcement"
           />
         </motion.div>
-      
+
         <motion.table
           variants={fadeIn("up", 0.1)}
           initial="hidden"
@@ -377,7 +454,7 @@ const Announcement = () => {
             <tr>
               {headerTableAnnounce.map((header, index) => (
                 <th
-                  key={header.Label +index}
+                  key={header.Label + index}
                   onClick={
                     header.Label === "ANNOUNCE CREATED"
                       ? () =>
@@ -401,125 +478,132 @@ const Announcement = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredAnnounces.length === 0 ? (
+            {currentUsers.length === 0 ? (
               <tr>
                 <td colSpan={headerTableAnnounce.length}>
                   No announcements found
                 </td>
               </tr>
             ) : (
-              filteredAnnounces.map((data) => (
+              currentUsers.map((data) => (
                 <tr className="items-row" key={data._id}>
                   <td>{data.title}</td>
                   <td>{data.topic}</td>
                   <td>{formatDate(data.createdAt)}</td>
                   <td className="btn-action-container">
-                    <button onClick={() => handleRowClick(data)}>Edit</button>
                     <button onClick={() => handleRowClick(data)}>View</button>
+                    {data.hiddenBy.includes(currentUsers._id) ? (
+                      <button onClick={() => handleUnhide(data)}>Unhide</button>
+                    ) : (
+                      <button onClick={() => handleHide(data)}>Hide</button>
+                    )}
                   </td>
                 </tr>
               ))
             )}
           </tbody>
         </motion.table>
-         {totalPages > 1 && (
-        <motion.div
-          variants={fadeIn("right", 0.1)}
-          initial="hidden"
-          whileInView={"show"}
-          className="containerNav"
-        >
-          <nav>
-            <ul className="pagination-modal">
-              {currentPage > 1 && (
-                <li className="page-items">
-                  <button className="page-links" onClick={prePage}>
-                    Previous
-                  </button>
-                </li>
-              )}
-              {(() => {
-                const pageNumbers = [];
-                const maxVisiblePages = 3; // Adjust for your desired truncation window
-                const halfVisible = Math.floor(maxVisiblePages / 2);
+        {totalPages > 1 && (
+          <motion.div
+            variants={fadeIn("right", 0.1)}
+            initial="hidden"
+            whileInView={"show"}
+            className="containerNav"
+          >
+            <nav>
+              <ul className="pagination-modal">
+                {currentPage > 1 && (
+                  <li className="page-items">
+                    <button className="page-links" onClick={prePage}>
+                      Previous
+                    </button>
+                  </li>
+                )}
+                {(() => {
+                  const pageNumbers = [];
+                  const maxVisiblePages = 3; // Adjust for your desired truncation window
+                  const halfVisible = Math.floor(maxVisiblePages / 2);
 
-                let startPage = Math.max(1, currentPage - halfVisible);
-                let endPage = Math.min(totalPages, currentPage + halfVisible);
+                  let startPage = Math.max(1, currentPage - halfVisible);
+                  let endPage = Math.min(totalPages, currentPage + halfVisible);
 
-                if (currentPage <= halfVisible) {
-                  endPage = Math.min(maxVisiblePages, totalPages);
-                }
-                if (currentPage + halfVisible >= totalPages) {
-                  startPage = Math.max(1, totalPages - maxVisiblePages + 1);
-                }
+                  if (currentPage <= halfVisible) {
+                    endPage = Math.min(maxVisiblePages, totalPages);
+                  }
+                  if (currentPage + halfVisible >= totalPages) {
+                    startPage = Math.max(1, totalPages - maxVisiblePages + 1);
+                  }
 
-                if (startPage > 1) {
-                  pageNumbers.push(
-                    <li key="first" className="page-items">
-                      <button
-                        className="page-links"
-                        onClick={() => handlePageChange(1)}
-                      >
-                        1
-                      </button>
-                    </li>
-                  );
-                  if (startPage > 2) {
+                  if (startPage > 1) {
                     pageNumbers.push(
-                      <li key="start-ellipsis" className="page-items ellipsis">
-                        ...
+                      <li key="first" className="page-items">
+                        <button
+                          className="page-links"
+                          onClick={() => handlePageChange(1)}
+                        >
+                          1
+                        </button>
+                      </li>
+                    );
+                    if (startPage > 2) {
+                      pageNumbers.push(
+                        <li
+                          key="start-ellipsis"
+                          className="page-items ellipsis"
+                        >
+                          ...
+                        </li>
+                      );
+                    }
+                  }
+
+                  for (let i = startPage; i <= endPage; i++) {
+                    pageNumbers.push(
+                      <li
+                        key={i}
+                        onClick={() => handlePageChange(i)}
+                        className={`page-items ${
+                          currentPage === i ? "active" : ""
+                        }`}
+                      >
+                        <button className="page-links">{i}</button>
                       </li>
                     );
                   }
-                }
 
-                for (let i = startPage; i <= endPage; i++) {
-                  pageNumbers.push(
-                    <li
-                      key={i}
-                      onClick={() => handlePageChange(i)}
-                      className={`page-items ${
-                        currentPage === i ? "active" : ""
-                      }`}
-                    >
-                      <button className="page-links">{i}</button>
-                    </li>
-                  );
-                }
-
-                if (endPage < totalPages) {
-                  if (endPage < totalPages - 1) {
+                  if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                      pageNumbers.push(
+                        <li key="end-ellipsis" className="page-items ellipsis">
+                          ...
+                        </li>
+                      );
+                    }
                     pageNumbers.push(
-                      <li key="end-ellipsis" className="page-items ellipsis">
-                        ...
+                      <li key="last" className="page-items">
+                        <button
+                          className="page-links"
+                          onClick={() => handlePageChange(totalPages)}
+                        >
+                          {totalPages}
+                        </button>
                       </li>
                     );
                   }
-                  pageNumbers.push(
-                    <li key="last" className="page-items">
-                      <button
-                        className="page-links"
-                        onClick={() => handlePageChange(totalPages)}
-                      >
-                        {totalPages}
-                      </button>
-                    </li>
-                  );
-                }
 
-                return pageNumbers;
-              })()}
-              {currentPage < totalPages && (
-                <li className="page-items">
-                  <button className="page-links" onClick={nextPage}>
-                    Next
-                  </button>
-                </li>
-              )}
-            </ul>
-          </nav>
-        </motion.div>
-      )}
+                  return pageNumbers;
+                })()}
+                {currentPage < totalPages && (
+                  <li className="page-items">
+                    <button className="page-links" onClick={nextPage}>
+                      Next
+                    </button>
+                  </li>
+                )}
+              </ul>
+            </nav>
+          </motion.div>
+        )}
       </div>
     </div>
   );

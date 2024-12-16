@@ -216,6 +216,7 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
                   header.Label === "DATE" ? handleDateSortToggle : undefined
                 }
                 style={{
+              
                   cursor: header.Label === "DATE" ? "pointer" : "default",
                 }}
               >

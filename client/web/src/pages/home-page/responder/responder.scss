@@ -5,3 +5,36 @@
     flex-direction: column;
     color: $main-color;
 }
+.count-container {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .count-responders {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    width: 25%;
+    padding: 10px 15px;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    color: maroon;
+
+    transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.24);
+    border-right: 1px solid rgba(0, 0, 0, 0.24);
+    .dataCount {
+      padding-bottom: 12px;
+      &:first-child {
+        font-weight: 900;
+        font-size: 70px;
+      }
+      &:last-child {
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 12px;
+        text-align: center;
+      }
+    }
+  }

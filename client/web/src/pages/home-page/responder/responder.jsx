@@ -12,7 +12,7 @@ const Responder = () => {
   const [sortOrder, setSortOrder] = useState("asc"); // "asc" for ascending, "desc" for descending
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 5;
+  const recordsPerPage = 7;
 
   // Handle sorting logic
   const handleSort = (key) => {
@@ -69,6 +69,17 @@ const Responder = () => {
       >
         <h1>Responder</h1>
       </motion.div>
+       <motion.div
+              variants={zoomIn(0.1)}
+              initial="hidden"
+              whileInView="show"
+              className="count-container"
+            >
+              <div className="count-responders">
+                <span className="dataCount">{responder.length}</span>
+                <span className="dataCount">Responders</span>
+              </div>
+            </motion.div>
       <motion.div
         variants={fadeIn("up", 0.1)}
         initial="hidden"
