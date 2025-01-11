@@ -145,7 +145,7 @@
     margin-top: 22px;
     cursor: default;
     color: $main-color;
-    background-color: rgb(255, 255, 255);
+
     grid-column: span 3;
     grid-row: 3;
     border-right: 1px solid rgba(0, 0, 0, 0.127);
@@ -157,7 +157,7 @@
       width: 10%;
     }
     &:hover {
-      transform: scale(0.98);
+      // transform: scale(0.98);
       box-shadow: 0 4px 8px rgba(54, 54, 54, 0.092);
     }
   }

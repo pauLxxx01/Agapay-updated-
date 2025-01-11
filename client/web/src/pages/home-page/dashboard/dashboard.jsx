@@ -10,20 +10,26 @@ import { motion } from "framer-motion";
 import { useSocket } from "../../../socket/Socket.jsx";
 import { useContext } from "react";
 import { AuthContext } from "../../../context/authContext.jsx";
-import EmergencyBox from "./../../../components/emergencyBox/emergencybox";
+import EmergencyBox from "../../../components/emergencyBox/emergencybox";
 import { emergencyType } from "../../../newData.js";
-import LineChartComponent from "../../../components/barChart/chart.jsx";
+import BarChartComponent from "../../../components/barChart/chart.jsx";
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+
+const containerStyle = {
+  width: '100%',
+  height: '400px'
+};
+
+const center = {
+  lat: 13.9513, // Default latitude
+  lng: 121.6224  // Default longitude
+};
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
   const [state, messages, users] = useContext(AuthContext);
-
-
-  console.log("messages: ",messages);
   const { socket } = useSocket();
-
   const [modalOpen, setModalOpen] = useState({
     fire: false,
     natural: false,
@@ -33,7 +39,44 @@ const Dashboard = () => {
     crime: false,
   });
 
-  // Define `filteredMessage` outside `findUserMessage`
+  const [dmsCoordinates, setDmsCoordinates] = useState({ lat: '', lng: '' });
+
+  const handleDmsChange = (e) => {
+    const { name, value } = e.target;
+    setDmsCoordinates((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleDmsSubmit = async () => {
+    const convertToDecimal = (dms) => {
+      const [degrees, minutes, seconds] = dms.match(/\d+/g).map(Number);
+      return degrees + (minutes / 60) + (seconds / 3600);
+    };
+
+    const latDecimal = convertToDecimal(dmsCoordinates.lat);
+    const lngDecimal = convertToDecimal(dmsCoordinates.lng);
+    const center = { lat: latDecimal, lng: lngDecimal };
+
+    // Replace 'YOUR_GOOGLE_MAPS_API_KEY' with your actual API key
+    const directionsService = new google.maps.DirectionsService();
+
+    directionsService.route({
+      origin: { lat: 13.9513, lng: 121.6224 }, // Assuming origin as a fixed point (e.g., user's location)
+      destination: center,
+      travelMode: 'DRIVING'
+    }, (result, status) => {
+      if (status === 'OK') {
+        setDirections(result);
+      } else {
+        console.error(`Directions request failed due to ${status}`);
+      }
+    });
+
+    return center;
+  };
+
   const filteredMessage = (type) => {
     const lowerCaseType = type.toLowerCase();
 
@@ -71,9 +114,8 @@ const Dashboard = () => {
   };
 
   if (loading) return <Loading />;
-
   if (error) return <p>{error}</p>;
-  console.log(users);
+
   return (
     <div>
       {socket ? (
@@ -124,12 +166,39 @@ const Dashboard = () => {
                 />
               );
             })}
-            {/*  <div className="box box8">
-            <LineChartComponent /> 
-           
-          </div>*/}
+            <div className="box8">
+              <BarChartComponent />
+            </div>
+
+            <div className="map-container">
+              <input
+                type="text"
+                name="lat"
+                placeholder="Latitude (DMS)"
+                value={dmsCoordinates.lat}
+                onChange={handleDmsChange}
+              />
+              <input
+                type="text"
+                name="lng"
+                placeholder="Longitude (DMS)"
+                value={dmsCoordinates.lng}
+                onChange={handleDmsChange}
+              />
+              <button onClick={handleDmsSubmit}>Show Location</button>
+              <LoadScript
+                googleMapsApiKey="AIzaSyDnmtj0qCIxSlTSvc8HwMvrPDSA4u9Y_7o"
+              >
+                <GoogleMap
+                  mapContainerStyle={containerStyle}
+                  center={center}
+                  zoom={10}
+                >
+                  <Marker position={center} />
+                </GoogleMap>
+              </LoadScript>
+            </div>
           </motion.div>
-         
         </div>
       ) : (
         <p style={{ color: "red" }}>Disconnected from server</p>

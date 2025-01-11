@@ -38,3 +38,18 @@
       }
     }
   }
+  .btn-create-responder{
+    display: flex;
+
+    justify-content: end;
+  }
+  .btn-create{
+    background-color: maroon;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 12px;
+    width: 20%;
+  }

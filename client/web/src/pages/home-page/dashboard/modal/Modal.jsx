@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import "./modal.scss";
 import { motion } from "framer-motion";
 import { fadeIn, zoomIn } from "../../../../variants";
-import { headerTableModal } from "../../../../newData";
+import { headerTableGeneral } from "../../../../newData";
 import { Link, useNavigate } from "react-router-dom";
 import { useMemo } from "react";
 import Table from "../../../../components/table/table";
 
 function Modal({ setOpenModal, title, data, users }) {
-  const all = ["pending","in-progress"]
+  const all = ["pending", "in-progress"];
   const [filterStatus, setFilterStatus] = useState(all);
 
   return (
@@ -28,32 +28,12 @@ function Modal({ setOpenModal, title, data, users }) {
               <span>{data.length}</span>
               <span>{title}</span>
             </div>
-            <div className="btn-container">
-      <div
-        className={`dataCount ${filterStatus === "in-progress" ? "active" : ""}`}
-        onClick={() => setFilterStatus("in-progress")}
-      >
-        <span>In Progress</span>
-      </div>
-      <div
-        className={`dataCount ${filterStatus === "pending" ? "active" : ""}`}
-        onClick={() => setFilterStatus("pending")}
-      >
-        <span>Pending</span>
-      </div>
-      <div
-        className={`dataCount ${filterStatus === "all" ? "active" : ""}`}
-        onClick={() => setFilterStatus(all)}
-      >
-        <span>All</span>
-      </div>
-    </div>
           </motion.div>
 
           <Table
             messages={data}
             users={users}
-            headerTable={headerTableModal}
+            headerTable={headerTableGeneral}
             filterStatus={filterStatus}
           />
         </div>

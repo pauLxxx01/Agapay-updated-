@@ -151,6 +151,14 @@ function App() {
             </PrivateRoute>
           ),
         },
+        {
+          path: "/home/responder/registration",
+          element: (
+            <PrivateRoute>
+              <ResponderRegister />
+            </PrivateRoute>
+          ),
+        },
       ],
     },
   ]);

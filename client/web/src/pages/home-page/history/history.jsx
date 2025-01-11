@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { fadeIn, zoomIn } from "../../../variants";
 import Table from "../../../components/table/table";
 import { AuthContext } from "../../../context/authContext";
-import { headerTableGeneral } from "../../../newData";
+import { headerTableCompleted } from "../../../newData";
 import "./history.scss";
 import Loading from "../../../components/loading/loading";
 const History = () => {
@@ -61,7 +61,7 @@ const History = () => {
         <Table
           messages={messages}
           users={users}
-          headerTable={headerTableGeneral}
+          headerTable={headerTableCompleted}
           filterStatus={filterStatus}
         />
       </div>

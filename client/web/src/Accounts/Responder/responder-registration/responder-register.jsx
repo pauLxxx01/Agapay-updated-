@@ -3,12 +3,17 @@ import formatPhilippinePhoneNumber from "../../helper/phoneFormat";
 import { responsibilities } from "../../../newData";
 import "./responder.scss";
 import axios from "axios";
+import { motion } from "framer-motion";
+import { fadeIn, zoomIn } from "../../../variants";
 import { toast } from "react-toastify";
+import { Link, useNavigate } from "react-router-dom";
 const Responder = () => {
   const [name, setName] = useState("");
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     setName(`${firstName} ${lastName}`.trim());
@@ -41,7 +46,7 @@ const Responder = () => {
         account_id,
         phone,
         emergency_role,
-        university_office
+        university_office,
       })
       .then((res) => {
         console.log("Data sent: ", {
@@ -49,7 +54,7 @@ const Responder = () => {
           account_id,
           phone,
           emergency_role,
-          university_office
+          university_office,
         });
         toast.success("Registration successfully!");
         setFirstName("");
@@ -64,16 +69,21 @@ const Responder = () => {
         if (error.response) {
           console.error("Error response: ", error.response.data);
           toast(error.response.data.message);
-        
         } else {
           console.error("Error message:", error.message);
         }
       });
   };
 
+
   return (
     <div className="container-form-responder">
-      <div className="register">
+      <motion.div
+        variants={zoomIn( 0.1)}
+        initial="hidden"
+        whileInView="show"
+        className="register"
+      >
         <div className="card">
           <div className="card-header">Responder Registration</div>
           <div className="card-body">
@@ -147,12 +157,8 @@ const Responder = () => {
                   </option>
                   <option value="Fire Emergency">Fire Emergency</option>
                   <option value="Natural Hazard">Natural Hazard</option>
-                  <option value="Biological Hazard">
-                    Biological Hazard
-                  </option>
-                  <option value="Medical Assistance">
-                    Medical Assistance
-                  </option>
+                  <option value="Biological Hazard">Biological Hazard</option>
+                  <option value="Medical Assistance">Medical Assistance</option>
                   <option value="Facility Failure">Facility Failure</option>
                   <option value="Crime & Violence">Crime & Violence</option>
                 </select>
@@ -199,22 +205,32 @@ const Responder = () => {
                     Human Resource Department
                   </option>
                   <option value="Office of Student Affairs & Services">
-                  Office of Student Affairs & Services
+                    Office of Student Affairs & Services
                   </option>
-                  <option value="Group of security">
-                  Group of security
-                  </option>
+                  <option value="Group of security">Group of security</option>
                 </select>
               </div>
-
-              <button type="submit" className="btn-primary">
-                Register
-              </button>
+              <div className="btn-container">
+                <button
+                  className="btn-primary"
+                  onClick={() => navigate("/home/responder")}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary">
+                  Register
+                </button>
+              </div>
             </form>
           </div>
         </div>
-      </div>
-      <div className="role">
+      </motion.div>
+      <motion.div 
+       variants={zoomIn( 0.1)}
+       initial="hidden"
+       whileInView="show"
+      
+      className="role">
         <div className="card">
           <div className="card-header">University Office</div>
           <div className="card-body">
@@ -235,7 +251,7 @@ const Responder = () => {
             ))}
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

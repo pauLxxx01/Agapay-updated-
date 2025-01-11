@@ -7,6 +7,8 @@ import DialogCompleted from "../dailogCompleted/dialog";
 import Loading from "../loading/loading";
 import Error from "../error/error";
 import axios from "axios";
+import { IconButton, Menu, MenuItem } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 const Table = ({ messages, users, headerTable, filterStatus }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,6 +16,7 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
   const [sortDirection, setSortDirection] = useState("desc");
   const recordsPerPage = 5;
 
+  console.log(headerTable, "header table");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogData, setDialogData] = useState({
     message: null,
@@ -24,6 +27,9 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
 
   const [parents, setParents] = useState(null);
   const [responder, setResponder] = useState(null);
+
+  const [filters, setFilters] = useState({});
+  const [selectedSort, setSelectedSort] = useState([]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -51,49 +57,30 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
     );
   };
 
+  const handleDateSortChange = (event) => {
+    console.log(event, "event");
+    setSortDirection(event);
+  };
+
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value === value ? value : "",
+    }));
+  };
+
+  const handleSortToggle = (key) => {
+    if (selectedSort.includes(key)) {
+      setSelectedSort(selectedSort.filter((item) => item !== key));
+    } else {
+      setSelectedSort([...selectedSort, key]);
+    }
+  };
+
   const filteredUsers = useMemo(() => {
-    0;
     if (!messages || !users) return [];
-    return messages
-      .filter((data) =>
-        users.some(
-          (user) =>
-            (user._id.toString() === data.senderId.toString() &&
-              (data.senderId
-                .toString()
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase()) ||
-                user.name
-                  .toString()
-                  .toLowerCase()
-                  .includes(searchTerm.toLowerCase()) ||
-                user.account_id
-                  .toString()
-                  .toLowerCase()
-                  .includes(searchTerm.toLowerCase()) ||
-                user.department
-                  .toString()
-                  .toLowerCase()
-                  .includes(searchTerm.toLowerCase()) ||
-                (data.createdAt &&
-                  new Date(data.createdAt)
-                    .toLocaleString()
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase())))) ||
-            (data.respond &&
-              data.respond
-                .toString()
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase())) ||
-            (data.createdAt &&
-              data.createdAt.toString().includes(searchTerm)) ||
-            (data.emergency &&
-              data.emergency
-                .toString()
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase()))
-        )
-      )
+
+    let filteredData = messages
       .map((data) => {
         const matchedUser = users.find(
           (user) => user._id.toString() === data.senderId.toString()
@@ -111,12 +98,33 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
           emergency: data.emergency,
         };
       })
+      .filter(
+        (user) =>
+          filterStatus.includes(user.respond) &&
+          Object.keys(filters).every((key) =>
+            filters[key] ? user[key]?.toString() === filters[key] : true
+          ) &&
+          (searchTerm === "" ||
+            Object.values(user).some((value) =>
+              String(value).toLowerCase().includes(searchTerm.toLowerCase())
+            ))
+      )
       .sort((a, b) =>
         sortDirection === "desc"
-          ? new Date(b.updatedAt) - new Date(a.updatedAt)
-          : new Date(a.updatedAt) - new Date(b.updatedAt)
+          ? new Date(b.createdAt) - new Date(a.createdAt)
+          : new Date(a.createdAt) - new Date(b.createdAt)
       );
-  }, [messages, users, searchTerm, sortDirection]);
+
+    return filteredData;
+  }, [
+    messages,
+    users,
+    searchTerm,
+    filters,
+    selectedSort,
+    sortDirection,
+    filterStatus,
+  ]);
 
   const openDialog = async (data) => {
     console.log(data);
@@ -142,18 +150,16 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
   };
 
   // Filter based on selected status
-  const getFilteredUsersByStatus = () => {
-    return filteredUsers.filter(
-      (user) => filterStatus.includes(user.respond) && user.emergency
-    );
-  };
+  // const getFilteredUsersByStatus = () => {
+  //   return filteredUsers.filter(
+  //     (user) => filterStatus.includes(user.respond) && user.emergency
+  //   );
+  // };
 
   const lastIndex = currentPage * recordsPerPage;
   const firstIndex = lastIndex - recordsPerPage;
-  const currentUsers = getFilteredUsersByStatus().slice(firstIndex, lastIndex);
-  const totalPages = Math.ceil(
-    getFilteredUsersByStatus().length / recordsPerPage
-  );
+  const currentUsers = filteredUsers.slice(firstIndex, lastIndex);
+  const totalPages = Math.ceil(filteredUsers.length / recordsPerPage);
 
   const handlePageChange = (page) => setCurrentPage(page);
 
@@ -185,6 +191,54 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
 
   if (loading) return <Loading />;
   if (error) return <Error message={error} />;
+
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [isChecked, setIsChecked] = useState(false);
+
+  const handleSelectAll = (event) => {
+    const checked = event.target.checked;
+    setIsChecked(checked);
+
+    if (checked) {
+      const allMessageIDs = currentUsers.map((user) => user.messageID);
+      setSelectedRows(allMessageIDs);
+    } else {
+      setSelectedRows([]);
+    }
+  };
+
+  const handleUnselectAll = () => {
+    setIsChecked(false);
+    setSelectedRows([]);
+  };
+
+  const handleRowSelection = (id) => {
+    setSelectedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+    );
+  };
+
+  const completedCount = selectedRows.filter((id) =>
+    currentUsers.find(
+      (user) => user.messageID === id && user.respond === "completed"
+    )
+  ).length;
+
+  const isSelected = (id) => selectedRows.includes(id);
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [currentHeaderKey, setCurrentHeaderKey] = useState(null);
+
+  const handleClick = (event, headerKey) => {
+    setAnchorEl(event.currentTarget);
+    setCurrentHeaderKey(headerKey);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  console.log("selectedRows: ", selectedRows);
   return (
     <>
       <motion.div
@@ -200,29 +254,117 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
           placeholder="Search..."
         />
       </motion.div>
-
       <motion.table
         variants={fadeIn("up", 0.1)}
         initial="hidden"
-        whileInView={"show"}
+        whileInView="show"
         className="user-table"
       >
         <thead>
           <tr>
             {headerTable.map((header, index) => (
-              <th
-                key={index}
-                onClick={
-                  header.Label === "DATE" ? handleDateSortToggle : undefined
-                }
-                style={{
-              
-                  cursor: header.Label === "DATE" ? "pointer" : "default",
-                }}
-              >
-                {header.Label}
-                {header.Label === "DATE" &&
-                  (sortDirection === "desc" ? " ↑" : " ↓")}
+              <th key={index}>
+                <div className="label-container">
+                  <span
+                    onClick={() => handleSort(header.KEY.toLowerCase())}
+                    className="sortable-header"
+                  >
+                    {header.Label}
+                  </span>
+
+                  {/* Display MoreVertIcon and Menu for filtering options */}
+                  {header.Label !== "ACTION" && header.Label !== "#" && (
+                    <>
+                      <IconButton
+                        aria-controls={anchorEl ? "simple-menu" : undefined}
+                        aria-haspopup="true"
+                        onClick={(e) => handleClick(e, header.KEY)}
+                      >
+                        <MoreVertIcon
+                          fontSize="small"
+                          sx={{ color: "white" }}
+                        />
+                      </IconButton>
+
+                      <Menu
+                        id="simple-menu"
+                        anchorEl={anchorEl}
+                        keepMounted
+                        open={
+                          Boolean(anchorEl) && currentHeaderKey === header.KEY
+                        }
+                        onClose={handleClose}
+                      >
+                        {header.Label !== "DATE"
+                          ? [
+                              <MenuItem
+                                key="all-option"
+                                onClick={() => {
+                                  handleFilterChange(
+                                    header.KEY.toLowerCase(),
+                                    ""
+                                  );
+                                  handleClose();
+                                }}
+                              >
+                                All
+                              </MenuItem>,
+                              ...[
+                                ...new Set(
+                                  filteredUsers.map(
+                                    (user) => user[header.KEY] || "No Data"
+                                  )
+                                ),
+                              ].map((value) => (
+                                <MenuItem
+                                  key={value}
+                                  onClick={() => {
+                                    handleFilterChange(
+                                      header.KEY.toLowerCase(),
+                                      value
+                                    );
+                                    handleClose();
+                                  }}
+                                >
+                                  {value}
+                                </MenuItem>
+                              )),
+                            ]
+                          : [
+                              <MenuItem
+                                key="newest-first"
+                                onClick={() => {
+                                  handleDateSortChange("desc");
+                                  handleClose();
+                                }}
+                              >
+                                Newest First
+                              </MenuItem>,
+                              <MenuItem
+                                key="oldest-first"
+                                onClick={() => {
+                                  handleDateSortChange("asc");
+                                  handleClose();
+                                }}
+                              >
+                                Oldest First
+                              </MenuItem>,
+                            ]}
+                      </Menu>
+                    </>
+                  )}
+
+                  {/* Checkbox for the "#" column if there's an ACTION header */}
+                  {header.Label === "#" &&
+                    headerTable.some((h) => h.Label === "ACTION") && (
+                      <input
+                        className="checkedAll"
+                        type="checkbox"
+                        checked={isChecked} 
+                        onChange={handleSelectAll}
+                      />
+                    )}
+                </div>
               </th>
             ))}
           </tr>
@@ -230,54 +372,120 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
 
         <tbody>
           {currentUsers.length === 0 ? (
-            <tr>
-              <td colSpan={headerTable.length}>No data</td>
+            <tr className="items-row" key={`no-data`}>
+              <td colSpan={headerTable.length + 2}>No data</td>
             </tr>
           ) : (
-            currentUsers.map((data, index) => (
-              <tr
-                className="items-row"
-                key={`${index}-${data._id}`}
-                onClick={() => handleRowClick(data)}
-              >
-                {headerTable.map((header, index) => {
-                  const columnLabel = header.KEY.toLowerCase();
-                  if (columnLabel === "createdat") {
-                    return (
-                      <td key={index}>
-                        {data.updatedAt
-                          ? new Date(data.updatedAt).toLocaleString()
-                          : "No Data"}
-                      </td>
-                    );
-                  }
-                  if (columnLabel === "respond") {
-                    return (
-                      <td key={index}>
-                        <div className={`data ${data.respond}`}>
-                          {data.respond === "completed"
-                            ? "Completed"
-                            : data.respond === "pending"
-                            ? "Pending"
-                            : data.respond === "in-progress"
-                            ? "In - Progress"
-                            : "No respond received"}
-                        </div>
-                      </td>
-                    );
-                  }
+            currentUsers.map((data, index) => {
+              const isItemSelected = isSelected(data.messageID);
+              return (
+                <tr
+                  className={`items-row ${isItemSelected ? "selected" : ""}`}
+                  key={`${index}-${data._id}`}
+                >
+                  {headerTable.map((header, headerIndex) => {
+                    const columnLabel = header.KEY.toLowerCase();
+                    if (columnLabel === "number") {
+                      return (
+                        <td key={headerIndex}>{firstIndex + index + 1}</td>
+                      );
+                    }
+                    if (columnLabel === "createdat") {
+                      return (
+                        <td key={headerIndex}>
+                          {data.updatedAt
+                            ? new Date(data.updatedAt).toLocaleString()
+                            : "No Data"}
+                        </td>
+                      );
+                    }
 
-                  return (
-                    <td key={`${columnLabel}-${index}`}>
-                      {data[columnLabel] || "No Data"}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))
+                    if (columnLabel === "action") {
+                      return (
+                        <td colSpan={headerTable.length + 1} key={headerIndex}>
+                          <button
+                            className="action-btn view-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRowClick(data);
+                            }}
+                          >
+                            View
+                          </button>
+
+                          <button
+                            className="action-btn select-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRowSelection(data.messageID);
+                            }}
+                          >
+                            {isItemSelected ? "Deselect" : `Select`}
+                          </button>
+                        </td>
+                      );
+                    }
+
+                    if (columnLabel === "respond") {
+                      return (
+                        <td key={headerIndex}>
+                          <div className={`data ${data.respond}`}>
+                            {data.respond === "completed"
+                              ? "Completed"
+                              : data.respond === "pending"
+                              ? "Pending"
+                              : data.respond === "in-progress"
+                              ? "In Progress"
+                              : "No response received"}
+                          </div>
+                        </td>
+                      );
+                    }
+
+                    return (
+                      <td key={`${columnLabel}-${headerIndex}`}>
+                        {data[columnLabel] || "No Data"}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })
           )}
         </tbody>
       </motion.table>
+
+      {/* Indicator for selected items */}
+      {selectedRows.length > 0 ? (
+        <div className="selection-indicator">
+          Selected: {selectedRows.length} item(s)
+          {/* Button for marking items as completed */}
+          <div className="buttonContainer">
+            {/* Button for unselecting all items */}
+            <button
+              className="unselect-all-btn"
+              onClick={() => {
+                handleUnselectAll(); // Call a function to clear selections
+              }}
+            >
+              Unselect All
+            </button>
+
+            <button
+              className="completed-action-btn"
+              onClick={() => {
+                /* Handle action for completed items */
+              }}
+              disabled={completedCount === 0}
+            >
+              Mark as Completed
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="selection-indicator"></div>
+      )}
+
       {totalPages > 1 && (
         <motion.div
           variants={fadeIn("right", 0.1)}

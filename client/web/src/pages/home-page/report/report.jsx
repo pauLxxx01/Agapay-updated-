@@ -8,7 +8,6 @@ import Loading from "../../../components/loading/loading";
 import { AuthContext } from "../../../context/authContext";
 import Table from "../../../components/table/table";
 
-
 const Report = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -74,16 +73,13 @@ const Report = () => {
             whileInView="show"
             className="eachReport"
           >
-            <div className="count-history" onClick={() => setFilterStatus(all)}>
+            <div className="count-history">
               <span className="dataCount">{responseCount.total}</span>
               <span className="dataCount">Total Report</span>
             </div>
 
             <div
-              className={`count-history ${
-                filterStatus === "in-progress" ? "active" : ""
-              }`}
-              onClick={() => setFilterStatus("in-progress")}
+              className={`count-history`}
             >
               <span className="dataCount inProgress">
                 {responseCount.inProgress}
@@ -91,19 +87,13 @@ const Report = () => {
               <span className="dataCount">In Progress report</span>
             </div>
 
-            <div
-              className={`count-history ${
-                filterStatus === "pending" ? "active" : ""
-              }`}
-              onClick={() => setFilterStatus("pending")}
-            >
+            <div className={`count-history`}>
               <span className="dataCount pending">{responseCount.pending}</span>
               <span className="dataCount">Pending report</span>
             </div>
           </motion.div>
         </div>
       </div>
- 
 
       <div className="user-table">
         <Table

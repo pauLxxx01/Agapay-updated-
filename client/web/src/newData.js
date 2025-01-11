@@ -9,6 +9,43 @@ export const emergencyType = [
   { type: "Crime", key: "crime", label: "Crime & Violence" },
 ];
 
+export const headerTableCompleted = [
+  {
+    id: 0,
+    KEY: "number",
+    Label: "#",
+  },
+  {
+    id: 1,
+    KEY: "name",
+    Label: "NAME",
+  },
+  {
+    id: 2,
+    KEY: "account_id",
+    Label: "USER ID",
+  },
+  {
+    id: 3,
+    KEY: "department",
+    Label: "DEPARTMENT",
+  },
+  {
+    id: 4,
+    KEY: "emergency",
+    Label: "EMERGENCY",
+  },
+  {
+    id: 5,
+    KEY: "createdAt",
+    Label: "DATE",
+  },
+  {
+    id: 6,
+    KEY: "respond",
+    Label: "STATUS",
+  },
+];
 export const headerTableModal = [
   {
     id: 1,
@@ -67,35 +104,34 @@ export const headerTableReport = [
 ];
 
 export const headerTableGeneral = [
+  { KEY: "number", Label: "#" },
   {
-    id: 1,
     KEY: "name",
     Label: "NAME",
   },
   {
-    id: 2,
     KEY: "account_id",
     Label: "USER ID",
   },
   {
-    id: 3,
     KEY: "department",
     Label: "DEPARTMENT",
   },
   {
-    id: 4,
     KEY: "emergency",
     Label: "EMERGENCY",
   },
   {
-    id: 5,
     KEY: "createdAt",
     Label: "DATE",
   },
   {
-    id: 6,
     KEY: "respond",
     Label: "STATUS",
+  },
+  {
+    KEY: "action",
+    Label: "ACTION",
   },
 ];
 
@@ -164,23 +200,28 @@ export const responsibilities = [
 
 export const responderTable = [
   {
+    id: 0,
+    KEY: "number",
+    Label: "#",
+  },
+  {
     id: 1,
     KEY: "name",
-    Label: "Name"
+    Label: "NAME",
   },
   {
     id: 2,
     KEY: "account_id",
-    Label: "Account ID"
+    Label: "Account ID",
   },
   {
     id: 3,
     KEY: "university_office",
-    Label: "University Office"
+    Label: "University Office",
   },
   {
     id: 4,
-      KEY: "emergency_role",
-    Label: "Emergency Role"
-  }
-]
+    KEY: "emergency_role",
+    Label: "Emergency Role",
+  },
+];

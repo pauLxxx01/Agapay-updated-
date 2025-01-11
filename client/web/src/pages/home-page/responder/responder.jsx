@@ -1,59 +1,93 @@
 import React, { useContext, useState } from "react";
-import Table from "../../../components/table/table";
-import { responderTable } from "../../../newData";
 import { AuthContext } from "../../../context/authContext";
 import { motion } from "framer-motion";
 import { fadeIn, zoomIn } from "../../../variants";
-import './responder.scss'
+import { IconButton, Menu, MenuItem } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import "./responder.scss";
+import { responderTable } from "../../../newData";
+import { Link, useNavigate } from "react-router-dom";
 
 const Responder = () => {
   const [, , , , , responder] = useContext(AuthContext);
-  const [sortKey, setSortKey] = useState(null);
-  const [sortOrder, setSortOrder] = useState("asc"); // "asc" for ascending, "desc" for descending
+  const [sortConfig, setSortConfig] = useState({ key: null, order: "asc" });
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 7;
+  const [filters, setFilters] = useState({});
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [currentHeaderKey, setCurrentHeaderKey] = useState(null);
 
-  // Handle sorting logic
+  const navigate = useNavigate();
+  // Sorting logic
   const handleSort = (key) => {
-    if (sortKey === key) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortKey(key);
-      setSortOrder("asc");
-    }
+    setSortConfig((prev) => ({
+      key,
+      order: prev.key === key && prev.order === "asc" ? "desc" : "asc",
+    }));
   };
 
-  // Filter data based on the search term
-  const filteredResponders = responder.filter((item) =>
-    Object.values(item)
-      .some((value) =>
-        value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      )
-  );
+  // Filter change logic
+  const handleFilterChange = (key, value) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [key]: value,
+    }));
+    handleClose();
+  };
 
-  // Sort data based on current sortKey and sortOrder
+  // Close dropdown menu
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  // Open dropdown menu
+  const handleClick = (event, headerKey) => {
+    setAnchorEl(event.currentTarget);
+    setCurrentHeaderKey(headerKey);
+  };
+
+  // Filter data
+  const filteredResponders =
+    responder?.filter((item) => {
+      const matchesSearch = Object.values(item).some((value) =>
+        value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+      const matchesFilters = Object.entries(filters).every(
+        ([key, filterValue]) =>
+          filterValue === ""
+            ? true
+            : (item[key]?.toString().toLowerCase() || "").includes(
+                filterValue.toLowerCase()
+              )
+      );
+
+      return matchesSearch && matchesFilters;
+    }) || [];
+
+  // Sort data
   const sortedResponders = [...filteredResponders].sort((a, b) => {
-    if (!sortKey) return 0; // No sorting by default
-    const aValue = a[sortKey]?.toString().toLowerCase() || "";
-    const bValue = b[sortKey]?.toString().toLowerCase() || "";
-    if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
-    if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+    const { key, order } = sortConfig;
+    if (!key) return 0;
+    const aValue = a[key]?.toString().toLowerCase() || "";
+    const bValue = b[key]?.toString().toLowerCase() || "";
+    if (aValue < bValue) return order === "asc" ? -1 : 1;
+    if (aValue > bValue) return order === "asc" ? 1 : -1;
     return 0;
   });
 
+  // Pagination logic
   const lastIndex = currentPage * recordsPerPage;
   const firstIndex = lastIndex - recordsPerPage;
   const currentUsers = sortedResponders.slice(firstIndex, lastIndex);
   const totalPages = Math.ceil(filteredResponders.length / recordsPerPage);
 
   const handlePageChange = (page) => setCurrentPage(page);
-
   const prePage = (e) => {
     e.preventDefault();
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
-
   const nextPage = (e) => {
     e.preventDefault();
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
@@ -64,31 +98,36 @@ const Responder = () => {
       <motion.div
         variants={fadeIn("down", 0.1)}
         initial="hidden"
-        whileInView={"show"}
+        whileInView="show"
         className="title"
       >
         <h1>Responder</h1>
       </motion.div>
-       <motion.div
-              variants={zoomIn(0.1)}
-              initial="hidden"
-              whileInView="show"
-              className="count-container"
-            >
-              <div className="count-responders">
-                <span className="dataCount">{responder.length}</span>
-                <span className="dataCount">Responders</span>
-              </div>
-            </motion.div>
+      <motion.div
+        variants={zoomIn(0.1)}
+        initial="hidden"
+        whileInView="show"
+        className="count-container"
+      >
+        <div className="count-history">
+          <span className="dataCount">{responder?.length || 0}</span>
+          <span className="dataCount">Total Responders</span>
+        </div>
+      </motion.div>
+      <div className="btn-create-responder">
+        <button className="btn-create" onClick={() => navigate("/home/responder/registration")}>
+          Create Responder
+        </button>
+      </div>
       <motion.div
         variants={fadeIn("up", 0.1)}
         initial="hidden"
-        whileInView={"show"}
+        whileInView="show"
         className="search"
       >
         <input
           type="search"
-          value={searchTerm.toString()}
+          value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search..."
         />
@@ -102,13 +141,52 @@ const Responder = () => {
         <thead>
           <tr>
             {responderTable.map((header) => (
-              <th
-                key={header.id}
-                onClick={() => handleSort(header.KEY)}
-                style={{ cursor: "pointer" }}
-              >
+              <th key={header.id}>
                 {header.Label}
-                {sortKey === header.KEY && (sortOrder === "asc" ? " ▲" : " ▼")}
+                {header.KEY !== "number" &&
+                  header.KEY !== "name" &&
+                  header.KEY !== "account_id" && (
+                    <>
+                      <IconButton onClick={(e) => handleClick(e, header.KEY)}>
+                        <MoreVertIcon
+                          fontSize="small"
+                          sx={{ color: "white" }}
+                        />
+                      </IconButton>
+                      <Menu
+                        id="simple-menu"
+                        anchorEl={anchorEl}
+                        keepMounted
+                        open={
+                          Boolean(anchorEl) && currentHeaderKey === header.KEY
+                        }
+                        onClose={handleClose}
+                      >
+                        <MenuItem
+                          key="all-option"
+                          onClick={() => handleFilterChange(header.KEY, "")}
+                        >
+                          All
+                        </MenuItem>
+                        {[
+                          ...new Set(
+                            filteredResponders.map(
+                              (user) => user[header.KEY] || "No Data"
+                            )
+                          ),
+                        ].map((value) => (
+                          <MenuItem
+                            key={value}
+                            onClick={() =>
+                              handleFilterChange(header.KEY, value)
+                            }
+                          >
+                            {value}
+                          </MenuItem>
+                        ))}
+                      </Menu>
+                    </>
+                  )}
               </th>
             ))}
           </tr>
@@ -120,13 +198,13 @@ const Responder = () => {
             </tr>
           ) : (
             currentUsers.map((data, index) => (
-              <tr
-                className="items-row"
-                key={index}
-                onClick={() => console.log("Row clicked:", data)}
-              >
-                {responderTable.map((column) => (
-                  <td key={column.KEY}>{data[column.KEY]}</td>
+              <tr key={index} onClick={() => console.log("Row clicked:", data)}>
+                {responderTable.map((column, headerIndex) => (
+                  <td key={headerIndex}>
+                    {column.KEY === "number"
+                      ? firstIndex + index + 1
+                      : data[column.KEY]}
+                  </td>
                 ))}
               </tr>
             ))
@@ -149,7 +227,6 @@ const Responder = () => {
                   </button>
                 </li>
               )}
-              {/* Pagination logic */}
               {(() => {
                 const pageNumbers = [];
                 const maxVisiblePages = 3; // Adjust for your desired truncation window

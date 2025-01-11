@@ -241,12 +241,7 @@ const Announcement = () => {
         {isModalViewOpen && (
           <div>
             <div className="modal">
-              <motion.div
-                variants={zoomIn(0.1)}
-                initial="hidden"
-                whileInView="show"
-                className="modal-content"
-              >
+              <div className="modal-content">
                 <div className="modal-header">
                   <h2>Announcement Details</h2>
 
@@ -280,7 +275,7 @@ const Announcement = () => {
                     <p>{topic}</p>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </div>
           </div>
         )}
@@ -288,12 +283,7 @@ const Announcement = () => {
         {isModalOpen && (
           <div>
             <div className="modal">
-              <motion.div
-                variants={zoomIn(0.1)}
-                initial="hidden"
-                whileInView="show"
-                className="form-container-announce"
-              >
+              <div className="form-container-announce">
                 <form className="announce-form" onSubmit={handleToConfirm}>
                   <div className="header-container">
                     <h2>Announcement</h2>
@@ -414,7 +404,7 @@ const Announcement = () => {
                     </button>
                   </div>
                 </form>
-              </motion.div>
+              </div>
             </div>
           </div>
         )}
@@ -452,7 +442,7 @@ const Announcement = () => {
           whileInView="show"
           className="count-container"
         >
-          <div className="count-announcement">
+          <div className="count-history">
             <span className="dataCount">{filteredAnnounces.length}</span>
             <span className="dataCount">Total Announcements</span>
           </div>
