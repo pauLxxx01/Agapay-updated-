@@ -1,9 +1,10 @@
 import { useNavigate, useParams } from "react-router-dom";
 import "./view.scss";
 import axios from "axios";
-import React, { useContext, useEffect, useState } from "react";
+import  { useContext, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { zoomIn } from "../../../../variants";
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
 
 //dialog
 import Dialog from "@mui/material/Dialog";
@@ -169,6 +170,36 @@ const viewReports = () => {
     setOpen(false);
   };
 
+  const defaultCenter = {
+    lat: 0,
+    lng: 0
+  };
+  const [location, setLocation] = useState(defaultCenter);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+      });
+    }
+  }, []);
+
+  const handleLocationChange = (e) => {
+    const { name, value } = e.target;
+    setLocation((prev) => ({
+      ...prev,
+      [name]: parseFloat(value)
+    }));
+  };
+
+const containerStyle = {
+  width: '100%',
+  height: '400px'
+}
+
   if (loading) return <Loading />;
   if (error) return <div>⚠️{error}</div>;
   if (!messages) return <div>Report not found</div>;
@@ -280,11 +311,30 @@ const viewReports = () => {
               </div>
             </div>
           </div>
+
+          {/* location */}
           <div className="box box3">
             <div className="location">
               <span>Nearby</span>
               <div className="locationBox">
                 <p>{filteredMessage.location}</p>
+              </div>
+              <div className="locationBox">
+              <div>
+        <label>
+          Latitude:
+          <input type="number" name="lat" value={location.lat} onChange={handleLocationChange} />
+        </label>
+        <label>
+          Longitude:
+          <input type="number" name="lng" value={location.lng} onChange={handleLocationChange} />
+        </label>
+      </div>
+              <LoadScript googleMapsApiKey="AIzaSyDPXRC1SW_v5gq5cLZxGSXC53BjSXiddJg">
+        <GoogleMap mapContainerStyle={containerStyle} center={location} zoom={19}>
+          <Marker position={location} />
+        </GoogleMap>
+      </LoadScript>
               </div>
             </div>
           </div>

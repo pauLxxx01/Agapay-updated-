@@ -170,34 +170,7 @@ const Dashboard = () => {
               <BarChartComponent />
             </div>
 
-            <div className="map-container">
-              <input
-                type="text"
-                name="lat"
-                placeholder="Latitude (DMS)"
-                value={dmsCoordinates.lat}
-                onChange={handleDmsChange}
-              />
-              <input
-                type="text"
-                name="lng"
-                placeholder="Longitude (DMS)"
-                value={dmsCoordinates.lng}
-                onChange={handleDmsChange}
-              />
-              <button onClick={handleDmsSubmit}>Show Location</button>
-              <LoadScript
-                googleMapsApiKey="AIzaSyDnmtj0qCIxSlTSvc8HwMvrPDSA4u9Y_7o"
-              >
-                <GoogleMap
-                  mapContainerStyle={containerStyle}
-                  center={center}
-                  zoom={10}
-                >
-                  <Marker position={center} />
-                </GoogleMap>
-              </LoadScript>
-            </div>
+          
           </motion.div>
         </div>
       ) : (

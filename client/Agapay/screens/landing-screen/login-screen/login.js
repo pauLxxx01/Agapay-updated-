@@ -68,7 +68,7 @@ export default function Login({ navigation }) {
       if (!userId || !password) {
         setLoading(false);
         Alert.alert(
-          "Alert",
+          "Warning!",
           "Please provide both student number and password!"
         );
 

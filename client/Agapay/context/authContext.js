@@ -16,7 +16,7 @@ const AuthProvider = ({ children }) => {
 
   const [loading, setLoading] = useState(true);
 
-  const defaultApiUrl = "http://192.168.18.42:8080/admin/auth";
+  const defaultApiUrl = "http://192.168.1.125:8080/admin/auth";
   axios.defaults.baseURL = defaultApiUrl;
 
   useEffect(() => {

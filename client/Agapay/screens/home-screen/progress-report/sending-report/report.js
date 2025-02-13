@@ -27,6 +27,7 @@ import {
 } from "./../../../../components/getFullScreen";
 
 import axios from "axios";
+import LocationComponent from "../../../location/location";
 
 const Progress = ({ navigation, route }) => {
   const { name, img, photoUri, ...reminder } = route.params;
@@ -40,6 +41,13 @@ const Progress = ({ navigation, route }) => {
 
   const [loading, setLoading] = useState(false);
   const reminders = Object.values(reminder);
+
+  const [isLocationApproved, setIsLocationApproved] = useState(false);
+  const [buttonEnabled, setButtonEnabled] = useState(false); // New state for button enabled
+
+  const handleLocationApproved = () => {
+    setIsLocationApproved(true);
+  };
 
   useEffect(() => {
     if (route.params?.photoUri) {
@@ -59,6 +67,21 @@ const Progress = ({ navigation, route }) => {
       console.error(error);
     }
   };
+  const checkButtonEnabled = () => {
+    if (
+      reportText.trim() &&
+      capturedPhotos.length > 0 &&
+      selectedValue &&
+      isLocationApproved
+    ) {
+      setButtonEnabled(true);
+    } else {
+      setButtonEnabled(false);
+    }
+  };
+  useEffect(() => {
+    checkButtonEnabled(); // Check button state whenever relevant state changes
+  }, [reportText, capturedPhotos, selectedValue, isLocationApproved]);
 
   const handleSubmit = async () => {
     try {
@@ -211,30 +234,41 @@ const Progress = ({ navigation, route }) => {
           />
         </ScrollView>
 
-        <View style={styles.dropdownContainer}>
-          <Picker
-            required
-            selectedValue={selectedValue}
-            mode="dropdown"
-            style={[styles.dropdownPicker]} // Added borderRadius
-            onValueChange={(itemValue, itemIndex) =>
-              setSelectedValue(itemValue)
-            }
-          >
-            <Picker.Item label="Nearby" value="" style={styles.dropdownTitle} />
-            {options.map((x, i) => (
+        <View style={styles.locationContainer}>
+          <View style={styles.dropdownContainer}>
+            <Picker
+              required
+              selectedValue={selectedValue}
+              mode="dropdown"
+              style={[styles.dropdownPicker]} // Added borderRadius
+              onValueChange={(itemValue, itemIndex) =>
+                setSelectedValue(itemValue)
+              }
+            >
               <Picker.Item
-                label={x.label}
-                style={styles.dropdownItems}
-                value={x.value}
-                key={i}
+                label="Nearby"
+                value=""
+                style={styles.dropdownTitle}
               />
-            ))}
-          </Picker>
+              {options.map((x, i) => (
+                <Picker.Item
+                  label={x.label}
+                  style={styles.dropdownItems}
+                  value={x.value}
+                  key={i}
+                />
+              ))}
+            </Picker>
+          </View>
+          <LocationComponent onLocationApproved={handleLocationApproved} />
         </View>
 
         <View style={styles.notificationButtons}>
-          <TouchableOpacity style={styles.notifyButton} onPress={handleSubmit}>
+          <TouchableOpacity
+            disabled={!buttonEnabled}
+            style={[styles.actionButton, buttonEnabled && styles.notifyButton]}
+            onPress={handleSubmit}
+          >
             <Text style={styles.notifyButtonText}>Send SOS</Text>
           </TouchableOpacity>
         </View>
@@ -254,13 +288,16 @@ const styles = StyleSheet.create({
     paddingTop: statusBarSize(),
     justifyContent: "center",
     paddingHorizontal: width * 0.04,
-    gap: 12,
   },
   header: {
     width: "100%",
     alignItems: "center",
   },
-
+  locationContainer: {
+    flexDirection: "row",
+    margin: width * 0.05,
+    justifyContent: "space-between",
+  },
   headerTitle: {
     textTransform: "uppercase",
     fontWeight: "bold",
@@ -360,7 +397,10 @@ const styles = StyleSheet.create({
   dropdownContainer: {
     backgroundColor: "white",
     borderRadius: width * 0.05,
-    marginHorizontal: width * 0.05,
+    width: "60%",
+    height: width * 0.15,
+    justifyContent: "center"
+  
   },
   dropdownItems: {
     fontSize: width * 0.04, // Font size for items
@@ -388,14 +428,22 @@ const styles = StyleSheet.create({
   },
   notifyButton: {
     width: "100%",
-    backgroundColor: "white",
+    backgroundColor: "#007bff",
+    padding: width * 0.03,
+    borderRadius: width * 0.05,
+  },
+
+  actionButton: {
+    width: "100%",
+    backgroundColor: "rgba(149, 162, 176, 0.31)",
+    color: "rgba(149, 162, 176, 0.31)",
     padding: width * 0.03,
     borderRadius: width * 0.05,
   },
   notifyButtonText: {
     textTransform: "uppercase",
     fontWeight: "bold",
-    color: "maroon",
+    color: "white",
     letterSpacing: 2,
     textAlign: "center",
     justifyContent: "center",

@@ -64,7 +64,7 @@
     //img box
     .box1 {
       grid-column: 1;
-      grid-row: 2 / span 3;
+      grid-row: 2 / span 2;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -135,8 +135,8 @@
 
     //location
     .box3 {
-      grid-column: 2 / span 3;
-      grid-row: 3;
+      grid-column: 1 / span 4;
+      grid-row: 4;
       .location {
         gap: 12px;
         display: flex;
@@ -165,7 +165,7 @@
     //message
     .box4 {
       grid-column: 2 / span 3;
-      grid-row: 4 ;
+      grid-row: 3 ;
 
       .message {
         gap: 12px;
@@ -182,16 +182,14 @@
         }
         .textBox {
           display: flex;
-
           border-radius: 12px;
           background-color: white;
-          min-height: 120px;
           padding: 2%;
           width: 100%;
           overflow-wrap: break-word;
           p {
             width: 100%;
-            font-size: 14px;
+    
             font-weight: 100;
             overflow-wrap: break-word;
             word-wrap: break-word;
