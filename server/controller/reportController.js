@@ -6,12 +6,22 @@ const responderModel = require("../model/responderModel");
 
 const sendReportToAdmin = async (req, res) => {
   try {
-    const { emergency, location, message, senderId, percentage, respond } =
+    const { emergency, location, message, senderId, percentage, respond, lat, long } =
       req.body;
+
 
     if (!req.file) {
       console.error("No file uploaded!.");
       return res.status(400).send("No file uploaded!!.");
+    }
+
+    if (!lat) {
+      console.error("Latitude is required!");
+      return res.status(400).send({success: false, message: "Latitude is required!"});
+    }
+    if (!long) {
+      console.error("Longitude is required!");
+      return res.status(400).send({success: false, message: "Longitude is required!"});
     }
     if (!emergency) {
       console.log("ERROR ", emergency);
@@ -46,6 +56,8 @@ const sendReportToAdmin = async (req, res) => {
     const newMessage = new ReportModel({
       emergency,
       location,
+      lat,
+      long,
       percentage,
       img: req.file ? req.file.filename : null, // Check if req.file exists
       message,
@@ -69,10 +81,11 @@ const sendReportToAdmin = async (req, res) => {
     sendReport(
       emergency,
       location,
+      lat,
+      long,
       message,
       senderId,
       percentage,
-
       req.file.filename,
       respond,
       createdAt,

@@ -38,6 +38,11 @@
         "foregroundImage": "./assets/agapay/logo/logo.png",
         "backgroundColor": "#ffffff"
       },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDPXRC1SW_v5gq5cLZxGSXC53BjSXiddJg"
+        }
+      },
       "package": "com.paulflancia01.Agapay"
     },
     "web": {

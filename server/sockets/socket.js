@@ -114,6 +114,8 @@ const socketConnection = (socket) => {
 async function sendReport(
   emergency,
   location,
+  lat,
+  long,
   message,
   senderId,
   percentage,
@@ -135,6 +137,8 @@ async function sendReport(
           messages: {
             emergency,
             location,
+            lat,
+            long,
             message,
             senderId,
             percentage,

@@ -1,10 +1,16 @@
 import { useNavigate, useParams } from "react-router-dom";
 import "./view.scss";
 import axios from "axios";
-import  { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { zoomIn } from "../../../../variants";
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
+import {
+  DirectionsRenderer,
+  GoogleMap,
+  LoadScript,
+  Marker,
+  Polyline,
+} from "@react-google-maps/api";
 
 //dialog
 import Dialog from "@mui/material/Dialog";
@@ -28,14 +34,64 @@ const viewReports = () => {
   const { id } = useParams();
 
   const [, messages, users] = useContext(AuthContext);
-  console.log("id", id)
+  console.log("id", id);
   console.log("messages: ", messages);
   console.log("user", users);
   const navigate = useNavigate();
 
+  //location
+  const [locationAllowed, setLocationAllowed] = useState(false);
+  const [location, setLocation] = useState(null);
+  const [directions, setDirections] = useState(null);
+  const [travelTime, setTravelTime] = useState("");
+
+  const confirmLocationPermission = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+          setLocationAllowed(true);
+        },
+        () => {
+          alert("Geolocation permission denied or not available.");
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
+  };
+
+  useEffect(() => {
+    confirmLocationPermission();
+  }, []);
+
+  useEffect(() => {
+    if (locationAllowed) {
+      const directionsService = new window.google.maps.DirectionsService();
+      directionsService.route(
+        {
+          origin: defaultCenter,
+          destination: location,
+          travelMode: window.google.maps.TravelMode.DRIVING,
+        },
+        (result, status) => {
+          if (status === window.google.maps.DirectionsStatus.OK) {
+            setDirections(result);
+            const duration = result.routes[0].legs[0].duration.text;
+            setTravelTime(duration);
+          } else {
+            console.error(`error fetching directions ${result}`);
+          }
+        }
+      );
+    }
+  }, [locationAllowed, location]);
+
   //for parent
   const [parents, setParents] = useState([]);
-
 
   const filteredMessage = messages.find((msg) => msg._id === id);
   const filteredUser = users.find((user) => user.report_data.includes(id));
@@ -96,8 +152,8 @@ const viewReports = () => {
 
   const handleUpdate = async (id, user) => {
     try {
-      console.log("update with id: ", id)
-      console.log("user details: ", user)
+      console.log("update with id: ", id);
+      console.log("user details: ", user);
       const requestData = {
         respond: "in-progress",
         percentage: 40,
@@ -171,34 +227,14 @@ const viewReports = () => {
   };
 
   const defaultCenter = {
-    lat: 0,
-    lng: 0
-  };
-  const [location, setLocation] = useState(defaultCenter);
-
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        setLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        });
-      });
-    }
-  }, []);
-
-  const handleLocationChange = (e) => {
-    const { name, value } = e.target;
-    setLocation((prev) => ({
-      ...prev,
-      [name]: parseFloat(value)
-    }));
+    lat: combinedData.lat,
+    lng: combinedData.long,
   };
 
-const containerStyle = {
-  width: '100%',
-  height: '400px'
-}
+  const containerStyle = {
+    width: "100%",
+    height: "400px",
+  };
 
   if (loading) return <Loading />;
   if (error) return <div>⚠️{error}</div>;
@@ -268,12 +304,14 @@ const containerStyle = {
                   )}
                   {filteredUser.account_id && (
                     <li>
-                      <strong>Stundet Account: </strong> {filteredUser.account_id}
+                      <strong>Stundet Account: </strong>{" "}
+                      {filteredUser.account_id}
                     </li>
                   )}
                   {filteredUser.phone_number && (
                     <li>
-                      <strong>Phone Number: </strong> {filteredUser.phone_number}
+                      <strong>Phone Number: </strong>{" "}
+                      {filteredUser.phone_number}
                     </li>
                   )}
                   {filteredUser.department && (
@@ -297,12 +335,12 @@ const containerStyle = {
                       <strong>Phone Number: </strong> {parents.phone}
                     </li>
                   )}
-                     {parents.alt_phone && (
+                  {parents.alt_phone && (
                     <li>
-                      <strong>Secondray Phone Number: </strong> {parents.alt_phone}
+                      <strong>Secondray Number: </strong> {parents.alt_phone}
                     </li>
                   )}
-                   {parents.address && (
+                  {parents.address && (
                     <li>
                       <strong>Address: </strong> {parents.address}
                     </li>
@@ -320,21 +358,26 @@ const containerStyle = {
                 <p>{filteredMessage.location}</p>
               </div>
               <div className="locationBox">
-              <div>
-        <label>
-          Latitude:
-          <input type="number" name="lat" value={location.lat} onChange={handleLocationChange} />
-        </label>
-        <label>
-          Longitude:
-          <input type="number" name="lng" value={location.lng} onChange={handleLocationChange} />
-        </label>
-      </div>
-              <LoadScript googleMapsApiKey="AIzaSyDPXRC1SW_v5gq5cLZxGSXC53BjSXiddJg">
-        <GoogleMap mapContainerStyle={containerStyle} center={location} zoom={19}>
-          <Marker position={location} />
-        </GoogleMap>
-      </LoadScript>
+  
+                  <GoogleMap
+                    mapContainerStyle={containerStyle}
+                    center={defaultCenter}
+                    zoom={18}
+                  >
+                    <Marker position={defaultCenter} />
+                    {locationAllowed && <Marker position={location} />}
+                    {locationAllowed && (
+                      <DirectionsRenderer directions={directions} />
+                    )}
+                  </GoogleMap>
+   
+              </div>
+              <div className="locationBox">
+                {travelTime && (
+                  <div>
+                    <p>Estimated Maximum Travel Time: {travelTime}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -432,7 +475,9 @@ const containerStyle = {
               Cancel
             </Button>
             <Button
-              onClick={() => handleAlreadyUpdate(filteredMessage._id, filteredUser)}
+              onClick={() =>
+                handleAlreadyUpdate(filteredMessage._id, filteredUser)
+              }
               size="medium"
               color="success"
               variant="contained"

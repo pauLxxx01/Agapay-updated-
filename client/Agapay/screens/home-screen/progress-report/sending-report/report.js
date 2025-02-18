@@ -17,9 +17,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { Picker } from "@react-native-picker/picker";
 import { AuthContext } from "../../../../context/authContext";
 import { options } from "../../../../infoData/data";
-{
-  /* Dimensions */
-}
+import * as Location from "expo-location";
 const { width, height } = Dimensions.get("window");
 import {
   getFullScreenHeight,
@@ -27,9 +25,39 @@ import {
 } from "./../../../../components/getFullScreen";
 
 import axios from "axios";
-import LocationComponent from "../../../location/location";
 
 const Progress = ({ navigation, route }) => {
+  const [locationApproved, setLocationApproved] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [lat, setLat] = useState();
+  const [long, setLong] = useState();
+
+  const getLocation = async () => {
+    let servicesEnabled = await Location.hasServicesEnabledAsync();
+    if (!servicesEnabled) {
+      Alert.alert(
+        "Location Services Disabled",
+        "Please enable location services to continue."
+      );
+      return;
+    }
+
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      setErrorMsg("Permission to access location was denied");
+      return;
+    }
+
+    let location = await Location.getCurrentPositionAsync({});
+    setLocationApproved(true);
+    handleLocationApproved()
+    console.log("lat:", location.coords.latitude);
+    console.log("long:", location.coords.longitude);
+    // Update state with the location coordinates
+    setLat(location.coords.latitude);
+    setLong(location.coords.longitude);
+  };
+
   const { name, img, photoUri, ...reminder } = route.params;
   const [state] = useContext(AuthContext);
   const [user_Id] = [state.user._id];
@@ -114,12 +142,14 @@ const Progress = ({ navigation, route }) => {
       const percentage = 10;
       const respond = "pending";
       const formData = new FormData();
-
       formData.append("emergency", name);
       formData.append("respond", respond);
+      formData.append("lat", lat)
+      formData.append("long", long);
       formData.append("location", selectedValue);
       formData.append("percentage", percentage);
       capturedPhotos.forEach((photo) => {
+
         formData.append("img", {
           uri: photo,
           name: photo.split("/").pop(),
@@ -133,7 +163,7 @@ const Progress = ({ navigation, route }) => {
           "Content-Type": "multipart/form-data",
         },
       };
-
+      
       await axios.post("/send-report", formData, config);
 
       Alert.alert(
@@ -147,6 +177,7 @@ const Progress = ({ navigation, route }) => {
         ],
         { cancelable: false }
       );
+      console.log(JSON.stringify(formData));
     } catch (error) {
       console.log(error);
       alert(error);
@@ -260,7 +291,22 @@ const Progress = ({ navigation, route }) => {
               ))}
             </Picker>
           </View>
-          <LocationComponent onLocationApproved={handleLocationApproved} />
+
+          <View style={styles.btnLocContainer}>
+            <TouchableOpacity
+              style={[styles.btnLoc, locationApproved && styles.buttonApproved]}
+              onPress={getLocation}
+            >
+              <Text style={styles.buttonText}>
+                {locationApproved ? (
+                  <Icon name="map-marker" size={25} color="#ff" />
+                ) : (
+                  "Get location"
+                )}
+              </Text>
+            </TouchableOpacity>
+            {errorMsg ? <Text style={styles.error}>{errorMsg}</Text> : null}
+          </View>
         </View>
 
         <View style={styles.notificationButtons}>
@@ -399,8 +445,7 @@ const styles = StyleSheet.create({
     borderRadius: width * 0.05,
     width: "60%",
     height: width * 0.15,
-    justifyContent: "center"
-  
+    justifyContent: "center",
   },
   dropdownItems: {
     fontSize: width * 0.04, // Font size for items
@@ -448,5 +493,34 @@ const styles = StyleSheet.create({
     textAlign: "center",
     justifyContent: "center",
     alignItems: "center",
+  },
+
+  btnLocContainer: {
+    width: "35%",
+
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  btnLoc: {
+    backgroundColor: "#ccc",
+    padding: 10,
+    borderRadius: 15,
+    width: "100%",
+    textAlign: "center",
+    height: width * 0.15,
+    justifyContent: "center",
+  },
+  buttonApproved: {
+    backgroundColor: "green",
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  error: {
+    color: "red",
+    marginTop: 10,
   },
 });

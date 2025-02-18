@@ -18,9 +18,11 @@ const LocationComponent = ({ onLocationApproved }) => {
 
     let location = await Location.getCurrentPositionAsync({});
 
-    console.log(location)
+
     setLocationApproved(true);
     onLocationApproved(); 
+    console.log('lat: ',location.coords.latitude)
+    console.log('long: ', location.coords.longitude)
   };
 
   return (
@@ -40,14 +42,14 @@ const LocationComponent = ({ onLocationApproved }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  btnLocContainer: {
     width: '35%',
    
     justifyContent: 'center',
     alignItems: 'center',
     
   },
-  button: {
+  btnLoc: {
     backgroundColor: '#ccc',
     padding: 10,
     borderRadius: 15,

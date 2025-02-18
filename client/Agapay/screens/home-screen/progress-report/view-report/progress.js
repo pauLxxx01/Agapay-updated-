@@ -19,7 +19,7 @@ import axios from "axios";
 import { progressReportInformation } from "../../../../infoData/data";
 import { Audio } from "expo-av"; // Importing Audio from expo-av
 import LoadingScreen from "../../../../components/loading/loading";
-
+import MapView, {Marker} from 'react-native-maps';
 const isSmallDevice = getFullScreenHeight() < 375;
 
 const ShowProgress = ({ navigation, route }) => {
@@ -163,13 +163,31 @@ const ShowProgress = ({ navigation, route }) => {
     </TouchableOpacity>
   );
 
+
+  const initialRegion = {
+    latitude: 13.946750669209747, // Latitude for the map center
+    longitude:121.61101590750933, // Longitude for the map center
+    latitudeDelta: 0.00099, // Zoom level
+    longitudeDelta: 0, // Zoom level
+  };
+
+
   return (
     <SafeAreaView style={styles.container}>
       <Animated.View style={[styles.messageContainer, { opacity: fadeAnim }]}>
         <View style={styles.dot} />
         <Text style={styles.messageText}>{currentMessage}</Text>
+        
       </Animated.View>
+      <Text style={styles.messageText}>lat: {details.long}</Text>
+      <Text style={styles.messageText}>lat: {details.lat}</Text>
+      <MapView style={styles.map} initialRegion={initialRegion}>
+        <Marker 
+  coordinate={{latitude: 13.946750669209747 , longitude: 121.61101590750933}}
+  title={details.emergency}
 
+        />
+      </MapView>
       <View style={styles.progressContainer}>
         <Text style={styles.title}>Progress Report</Text>
         {report.length > 0 && (
@@ -257,6 +275,10 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 12,
     color: "#555",
+  },
+  map: {
+    width: "100%",
+    height: "35%",
   },
   floatingButtonContainer: {
     position: "absolute",

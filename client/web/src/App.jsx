@@ -14,6 +14,8 @@ import Announcement from "./pages/home-page/announcement/announcement.jsx";
 import History from "./pages/home-page/history/history.jsx";
 import Responder from "./pages/home-page/responder/responder.jsx";
 
+import AccountCatagory from "./pages/home-page/accounts/accounts.jsx";
+
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -148,6 +150,14 @@ function App() {
           element: (
             <PrivateRoute>
               <Responder />
+            </PrivateRoute>
+          ),
+        },
+        {
+          path: "/home/accounts",
+          element: (
+            <PrivateRoute>
+              <AccountCatagory />
             </PrivateRoute>
           ),
         },

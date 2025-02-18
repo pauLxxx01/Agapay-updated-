@@ -213,7 +213,7 @@ const Responder = () => {
               <div className="btn-container">
                 <button
                   className="btn-primary"
-                  onClick={() => navigate("/home/responder")}
+                  onClick={() => navigate("/home/accounts")}
                 >
                   Cancel
                 </button>

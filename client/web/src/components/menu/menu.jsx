@@ -13,7 +13,7 @@ const menuItems = [
   { path: "/home/report", icon: ReportIcon, title: "Report" },
   { path: "/home/history", icon: HistoryIcon, title: "History" },
   { path: "/home/announcement", icon: AnnouncementIcon, title: "Announcement" },
-  { path: "/home/responder", icon: ResponderIcon, title: "Responder" },
+  { path: "/home/accounts", icon: ResponderIcon, title: "Accounts" },
 ];
 
 const Menu = () => {
