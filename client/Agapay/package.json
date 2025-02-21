@@ -10,6 +10,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@mapbox/polyline": "^1.2.1",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-community/blur": "^4.4.1",
     "@react-native-community/checkbox": "^0.5.17",
@@ -44,6 +45,7 @@
     "react-native-gesture-handler": "~2.20.2",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-maps": "^1.20.1",
+    "react-native-maps-directions": "^1.9.0",
     "react-native-network-info": "^5.2.1",
     "react-native-paper": "^5.12.5",
     "react-native-progress": "^5.0.1",

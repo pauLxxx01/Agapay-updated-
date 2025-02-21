@@ -55,8 +55,20 @@ const viewReports = () => {
           });
           setLocationAllowed(true);
         },
-        () => {
-          alert("Geolocation permission denied or not available.");
+        (error) => {
+          if (error.code === error.PERMISSION_DENIED) {
+            if (
+              window.confirm(
+                "Location services are not enabled. Would you like to enable them?"
+              )
+            ) {
+              alert(
+                "Please enable location services in your device settings and reload the page."
+              );
+            }
+          } else {
+            alert("Geolocation permission denied or not available.");
+          }
         }
       );
     } else {
@@ -150,6 +162,8 @@ const viewReports = () => {
 
   console.log("combined users: " + JSON.stringify(combinedData));
 
+ 
+
   const handleUpdate = async (id, user) => {
     try {
       console.log("update with id: ", id);
@@ -159,7 +173,11 @@ const viewReports = () => {
         percentage: 40,
         userId: user._id,
         id: id,
+        adminLat: location.lat, 
+        adminLong: location.lng,
       };
+
+      console.log("sending data: " + JSON.stringify(requestData));
 
       const sendNotif = {
         to: `${user.pushToken}`,
@@ -239,6 +257,9 @@ const viewReports = () => {
   if (loading) return <Loading />;
   if (error) return <div>⚠️{error}</div>;
   if (!messages) return <div>Report not found</div>;
+
+  console.log(`user's location: ${combinedData.lat},${combinedData.long}`);
+  console.log(`my location: ${location.lat}, ${location.lng}`);
 
   return (
     <motion.div
@@ -358,19 +379,17 @@ const viewReports = () => {
                 <p>{filteredMessage.location}</p>
               </div>
               <div className="locationBox">
-  
-                  <GoogleMap
-                    mapContainerStyle={containerStyle}
-                    center={defaultCenter}
-                    zoom={18}
-                  >
-                    <Marker position={defaultCenter} />
-                    {locationAllowed && <Marker position={location} />}
-                    {locationAllowed && (
-                      <DirectionsRenderer directions={directions} />
-                    )}
-                  </GoogleMap>
-   
+                <GoogleMap
+                  mapContainerStyle={containerStyle}
+                  center={defaultCenter}
+                  zoom={18}
+                >
+                  <Marker position={defaultCenter} />
+                  {locationAllowed && <Marker position={location} />}
+                  {locationAllowed && (
+                    <DirectionsRenderer directions={directions} />
+                  )}
+                </GoogleMap>
               </div>
               <div className="locationBox">
                 {travelTime && (

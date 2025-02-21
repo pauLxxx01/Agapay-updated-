@@ -15,6 +15,13 @@ const reportSchema = new mongoose.Schema(
       ],
       required: true,
     },
+    adminLat: {
+      type: Number,
+    },
+    adminLong: {
+      type: Number,
+    },
+
     lat: {
       type: Number,
       required: true,

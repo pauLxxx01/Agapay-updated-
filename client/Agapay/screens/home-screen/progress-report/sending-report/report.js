@@ -48,9 +48,14 @@ const Progress = ({ navigation, route }) => {
       return;
     }
 
-    let location = await Location.getCurrentPositionAsync({});
+    let location = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.High,
+      maximumAge: 10000,
+      timeout: 5000,
+    });
     setLocationApproved(true);
     handleLocationApproved()
+    console.log(location);
     console.log("lat:", location.coords.latitude);
     console.log("long:", location.coords.longitude);
     // Update state with the location coordinates

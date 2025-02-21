@@ -157,12 +157,12 @@ const getSpecificReportMessage = async (req, res) => {
 
 const updateReportMessage = async (req, res) => {
   const { id } = req.params; // Assuming the ID comes from the request parameters
-  const { respond, percentage, userId, responderId } = req.body; // Assuming the respond data comes from the request body
+  const { respond, percentage, userId, responderId, adminLat, adminLong } = req.body; // Assuming the respond data comes from the request body
 
   try {
     const updatedMessage = await ReportModel.findByIdAndUpdate(
       id,
-      { respond, percentage, responder: responderId },
+      { respond, percentage, responder: responderId, adminLat, adminLong },
       { new: true, runValidators: true } // `new: true` returns the updated document, `runValidators` ensures validation
     );
 

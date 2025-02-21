@@ -19,7 +19,10 @@ import axios from "axios";
 import { progressReportInformation } from "../../../../infoData/data";
 import { Audio } from "expo-av"; // Importing Audio from expo-av
 import LoadingScreen from "../../../../components/loading/loading";
-import MapView, {Marker} from 'react-native-maps';
+
+import MapView, { Marker } from "react-native-maps";
+import MapViewDirections from "react-native-maps-directions";
+
 const isSmallDevice = getFullScreenHeight() < 375;
 
 const ShowProgress = ({ navigation, route }) => {
@@ -29,14 +32,23 @@ const ShowProgress = ({ navigation, route }) => {
   const [report, setReport] = useState(() => {
     if (details) {
       return [
-        { _id: details._id, id: details.id, percentage: details.percentage },
+        {
+          _id: details._id,
+          id: details.id,
+          percentage: details.percentage,
+          lat: details.lat,
+          long: details.long,
+          adminLat: details.adminLat ? details.adminLat : 0,
+          adminLong: details.adminLong ? details.adminLong : 0,
+        },
       ];
     }
     console.warn("User data is missing, initializing with defaults.");
     return [{ _id: "unknown", percentage: 0 }];
   });
-
-  // console.log("route passed" + JSON.stringify(route.params));
+  console.log("Report detials: ", report);
+  const adminLong = report[0]?.adminLong;
+  console.log(adminLong);
   const { socket } = useSocket();
   const [admins, setAdmins] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -44,19 +56,35 @@ const ShowProgress = ({ navigation, route }) => {
   const [loading, setLoading] = useState(false);
   const fadeAnim = useState(new Animated.Value(1))[0];
   const [sound, setSound] = useState(null);
-
   const [unreadCount, setUnreadCount] = useState(0);
+  const [travelTime, setTravelTime] = useState(null);
+
+  const origin =
+    report[0]?.adminLat && report[0]?.adminLong
+      ? {
+          latitude: report[0]?.adminLat,
+          longitude: report[0]?.adminLong,
+        }
+      : { latitude: 0, longitude: 0 };
+
+  // Provide default values
+  const destination = report
+    ? {
+        latitude: report[0]?.lat,
+        longitude: report[0]?.long,
+      }
+    : { latitude: 0, longitude: 0 }; //Provide default values
 
   useEffect(() => {
     const initialize = async () => {
       setLoading(true);
       console.log(report);
-      const percentage = String(report[0]?.percentage);  
+      const percentage = String(report[0]?.percentage);
       console.log("percentage: ", percentage);
       try {
         // Match current progress
         const matchInfos = progressReportInformation.find(
-          (info) => String(info.percentage)  === percentage
+          (info) => String(info.percentage) === percentage
         );
 
         console.log("match infos: ", matchInfos);
@@ -112,7 +140,7 @@ const ShowProgress = ({ navigation, route }) => {
       socket.off("receiveMessage");
       socket.off("progressUpdate");
     };
-  }, [socket, report]);
+  }, [socket]);
 
   useEffect(() => {
     if (currentMessage) {
@@ -131,7 +159,7 @@ const ShowProgress = ({ navigation, route }) => {
         }, 500);
       });
     }
-  }, [currentMessage]);
+  }, [currentMessage, fadeAnim]);
 
   const openCall = async () => {
     setModalVisible(true); // Open the modal when making a call
@@ -163,31 +191,83 @@ const ShowProgress = ({ navigation, route }) => {
     </TouchableOpacity>
   );
 
-
-  const initialRegion = {
-    latitude: 13.946750669209747, // Latitude for the map center
-    longitude:121.61101590750933, // Longitude for the map center
-    latitudeDelta: 0.00099, // Zoom level
-    longitudeDelta: 0, // Zoom level
+  const initialRegion = () => {
+    if (origin && destination) {
+      return {
+        latitude: (origin.latitude + destination.latitude) / 2,
+        longitude: (origin.longitude + destination.longitude) / 2,
+        latitudeDelta: Math.abs(origin.latitude - destination.latitude) + 0.1,
+        longitudeDelta:
+          Math.abs(origin.longitude - destination.longitude) + 0.1,
+      };
+    } else if (origin) {
+      return {
+        latitude: origin.latitude,
+        longitude: origin.longitude,
+        latitudeDelta: 0.1,
+        longitudeDelta: 0.1,
+      };
+    } else if (destination) {
+      return {
+        latitude: destination.latitude,
+        longitude: destination.longitude,
+        latitudeDelta: 0.1,
+        longitudeDelta: 0.1,
+      };
+    } else {
+      return {
+        // Default region if no coordinates are available
+        latitude: 0,
+        longitude: 0,
+        latitudeDelta: 5,
+        longitudeDelta: 5,
+      };
+    }
   };
 
+  const mapRegion = initialRegion();
 
   return (
     <SafeAreaView style={styles.container}>
       <Animated.View style={[styles.messageContainer, { opacity: fadeAnim }]}>
         <View style={styles.dot} />
         <Text style={styles.messageText}>{currentMessage}</Text>
-        
       </Animated.View>
-      <Text style={styles.messageText}>lat: {details.long}</Text>
-      <Text style={styles.messageText}>lat: {details.lat}</Text>
-      <MapView style={styles.map} initialRegion={initialRegion}>
-        <Marker 
-  coordinate={{latitude: 13.946750669209747 , longitude: 121.61101590750933}}
-  title={details.emergency}
-
-        />
+      <Text style={styles.messageText}>admin lng: {report[0]?.adminLong}</Text>
+      <Text style={styles.messageText}>admin lat: {report[0]?.adminLat}</Text>
+      <Text style={styles.messageText}>user lng: {report[0]?.long}</Text>
+      <Text style={styles.messageText}>user lat: {report[0]?.lat}</Text>
+      <MapView style={styles.map} initialRegion={mapRegion}>
+        {origin && <Marker coordinate={origin} title="Origin" />}
+        {destination && <Marker coordinate={destination} title="Destination" />}
+        {origin != null &&
+          destination != null &&
+          destination != 0 &&
+          origin != 0 && (
+            <MapViewDirections
+              origin={origin}
+              destination={destination}
+              apikey={"AIzaSyDPXRC1SW_v5gq5cLZxGSXC53BjSXiddJg"}
+              strokeWidth={4}
+              strokeColor="blue"
+              onReady={(result) => {
+                console.log(
+                  `Estimated travel time: ${result.duration} minutes`
+                );
+                setTravelTime(result.duration);
+              }}
+              onError={(errorMessage) => {
+                console.log("GOT AN ERROR", errorMessage);
+              }}
+            />
+          )}
       </MapView>
+
+      {travelTime !== null && (
+        <Text style={styles.messageText}>
+          Estimated Travel Time: {travelTime} minutes
+        </Text>
+      )}
       <View style={styles.progressContainer}>
         <Text style={styles.title}>Progress Report</Text>
         {report.length > 0 && (
@@ -197,7 +277,6 @@ const ShowProgress = ({ navigation, route }) => {
         )}
       </View>
       <Donut initialPercentage={report[0]?.percentage || 0} />
-
       <View style={styles.floatingButtonContainer}>
         <TouchableOpacity
           style={styles.floatingButton}
@@ -214,9 +293,7 @@ const ShowProgress = ({ navigation, route }) => {
         </TouchableOpacity>
         {unreadCount > 0 && (
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>{unreadCount}
-  
-            </Text>
+            <Text style={styles.badgeText}>{unreadCount}</Text>
           </View>
         )}
 
@@ -228,7 +305,6 @@ const ShowProgress = ({ navigation, route }) => {
           />
         </TouchableOpacity>
       </View>
-
       <Modal
         animationType="slide"
         transparent={true}
