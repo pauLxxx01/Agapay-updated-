@@ -225,6 +225,15 @@ const ShowProgress = ({ navigation, route }) => {
     }
   };
 
+
+
+  const userLocation = {
+    latitude: destination.latitude,
+    longitude: destination.longitude,
+    latitudeDelta: 0.000992, // Adjust as necessary for zoom level
+    longitudeDelta: 0.000992, // Adjust as necessary for zoom level
+  };
+
   const mapRegion = initialRegion();
 
   return (
@@ -233,11 +242,8 @@ const ShowProgress = ({ navigation, route }) => {
         <View style={styles.dot} />
         <Text style={styles.messageText}>{currentMessage}</Text>
       </Animated.View>
-      <Text style={styles.messageText}>admin lng: {report[0]?.adminLong}</Text>
-      <Text style={styles.messageText}>admin lat: {report[0]?.adminLat}</Text>
-      <Text style={styles.messageText}>user lng: {report[0]?.long}</Text>
-      <Text style={styles.messageText}>user lat: {report[0]?.lat}</Text>
-      <MapView style={styles.map} initialRegion={mapRegion}>
+
+      <MapView style={styles.map} initialRegion={origin ? userLocation : mapRegion}>
         {origin && <Marker coordinate={origin} title="Origin" />}
         {destination && <Marker coordinate={destination} title="Destination" />}
         {origin != null &&
