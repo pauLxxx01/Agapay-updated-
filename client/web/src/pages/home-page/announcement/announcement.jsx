@@ -251,28 +251,26 @@ const Announcement = () => {
                 </div>
                 <div className="modal-body">
                   <div className="info-item">
-                    <h3>Title:</h3>
-                    <p>{title}</p>
+                    <p className="announceTitle">{title}</p>
                   </div>
                   <div className="info-item">
-                    <h3>Description:</h3>
+                  
+                    <h3>{topic}</h3>
                     <p>{description}</p>
                   </div>
-                  <div className="info-item">
-                    <h3>Date:</h3>
-                    <p>{formatDate(date)}</p>
-                  </div>
+              
                   <div className="info-item">
                     <h3>Department:</h3>
                     <p>{department}</p>
                   </div>
                   <div className="info-item">
+                    <h3>Date:</h3>
+                    <p>{formatDate(date)}</p>
+                  </div>
+                 
+                  <div className="info-item">
                     <h3>Duration:</h3>
                     <p>{duration}</p>
-                  </div>
-                  <div className="info-item">
-                    <h3>Topic:</h3>
-                    <p>{topic}</p>
                   </div>
                 </div>
               </div>

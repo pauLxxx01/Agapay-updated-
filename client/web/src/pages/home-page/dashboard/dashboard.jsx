@@ -14,6 +14,7 @@ import EmergencyBox from "../../../components/emergencyBox/emergencybox";
 import { emergencyType } from "../../../newData.js";
 import BarChartComponent from "../../../components/barChart/chart.jsx";
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import BarChartComponentPerDay from "../../../components/barChartPerDay/chartPerDay.jsx";
 
 const containerStyle = {
   width: '100%',
@@ -169,6 +170,7 @@ const Dashboard = () => {
             <div className="box8">
               <BarChartComponent />
             </div>
+            <div className="box9"><BarChartComponentPerDay /></div>
 
           
           </motion.div>

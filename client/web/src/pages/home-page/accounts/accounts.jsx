@@ -8,25 +8,17 @@ import { AuthContext } from "../../../context/authContext.jsx";
 const AccountCatagory = () => {
 
 
-    const [, , , , , responder] = useContext(AuthContext);
+    const [state, ,users , , , responder] = useContext(AuthContext);
 
 
 
-
+  console.log("state: ", users)
+  console.log("responder: ", responder);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState("Accounts");
   const dropdownRef = useRef(null);
   const options = ["Accounts", "Responders"];
   const placeholder = "Select an account";
-
-
-
-
-
-
-
-
-
 
   // Toggle dropdown open/close
   const toggleDropdown = () => setIsOpen((prev) => !prev);
@@ -86,7 +78,7 @@ const AccountCatagory = () => {
         </div>
       </div>
       {/* Conditional rendering of Responder component */}
-      {selectedOption === "Responders" && <Accounts responder={responder} />}
+      {selectedOption === "Responders" ? <Accounts selectedOption={"responder"} /> : <Accounts selectedOption={"users"} />}
     </motion.div>
   );
 };

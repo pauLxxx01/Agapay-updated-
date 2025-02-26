@@ -78,9 +78,10 @@ const BarChartComponent = () => {
 
   return (
     <div style={{width: "100%"}}>
-      <div style={{ marginBottom: "1rem",  width: "100%" }}>
+      <div style={{ marginBottom: "1rem"}}>
        
         <select
+        style={{width: "50%"}}
           id="groupBy"
           value={groupBy}
           onChange={(e) => setGroupBy(e.target.value)}
@@ -89,7 +90,7 @@ const BarChartComponent = () => {
           <option value="month">Monthly</option>
         </select>
       </div>
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={200}>
         <BarChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
@@ -100,7 +101,12 @@ const BarChartComponent = () => {
           />
           <YAxis />
           <Tooltip />
-          <Legend />
+          <Legend 
+      layout="vertical"
+      verticalAlign="top"
+      align="right"
+      wrapperStyle={{ padding: '10px' }}
+    />
           {emergencyTypes.map((emergency) => (
             <Bar
               key={emergency}

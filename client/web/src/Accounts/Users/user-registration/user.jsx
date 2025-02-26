@@ -3,10 +3,14 @@ import formatPhilippinePhoneNumber from "../../helper/phoneFormat";
 import axios from "axios";
 import { toast } from "react-toastify"; // Import Toastify
 import "react-toastify/dist/ReactToastify.css"; // Import styles
-
+import { motion } from "framer-motion";
 import "./user.scss";
+import { useNavigate } from "react-router-dom";
+import { zoomIn } from "../../../variants";
 
 const User = () => {
+
+  const navigate = useNavigate()
   // for user
   const [role, setRole] = useState({
     professor: false,
@@ -160,7 +164,11 @@ const User = () => {
   };
 
   return (
-    <div className="form-container-user">
+    <motion.div
+     variants={zoomIn(0.1)}
+        initial="hidden"
+        whileInView="show"
+    className="form-container-user">
       <form onSubmit={handleUpload} className="user-form">
         <div className="header-container">
           <h2>Registration</h2>
@@ -455,12 +463,20 @@ const User = () => {
               </select>
             </div>
           </div>
+          <div className="btn-container-user">
+          <button onClick={() => navigate('/home/accounts')} className="cancel-button-register">
+            Cancel
+          </button>
           <button type="submit" className="submit-button-register">
             Register
           </button>
+         
+          </div>
+         
+          
         </div>
       </form>
-    </div>
+    </motion.div>
   );
 };
 

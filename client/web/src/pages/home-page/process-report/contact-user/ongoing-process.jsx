@@ -313,6 +313,7 @@ const Ongoing = () => {
     }
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -322,6 +323,7 @@ const Ongoing = () => {
       respond: "completed",
       id: id,
     });
+    console.log("id", id);
     console.log("Update response: ", updateResponse);
 
     toast.success("Done Transaction!");

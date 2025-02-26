@@ -12,7 +12,7 @@
   text-transform: uppercase;
   letter-spacing: 2px;
   justify-content: center;
-  color:maroon
+  color: maroon;
 }
 
 //dashboard
@@ -141,12 +141,27 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.405);
     }
   }
+  .box9 {
+    grid-column: span 3;
+    grid-row: 4;
+    display: flex;
+    margin-top: 22px;
+    border-right: 1px solid rgba(0, 0, 0, 0.127);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.127);
+    transition: box-shadow 0.3sease-in-out, transform 0.3sease-in-out;
+    align-items: center;
+    justify-content: center;
+    &:hover {
+      // transform: scale(0.98);
+      box-shadow: 0 4px 8px rgba(54, 54, 54, 0.092);
+    }
+  }
   .box8 {
     margin-top: 22px;
     cursor: default;
     color: $main-color;
 
-    grid-column: span 2;
+    grid-column: span 3;
     grid-row: 3;
     border-right: 1px solid rgba(0, 0, 0, 0.127);
     border-bottom: 1px solid rgba(0, 0, 0, 0.127);

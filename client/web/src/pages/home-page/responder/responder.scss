@@ -1,55 +1,68 @@
 @import "../../../styles/variables.scss";
 
-.container-responder{
-    display: flex  ;
-    flex-direction: column;
-    color: $main-color;
+.container-responder {
+  display: flex;
+  flex-direction: column;
+  color: $main-color;
 }
 .count-container {
-    display: flex;
-    justify-content: flex-end;
-  }
+  display: flex;
+  justify-content: flex-start;
+}
 
-  .count-responders {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    width: 25%;
-    padding: 10px 15px;
-    border-radius: 12px;
-    position: relative;
-    overflow: hidden;
-    color: maroon;
+.count-responders {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  padding: 10px 15px;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  color: maroon;
 
-    transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.24);
-    border-right: 1px solid rgba(0, 0, 0, 0.24);
-    .dataCount {
-      padding-bottom: 12px;
-      &:first-child {
-        font-weight: 900;
-        font-size: 70px;
-      }
-      &:last-child {
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-size: 12px;
-        text-align: center;
-      }
+  transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.24);
+  border-right: 1px solid rgba(0, 0, 0, 0.24);
+  .dataCount {
+    padding-bottom: 12px;
+    &:first-child {
+      font-weight: 900;
+      font-size: 70px;
+    }
+    &:last-child {
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 12px;
+      text-align: center;
     }
   }
-  .btn-create-responder{
-    display: flex;
+}
+.btn-create-responder {
+  display: flex;
+  margin: 12px 0px;
+  justify-content: end;
+}
+.btn-create {
+  background-color: maroon;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 12px;
+}
+.searchAndBtnContainer {
+  display: flex;
 
-    justify-content: end;
-  }
-  .btn-create{
-    background-color: maroon;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 12px;
-    width: 20%;
-  }
+  justify-content: space-between;
+}
+
+.searchContainer input[type="search"] {
+  height: 40px;
+  padding: 12px 22px;
+  font-size: 16px;
+  border-radius: 20px;
+  border: 1px solid #eee;
+  background-color: #fff;
+}

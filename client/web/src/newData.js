@@ -225,3 +225,24 @@ export const responderTable = [
     Label: "Emergency Role",
   },
 ];
+
+export const accountsHeaderTable = [
+  { KEY: "number", Label: "#" },
+  {
+    KEY: "name",
+    Label: "NAME",
+  },
+  {
+    KEY: "account_id",
+    Label: "USER ID",
+  },
+  {
+    KEY: "department",
+    Label: "DEPARTMENT",
+  },
+
+  {
+    KEY: "degree",
+    Label: "COURSE",
+  },
+];

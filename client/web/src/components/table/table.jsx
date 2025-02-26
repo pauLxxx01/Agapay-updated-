@@ -7,7 +7,7 @@ import DialogCompleted from "../dailogCompleted/dialog";
 import Loading from "../loading/loading";
 import Error from "../error/error";
 import axios from "axios";
-import { IconButton, Menu, MenuItem } from "@mui/material";
+import { Alert, IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 const Table = ({ messages, users, headerTable, filterStatus }) => {
@@ -200,8 +200,15 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
     setIsChecked(checked);
 
     if (checked) {
-      const allMessageIDs = currentUsers.map((user) => user.messageID);
-      setSelectedRows(allMessageIDs);
+      // const allMessageIDs = currentUsers.map((user) => user.messageID);
+      // setSelectedRows(allMessageIDs);
+
+      //corrected code for select all, pushing object with id and user_id
+      const allRows = currentUsers.map((user) => ({
+        id: user.messageID,
+        user_id: user._id,
+      }));
+      setSelectedRows(allRows);
     } else {
       setSelectedRows([]);
     }
@@ -212,11 +219,17 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
     setSelectedRows([]);
   };
 
-  const handleRowSelection = (id) => {
-    setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
-    );
+  const handleRowSelection = (selectedRow) => {
+    setSelectedRows((prev) => {
+      const alreadySelected = prev.some((row) => row.id === selectedRow.id); //Corrected line
+      if (alreadySelected) {
+        return prev.filter((row) => row.id !== selectedRow.id); //Corrected line
+      } else {
+        return [...prev, selectedRow]; //Corrected line
+      }
+    });
   };
+
 
   const completedCount = selectedRows.filter((id) =>
     currentUsers.find(
@@ -224,7 +237,10 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
     )
   ).length;
 
-  const isSelected = (id) => selectedRows.includes(id);
+
+
+  const isSelected = (id) => selectedRows.some(row => row.id === id);
+
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentHeaderKey, setCurrentHeaderKey] = useState(null);
@@ -239,6 +255,35 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
   };
 
   console.log("selectedRows: ", selectedRows);
+  console.log(currentUsers, "currentUsers");
+
+  const handleUpdateAll = async (e) => {
+    e.preventDefault();
+
+    // Check if there are any selected rows
+    if (selectedRows.length === 0) {
+        console.log("No rows selected for update.");
+        return; // Exit if no rows are selected
+    }
+
+    // Iterate through each selected row object
+    for (const { id, user_id } of selectedRows) {
+        try {
+            // Send PUT request to update the message
+            const response = await axios.put(`/user/message/update/${id}`, {
+                percentage: "100%", // Assuming this is a required field
+                userId: user_id, // Use user_id from the current object
+                respond: "completed", // Other fields as necessary
+            });
+            console.log(`Successfully updated message ${id}:`, response.data);
+        } catch (error) {
+            // Log the error message for the specific ID
+            console.error(`Error updating message ${id}:`, error.message);
+        }
+    }
+};
+
+
   return (
     <>
       <motion.div
@@ -360,7 +405,7 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
                       <input
                         className="checkedAll"
                         type="checkbox"
-                        checked={isChecked} 
+                        checked={isChecked}
                         onChange={handleSelectAll}
                       />
                     )}
@@ -417,7 +462,7 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
                             className="action-btn select-btn"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleRowSelection(data.messageID);
+                              handleRowSelection({id: data.messageID, user_id: data._id});
                             }}
                           >
                             {isItemSelected ? "Deselect" : `Select`}
@@ -471,13 +516,7 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
               Unselect All
             </button>
 
-            <button
-              className="completed-action-btn"
-              onClick={() => {
-                /* Handle action for completed items */
-              }}
-              disabled={completedCount === 0}
-            >
+            <button className="completed-action-btn" onClick={handleUpdateAll}>
               Mark as Completed
             </button>
           </div>

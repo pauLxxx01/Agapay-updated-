@@ -169,6 +169,14 @@ function App() {
             </PrivateRoute>
           ),
         },
+        {
+          path: "/home/account/user/registration",
+          element: (
+            <PrivateRoute>
+              <UserRegistration />
+            </PrivateRoute>
+          )
+        }
       ],
     },
   ]);
