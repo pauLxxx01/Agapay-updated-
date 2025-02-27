@@ -17,7 +17,7 @@ const AuthProvider = ({ children }) => {
     token: "",
   });
 
-  const [messages, setMessages] = useState(null);
+  const [messages, setMessages] = useState([]);
   const [users, setUsers] = useState(null);
   const [responder, setResponder] = useState(null);
 
@@ -143,9 +143,7 @@ const AuthProvider = ({ children }) => {
   if (error) {
     return <Error message={errorMessage.message} />;
   }
-  if (loading) {
-    return <Loading />;
-  }
+ 
   return (
     <AuthContext.Provider
       value={[state, messages, users, notifCount, setNotifCount, responder]}

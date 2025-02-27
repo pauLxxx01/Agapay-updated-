@@ -81,16 +81,22 @@ const Dashboard = () => {
   const filteredMessage = (type) => {
     const lowerCaseType = type.toLowerCase();
 
-    return messages.filter((message) => {
-      const isEmergencyTypeMatch =
-        message.emergency.split(" ")[0].toLowerCase() === lowerCaseType;
-      const isRespondStatusMatch = ["pending", "in-progress"].includes(
-        message.respond.toLowerCase()
-      );
+    // Add this check
+    if (!messages) {
+        console.warn("Messages is null or undefined, cannot filter.");
+        return []; // Or return a default empty array
+    }
 
-      return isEmergencyTypeMatch && isRespondStatusMatch;
+    return messages.filter((message) => {
+        const isEmergencyTypeMatch =
+            message.emergency.split(" ")[0].toLowerCase() === lowerCaseType;
+        const isRespondStatusMatch = ["pending", "in-progress"].includes(
+            message.respond.toLowerCase()
+        );
+
+        return isEmergencyTypeMatch && isRespondStatusMatch;
     });
-  };
+};
 
   const isAnyModalOpen = Object.values(modalOpen).some((isOpen) => isOpen);
 
@@ -114,7 +120,7 @@ const Dashboard = () => {
     setModalOpen((prevModalOpen) => ({ ...prevModalOpen, [type]: false }));
   };
 
-  if (loading) return <Loading />;
+  
   if (error) return <p>{error}</p>;
 
   return (

@@ -225,13 +225,11 @@ const ShowProgress = ({ navigation, route }) => {
     }
   };
 
-
-
   const userLocation = {
     latitude: destination.latitude,
     longitude: destination.longitude,
-    latitudeDelta: 0.000992, // Adjust as necessary for zoom level
-    longitudeDelta: 0.000992, // Adjust as necessary for zoom level
+    latitudeDelta: 0.000992, 
+    longitudeDelta: 0.000992, 
   };
 
   const mapRegion = initialRegion();
@@ -243,7 +241,7 @@ const ShowProgress = ({ navigation, route }) => {
         <Text style={styles.messageText}>{currentMessage}</Text>
       </Animated.View>
 
-      <MapView style={styles.map} initialRegion={origin ? userLocation : mapRegion}>
+      <MapView style={styles.map} initialRegion={!origin ? mapRegion  : userLocation }>
         {origin && <Marker coordinate={origin} title="Origin" />}
         {destination && <Marker coordinate={destination} title="Destination" />}
         {origin != null &&
@@ -271,7 +269,7 @@ const ShowProgress = ({ navigation, route }) => {
 
       {travelTime !== null && (
         <Text style={styles.messageText}>
-          Estimated Travel Time: {travelTime} minutes
+          Estimated Travel Time: {Math.round(travelTime)} minutes
         </Text>
       )}
       <View style={styles.progressContainer}>
@@ -293,7 +291,7 @@ const ShowProgress = ({ navigation, route }) => {
         >
           <FontAwesome
             name="comment"
-            size={isSmallDevice ? 24 : 30}
+            size={isSmallDevice ? 12 : 22}
             color="#FFF"
           />
         </TouchableOpacity>
@@ -306,7 +304,7 @@ const ShowProgress = ({ navigation, route }) => {
         <TouchableOpacity style={styles.floatingButton} onPress={openCall}>
           <FontAwesome
             name="phone"
-            size={isSmallDevice ? 24 : 30}
+            size={isSmallDevice ? 12 : 22}
             color="#FFF"
           />
         </TouchableOpacity>
@@ -371,9 +369,9 @@ const styles = StyleSheet.create({
   floatingButton: {
     backgroundColor: "#8B0000",
     borderRadius: 100,
-    height: 75,
-    width: 75,
-    padding: 16,
+    height: 55,
+    width: 55,
+
     marginVertical: 10,
     justifyContent: "center",
     alignItems: "center",

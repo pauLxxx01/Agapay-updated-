@@ -7,81 +7,144 @@ import {
   TextInput,
   ScrollView,
   Dimensions,
-  ImageBackground,
-  KeyboardAvoidingView,
-  Platform,
   Alert,
+  Button,
 } from "react-native";
-import React, { useState, useEffect, useContext } from "react";
-import Icon from "react-native-vector-icons/FontAwesome";
-import { Picker } from "@react-native-picker/picker";
-import { AuthContext } from "../../../../context/authContext";
-import { options } from "../../../../infoData/data";
-import * as Location from "expo-location";
-const { width, height } = Dimensions.get("window");
 import {
   getFullScreenHeight,
   statusBarSize,
 } from "./../../../../components/getFullScreen";
-
+import { AuthContext } from "../../../../context/authContext";
+import * as Location from "expo-location";
+import React, { useState, useEffect, useContext } from "react";
+import Icon from "react-native-vector-icons/FontAwesome";
 import axios from "axios";
+import MapView, { Marker } from "react-native-maps";
+import { Picker } from "@react-native-picker/picker";
+import { options } from "../../../../infoData/data";
+
+const { width, height } = Dimensions.get("window");
+
+// Define a professional color palette
+const primaryColor = "maroon"; // Muted Blue Primary
+const secondaryColor = "#ecf0f1"; // Light Gray Secondary
+const accentColor = "#3498db"; // Blue Accent
+const textColor = "#333"; // Dark Gray Text
+const errorColor = "#e74c3c"; // Red for errors
 
 const Progress = ({ navigation, route }) => {
   const [locationApproved, setLocationApproved] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
   const [lat, setLat] = useState();
   const [long, setLong] = useState();
+  const [mapRegion, setMapRegion] = useState({
+    latitude: 37.78825,
+    longitude: -122.4324,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
+  const [location, setLocation] = useState(null);
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMessage("Permission to access location was denied");
+        return;
+      }
 
-  const getLocation = async () => {
-    let servicesEnabled = await Location.hasServicesEnabledAsync();
-    if (!servicesEnabled) {
-      Alert.alert(
-        "Location Services Disabled",
-        "Please enable location services to continue."
-      );
-      return;
+      // Try to get the initial location with higher accuracy
+      let initialLocation = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High, // or Balanced, Medium, Low
+      });
+
+      setLocation(initialLocation);
+      setMapRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      });
+    })();
+  }, []);
+  const handleGetLocation = async () => {
+    try {
+      // Request higher accuracy
+      let location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High, // or Balanced, Medium, Low
+      });
+      console.log("Location: " + JSON.stringify(location));
+      console.log("lat:", location.coords.latitude);
+      console.log("long:", location.coords.longitude);
+
+      setLocation(location);
+      setMapRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.000999,
+        longitudeDelta: 0.000999,
+      });
+      setLat(location.coords.latitude);
+      setLong(location.coords.longitude);
+      handleLocationApproved();
+    } catch (error) {
+      Alert.alert("Error", "Could not get location. Please try again.");
+      console.error(error);
     }
-
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      setErrorMsg("Permission to access location was denied");
-      return;
-    }
-
-    let location = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.High,
-      maximumAge: 10000,
-      timeout: 5000,
-    });
-    setLocationApproved(true);
-    handleLocationApproved()
-    console.log(location);
-    console.log("lat:", location.coords.latitude);
-    console.log("long:", location.coords.longitude);
-    // Update state with the location coordinates
-    setLat(location.coords.latitude);
-    setLong(location.coords.longitude);
   };
+  // const getLocation = async () => {
+  //   let servicesEnabled = await Location.hasServicesEnabledAsync();
+  //   if (!servicesEnabled) {
+  //     Alert.alert(
+  //       "Location Services Disabled",
+  //       "Please enable location services to continue."
+  //     );
+  //     return;
+  //   }
+
+  //   let { status } = await Location.requestForegroundPermissionsAsync();
+  //   if (status !== "granted") {
+  //     setErrorMsg("Permission to access location was denied");
+  //     return;
+  //   }
+
+  //   let location = await Location.getCurrentPositionAsync({
+  //     accuracy: Location.Accuracy.High,
+  //     maximumAge: 10000,
+  //     timeout: 5000,
+  //   });
+  //   setMapRegion({
+  //     latitude: location.coords.latitude,
+  //     longitude: location.coords.longitude,
+  //     latitudeDelta: 0.0999,
+  // longitudeDelta: 0.000999,
+  //   });
+  //   setLocationApproved(true);
+  //   handleLocationApproved()
+  //   console.log(location);
+  //   console.log("lat:", location.coords.latitude);
+  //   console.log("long:", location.coords.longitude);
+  //   // Update state with the location coordinates
+  //   setLat(location.coords.latitude);
+  //   setLong(location.coords.longitude);
+  // };
 
   const { name, img, photoUri, ...reminder } = route.params;
   const [state] = useContext(AuthContext);
   const [user_Id] = [state.user._id];
-
   const [reportText, setReportText] = useState("");
   const [capturedPhotos, setCapturedPhotos] = useState([]);
   const [selectedValue, setSelectedValue] = useState("");
   const [file, setFile] = useState("");
-
   const [loading, setLoading] = useState(false);
   const reminders = Object.values(reminder);
-
   const [isLocationApproved, setIsLocationApproved] = useState(false);
   const [buttonEnabled, setButtonEnabled] = useState(false); // New state for button enabled
 
+  console.log(buttonEnabled);
+  console.log(reportText, capturedPhotos.length, selectedValue, isLocationApproved)
   const handleLocationApproved = () => {
     setIsLocationApproved(true);
   };
-
   useEffect(() => {
     if (route.params?.photoUri) {
       setCapturedPhotos((prevPhotos) => [...prevPhotos, route.params.photoUri]);
@@ -113,7 +176,7 @@ const Progress = ({ navigation, route }) => {
     }
   };
   useEffect(() => {
-    checkButtonEnabled(); // Check button state whenever relevant state changes
+    checkButtonEnabled(); 
   }, [reportText, capturedPhotos, selectedValue, isLocationApproved]);
 
   const handleSubmit = async () => {
@@ -149,12 +212,11 @@ const Progress = ({ navigation, route }) => {
       const formData = new FormData();
       formData.append("emergency", name);
       formData.append("respond", respond);
-      formData.append("lat", lat)
+      formData.append("lat", lat);
       formData.append("long", long);
       formData.append("location", selectedValue);
       formData.append("percentage", percentage);
       capturedPhotos.forEach((photo) => {
-
         formData.append("img", {
           uri: photo,
           name: photo.split("/").pop(),
@@ -168,7 +230,7 @@ const Progress = ({ navigation, route }) => {
           "Content-Type": "multipart/form-data",
         },
       };
-      
+
       await axios.post("/send-report", formData, config);
 
       Alert.alert(
@@ -207,12 +269,12 @@ const Progress = ({ navigation, route }) => {
       </View>
       {/* input reports */}
       <ScrollView
-        keyboardShouldPersistTaps="handled"
+        vertical
         style={styles.actionsContainer}
+        contentContainerStyle={styles.scrollContent} // Add this
       >
         {/* camera icon */}
-
-        {capturedPhotos.length < 1 && ( // Only show the icon if there's not exactly one photo
+        {capturedPhotos.length < 1 && (
           <View style={styles.camcontainer}>
             <TouchableOpacity
               style={styles.cameraIconButton}
@@ -226,14 +288,12 @@ const Progress = ({ navigation, route }) => {
         )}
 
         {/* camera display */}
-
         <View
-          horizontal
           style={[
             styles.imageScrollView,
             capturedPhotos.length <= 0
               ? { opacity: 0.2, marginTop: 0 }
-              : { opacity: 1, marginTop: height * 0.05 },
+              : { marginTop: height * 0.02 },
           ]}
         >
           <View style={styles.imageContainer}>
@@ -259,7 +319,7 @@ const Progress = ({ navigation, route }) => {
         </View>
 
         {/* text display */}
-        <ScrollView vertical style={styles.textContainer}>
+        <View style={styles.textContainer}>
           <TextInput
             style={styles.input}
             placeholder="Type your concerns..."
@@ -268,15 +328,26 @@ const Progress = ({ navigation, route }) => {
             value={reportText}
             onChangeText={setReportText}
           />
-        </ScrollView>
-
+        </View>
+        <MapView style={styles.map} region={mapRegion}>
+          <Marker
+            coordinate={{
+              latitude: mapRegion.latitude,
+              longitude: mapRegion.longitude,
+            }}
+            title="My Location"
+          />
+        </MapView>
+        <View style={styles.buttonContainer}>
+          <Button title="Get My Location" onPress={handleGetLocation} />
+        </View>
         <View style={styles.locationContainer}>
           <View style={styles.dropdownContainer}>
             <Picker
               required
               selectedValue={selectedValue}
               mode="dropdown"
-              style={[styles.dropdownPicker]} // Added borderRadius
+              style={[styles.dropdownPicker]}
               onValueChange={(itemValue, itemIndex) =>
                 setSelectedValue(itemValue)
               }
@@ -296,28 +367,15 @@ const Progress = ({ navigation, route }) => {
               ))}
             </Picker>
           </View>
-
-          <View style={styles.btnLocContainer}>
-            <TouchableOpacity
-              style={[styles.btnLoc, locationApproved && styles.buttonApproved]}
-              onPress={getLocation}
-            >
-              <Text style={styles.buttonText}>
-                {locationApproved ? (
-                  <Icon name="map-marker" size={25} color="#ff" />
-                ) : (
-                  "Get location"
-                )}
-              </Text>
-            </TouchableOpacity>
-            {errorMsg ? <Text style={styles.error}>{errorMsg}</Text> : null}
-          </View>
         </View>
 
         <View style={styles.notificationButtons}>
           <TouchableOpacity
             disabled={!buttonEnabled}
-            style={[styles.actionButton, buttonEnabled && styles.notifyButton]}
+            style={[
+              styles.actionButton,
+              buttonEnabled ? styles.notifyButton : styles.disabledButton,
+            ]}
             onPress={handleSubmit}
           >
             <Text style={styles.notifyButtonText}>Send SOS</Text>
@@ -333,91 +391,99 @@ export default Progress;
 const styles = StyleSheet.create({
   bodyContainer: {
     flex: 1,
+    backgroundColor: secondaryColor,
     height: getFullScreenHeight(),
+  },
+  map: {
+    width: "100%",
+    height: 200,
+    borderRadius: 10,
+    overflow: "hidden", // Clip content to the border
+  },
+  buttonContainer: {
+    padding: 10,
+    alignItems: "center",
   },
   container: {
     paddingTop: statusBarSize(),
-    justifyContent: "center",
     paddingHorizontal: width * 0.04,
   },
   header: {
-    width: "100%",
     alignItems: "center",
+    marginBottom: 10,
   },
   locationContainer: {
-    flexDirection: "row",
-    margin: width * 0.05,
-    justifyContent: "space-between",
+    marginHorizontal: width * 0.05, // Consistent horizontal margins
+    marginBottom: width * 0.04, // Spacing before the button
   },
   headerTitle: {
     textTransform: "uppercase",
-    fontWeight: "bold",
-    fontSize: width * 0.07,
-    color: "maroon",
+    fontWeight: "600",
+    fontSize: width * 0.06,
+    color: primaryColor,
     textAlign: "center",
   },
   firstaid: {
-    backgroundColor: "#FFF",
+    backgroundColor: "#fff",
     paddingHorizontal: width * 0.05,
-    paddingVertical: width * 0.02,
-    borderRadius: 15,
-    width: "100%",
+    paddingVertical: width * 0.03,
+    borderRadius: 10,
     marginBottom: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
   },
   firstaidText: {
     fontWeight: "bold",
-    fontSize: width * 0.05,
-    color: "maroon",
+    fontSize: width * 0.045,
+    color: primaryColor,
+    marginBottom: 5,
   },
   firstaidPro: {
     fontSize: width * 0.036,
-    color: "#000",
+    color: textColor,
     marginBottom: 6,
     fontStyle: "italic",
   },
-
-  //Input Station
   actionsContainer: {
-    flex: 1,
-    backgroundColor: "maroon",
-    borderTopRightRadius: width * 0.2,
-    borderTopLeftRadius: width * 0.2,
+    backgroundColor: primaryColor,
+    borderTopRightRadius: 50,
+    borderTopLeftRadius: 50,
+    padding: width * 0.04,
   },
-
-  //Camera
+  scrollContent: {
+    paddingBottom: width * 0.04,
+  },
   camcontainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+    alignItems: "center",
+    marginBottom: width * 0.04,
   },
   imageScrollView: {
-    backgroundColor: "white",
+    backgroundColor: "#fff",
+    borderRadius: 10,
     marginHorizontal: width * 0.05,
-    borderRadius: width * 0.05,
+    padding: 5,
+    borderWidth: 1,
+    borderColor: secondaryColor,
+    marginBottom: width * 0.04,
   },
   backgroundText: {
-    position: "relative",
-    fontSize: 42,
+    fontSize: 24,
     alignItems: "center",
     justifyContent: "center",
     textAlign: "center",
     fontWeight: "bold",
-    opacity: 0.2,
-    bottom: 0,
-    top: 0,
-    left: 0,
-    width: "100%",
+    opacity: 0.1,
+    color: textColor,
   },
   photoWrapper: {
     position: "relative",
     margin: 2,
   },
   imageContainer: {
-    maxHeight: width * 0.45,
+    maxHeight: width * 0.4,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -427,105 +493,87 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     right: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    opacity: 0.3,
-    borderRadius: 20,
-    padding: 5,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    borderRadius: 15,
+    padding: 4,
     justifyContent: "center",
     alignItems: "center",
   },
   capturedImage: {
-    width: width * 0.4,
-    height: width * 0.4,
-    borderRadius: 10,
+    width: width * 0.3,
+    height: width * 0.3,
+    borderRadius: 8,
   },
   cameraIconButton: {
-    padding: width * 0.05,
+    padding: width * 0.04,
+    backgroundColor: accentColor,
+    borderRadius: 50,
     justifyContent: "center",
     alignItems: "center",
   },
-  //dropdown list
   dropdownContainer: {
-    backgroundColor: "white",
-    borderRadius: width * 0.05,
-    width: "60%",
-    height: width * 0.15,
+    backgroundColor: "#fff",
+    borderRadius: 10,
     justifyContent: "center",
+    borderColor: secondaryColor,
+    borderWidth: 1,
   },
   dropdownItems: {
-    fontSize: width * 0.04, // Font size for items
+    fontSize: width * 0.036,
+    color: textColor,
   },
   dropdownTitle: {
     textTransform: "uppercase",
-    color: "maroon", // Text color for items
-    fontSize: width * 0.04, // Font size for items
-    fontWeight: "bold", // Bold text for title
+    color: primaryColor,
+    fontSize: width * 0.036,
+    fontWeight: "bold",
   },
   textContainer: {
-    paddingHorizontal: width * 0.05,
-    paddingVertical: width * 0.03,
-    minHeight: width * 0.25,
     backgroundColor: "#fff",
-    borderRadius: width * 0.05,
+    borderRadius: 10,
     marginHorizontal: width * 0.05,
-    marginVertical: width * 0.05,
+    marginBottom: width * 0.04,
+    padding: width * 0.04,
+    borderColor: secondaryColor,
+    borderWidth: 1,
+    height: width * 0.4, // Fixed height for the container
+    overflow: 'hidden', // Clip content that overflows
   },
   input: {
     fontSize: width * 0.04,
+    color: textColor,
   },
   notificationButtons: {
-    margin: width * 0.05,
+    alignItems: "center",
+    marginBottom: width * 0.04,
   },
-  notifyButton: {
-    width: "100%",
-    backgroundColor: "#007bff",
-    padding: width * 0.03,
-    borderRadius: width * 0.05,
-  },
-
   actionButton: {
     width: "100%",
-    backgroundColor: "rgba(149, 162, 176, 0.31)",
-    color: "rgba(149, 162, 176, 0.31)",
-    padding: width * 0.03,
-    borderRadius: width * 0.05,
+    padding: width * 0.035,
+    borderRadius: 10,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  notifyButton: {
+    backgroundColor: accentColor,
+  },
+  disabledButton: {
+    backgroundColor: secondaryColor,
+    opacity: 0.7,
   },
   notifyButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: width * 0.045,
     textTransform: "uppercase",
-    fontWeight: "bold",
-    color: "white",
-    letterSpacing: 2,
-    textAlign: "center",
-    justifyContent: "center",
-    alignItems: "center",
   },
-
-  btnLocContainer: {
-    width: "35%",
-
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  btnLoc: {
-    backgroundColor: "#ccc",
-    padding: 10,
-    borderRadius: 15,
-    width: "100%",
-    textAlign: "center",
-    height: width * 0.15,
-    justifyContent: "center",
-  },
-  buttonApproved: {
-    backgroundColor: "green",
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  error: {
-    color: "red",
-    marginTop: 10,
+  errorText: {
+    color: errorColor,
+    fontSize: width * 0.035,
+    marginTop: 5,
   },
 });
