@@ -7,14 +7,15 @@ import Loading from "../loading/loading";
 const PrivateRoute = ({ children }) => {
   const [state] = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
-  console.log(state);
+  console.log("from private route: " , state.token);
   const [redirect, setRedirect] = useState(false);
 
   useEffect(() => {
     if (!state.token) {
       setLoading(false);
-      toast.warning("You need to log in to access this page.");
+   
       const time = setTimeout(() => {
+        toast.warning("You need to log in to access this page.");
         setRedirect(true);
       }, 3000);
       return () => clearTimeout(time);

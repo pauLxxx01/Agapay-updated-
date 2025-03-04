@@ -19,6 +19,7 @@ const LineChartComponent = () => {
 
   // State for available dates
   const [availableDates, setAvailableDates] = useState([]);
+  const [noDataMessage, setNoDataMessage] = useState(""); // State to hold the message
 
   // Function to get unique dates from completed messages
   const getAvailableDates = (messages) => {
@@ -38,6 +39,13 @@ const LineChartComponent = () => {
   React.useEffect(() => {
     const dates = getAvailableDates(messages);
     setAvailableDates(dates);
+
+    // Display message if no completed messages are available
+    if (dates.length === 0) {
+      setNoDataMessage("There are no completed reports yet.");
+    } else {
+      setNoDataMessage(""); // Clear the message if there are completed messages
+    }
   }, [messages]);
 
   // Count completed messages by available dates
@@ -63,7 +71,7 @@ const LineChartComponent = () => {
 
     // Convert the count object to an array suitable for Recharts
     return availableDates.map((date) => ({
-      time: date,
+      time: date || 0,
       count: countByDate[date] || 0, // Default to 0 if no data
     }));
   };
@@ -73,17 +81,27 @@ const LineChartComponent = () => {
 
   return (
     <div style={{ width: "100%", padding: "12px" }}>
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="time"fontSize={12} />
-          <YAxis />
-          <Tooltip />
-          <Legend wrapperStyle={{ padding: '10px' }} />
-
-          <Line type="monotone" dataKey="count" stroke="rgb(97, 0, 0)" name="Completed Report" />
-        </LineChart>
-      </ResponsiveContainer>
+      {noDataMessage ? ( // Display the message if noDataMessage is set
+        <p style={{ textAlign: "center", fontStyle: "italic", color: "maroon" }}>
+          {noDataMessage}
+        </p>
+      ) : (
+        <ResponsiveContainer width="100%" height={200}>
+          <LineChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="time" fontSize={12} />
+            <YAxis />
+            <Tooltip />
+            <Legend wrapperStyle={{ padding: "10px" }} />
+            <Line
+              type="monotone"
+              dataKey="count"
+              stroke="rgb(97, 0, 0)"
+              name="Completed Report"
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      )}
     </div>
   );
 };

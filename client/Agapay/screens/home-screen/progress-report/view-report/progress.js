@@ -228,8 +228,8 @@ const ShowProgress = ({ navigation, route }) => {
   const userLocation = {
     latitude: destination.latitude,
     longitude: destination.longitude,
-    latitudeDelta: 0.000992, // Adjust as necessary for zoom level
-    longitudeDelta: 0.000992, // Adjust as necessary for zoom level
+    latitudeDelta: 0.000992, 
+    longitudeDelta: 0.000992, 
   };
 
   const mapRegion = initialRegion();
