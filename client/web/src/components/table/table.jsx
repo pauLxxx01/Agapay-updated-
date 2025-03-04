@@ -271,7 +271,7 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
         try {
             // Send PUT request to update the message
             const response = await axios.put(`/user/message/update/${id}`, {
-                percentage: "100%", // Assuming this is a required field
+                percentage: 100, // Assuming this is a required field
                 userId: user_id, // Use user_id from the current object
                 respond: "completed", // Other fields as necessary
             });

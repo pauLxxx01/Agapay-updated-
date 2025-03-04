@@ -1,9 +1,3 @@
-// 
-
-// src/components/BarChartComponent.js
-
-// src/components/BarChartComponent.js
-
 import React, { useState, useContext } from "react";
 import {
   BarChart,
@@ -24,15 +18,18 @@ const BarChartComponent = () => {
   // State for grouping type
   const [groupBy, setGroupBy] = useState("day");
 
+  // Function to count messages by time and emergency
   const countMessagesByTimeAndEmergency = (messages, groupBy) => {
+    if (!messages) return []; // Handle null or empty messages
+
     const countByTime = {};
 
-    // Group messages by time unit (day or month) and emergency type
     messages.forEach((message) => {
       const timeKey =
         groupBy === "month"
           ? dayjs(message.createdAt).format("YYYY-MM")
-          : dayjs(message.createdAt).format("YYYY-MM-DD"); // Group by month or day
+          : dayjs(message.createdAt).format("YYYY-MM-DD");
+
       const emergency = message.emergency;
 
       if (!countByTime[timeKey]) {
@@ -53,10 +50,12 @@ const BarChartComponent = () => {
     Object.keys(countByTime).forEach((timeKey) => {
       const timeData = { time: timeKey };
       allEmergencies.forEach((emergency) => {
-        timeData[emergency] = countByTime[timeKey][emergency] || 0; // Default to 0 if no data
+        timeData[emergency] = countByTime[timeKey][emergency] || 0;
       });
       result.push(timeData);
     });
+
+    console.log("Processed Chart Data:", result);
 
     return result;
   };
@@ -66,22 +65,25 @@ const BarChartComponent = () => {
 
   // Color map for different emergency types
   const emergencyColorMap = {
-    "Facility Failure": "gray",
-    "Medical Assistance": "rgb(48, 122, 206)",
-    "Natural Hazard": "rgb(210, 105, 30)",
     "Fire Emergency": "maroon",
+    "Medical Assistance": "rgb(48, 122, 206)",
     "Biological Hazard": "green",
     "Crime & Violence": "#F7B32D",
+    "Facility Failure": "gray",
+    "Natural Hazard": "rgb(210, 105, 30)",
   };
 
-  const emergencyTypes = [...new Set(messages.map((msg) => msg.emergency))];
+  const emergencyTypes = messages
+    ? [...new Set(messages.map((msg) => msg.emergency))]
+    : [];
+
+  console.log("Unique Emergency Types:", emergencyTypes); // Log unique emergency types
 
   return (
-    <div style={{width: "100%"}}>
-      <div style={{ marginBottom: "1rem"}}>
-       
+    <div style={{ width: "100%" }}>
+      <div style={{ marginBottom: "1rem" }}>
         <select
-        style={{width: "50%"}}
+          style={{ width: "50%" }}
           id="groupBy"
           value={groupBy}
           onChange={(e) => setGroupBy(e.target.value)}
@@ -90,32 +92,36 @@ const BarChartComponent = () => {
           <option value="month">Monthly</option>
         </select>
       </div>
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="time"
-            orientation="bottom"
-            padding={{ left: 0, right: 0 }}
-            fontSize={12}
-          />
-          <YAxis />
-          <Tooltip />
-          <Legend 
-      layout="vertical"
-      verticalAlign="top"
-      align="right"
-      wrapperStyle={{ padding: '10px' }}
-    />
-          {emergencyTypes.map((emergency) => (
-            <Bar
-              key={emergency}
-              dataKey={emergency}
-              fill={emergencyColorMap[emergency] || "#000000"}
+      {messages && chartData.length > 0 ? (
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="time"
+              orientation="bottom"
+              padding={{ left: 0, right: 0 }}
+              fontSize={12}
             />
-          ))}
-        </BarChart>
-      </ResponsiveContainer>
+            <YAxis />
+            <Tooltip />
+            <Legend
+              layout="vertical"
+              verticalAlign="top"
+              align="right"
+              wrapperStyle={{ padding: "10px" }}
+            />
+            {emergencyTypes.map((emergency) => (
+              <Bar
+                key={emergency}
+                dataKey={emergency}
+                fill={emergencyColorMap[emergency] || "#000000"}
+              />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      ) : (
+        <div>No data available for chart.</div>
+      )}
     </div>
   );
 };

@@ -61,7 +61,7 @@ export default function Donut({
     if (percentage === "100") {
       setColor("#4caf50");
     } else {
-      setColor("#800000");
+      setColor("#4caf50");
     }
 
     return () => {

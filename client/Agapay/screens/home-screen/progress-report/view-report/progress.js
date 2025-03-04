@@ -225,8 +225,6 @@ const ShowProgress = ({ navigation, route }) => {
     }
   };
 
-
-
   const userLocation = {
     latitude: destination.latitude,
     longitude: destination.longitude,
@@ -238,12 +236,26 @@ const ShowProgress = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.progressContainer}>
+        <Donut initialPercentage={report[0]?.percentage || 0} />
+        <View style={styles.progressTextContainer}>
+          <Text style={styles.title}>Progress Report</Text>
+          {report.length > 0 && (
+            <Text style={styles.subtitle}>
+              Current Progress: {parseInt(report[0]?.percentage || 0)}%
+            </Text>
+          )}
+        </View>
+      </View>
       <Animated.View style={[styles.messageContainer, { opacity: fadeAnim }]}>
         <View style={styles.dot} />
         <Text style={styles.messageText}>{currentMessage}</Text>
       </Animated.View>
 
-      <MapView style={styles.map} initialRegion={origin ? userLocation : mapRegion}>
+      <MapView
+        style={styles.map}
+        initialRegion={origin ? userLocation : mapRegion}
+      >
         {origin && <Marker coordinate={origin} title="Origin" />}
         {destination && <Marker coordinate={destination} title="Destination" />}
         {origin != null &&
@@ -270,19 +282,14 @@ const ShowProgress = ({ navigation, route }) => {
       </MapView>
 
       {travelTime !== null && (
-        <Text style={styles.messageText}>
-          Estimated Travel Time: {travelTime} minutes
+        <Text style={styles.travelTimeText}>
+          Estimated Travel Time:
+          <Text style={{ fontWeight: "bold" }}>
+            {" "}
+            {Math.round(travelTime)} minutes
+          </Text>
         </Text>
       )}
-      <View style={styles.progressContainer}>
-        <Text style={styles.title}>Progress Report</Text>
-        {report.length > 0 && (
-          <Text style={styles.subtitle}>
-            Current Progress: {parseInt(report[0]?.percentage || 0)}%
-          </Text>
-        )}
-      </View>
-      <Donut initialPercentage={report[0]?.percentage || 0} />
       <View style={styles.floatingButtonContainer}>
         <TouchableOpacity
           style={styles.floatingButton}
@@ -293,7 +300,7 @@ const ShowProgress = ({ navigation, route }) => {
         >
           <FontAwesome
             name="comment"
-            size={isSmallDevice ? 24 : 30}
+            size={isSmallDevice ? 18 : 24}
             color="#FFF"
           />
         </TouchableOpacity>
@@ -306,7 +313,7 @@ const ShowProgress = ({ navigation, route }) => {
         <TouchableOpacity style={styles.floatingButton} onPress={openCall}>
           <FontAwesome
             name="phone"
-            size={isSmallDevice ? 24 : 30}
+            size={isSmallDevice ? 18 : 24}
             color="#FFF"
           />
         </TouchableOpacity>
@@ -343,20 +350,34 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     padding: 20,
-    justifyContent: "center",
+    gap: 12,
     alignItems: "center",
+    justifyContent: "center",
+  },
+  travelTimeText: {
+    color: "maroon",
   },
   progressContainer: {
-    marginBottom: 20,
-    alignItems: "center",
+    position: "absolute",
+    top: 60,
+    flexDirection: "row",
+    width: "100%",
+    gap: 12,
+    backgroundColor: "maroon",
+    padding: 4,
+    borderRadius: 12,
+  },
+  progressTextContainer: {
+    justifyContent: "center",
   },
   title: {
     fontSize: 20,
     fontWeight: "bold",
+    color: "#fff",
   },
   subtitle: {
     fontSize: 12,
-    color: "#555",
+    color: "#FAA0A0",
   },
   map: {
     width: "100%",
@@ -371,9 +392,9 @@ const styles = StyleSheet.create({
   floatingButton: {
     backgroundColor: "#8B0000",
     borderRadius: 100,
-    height: 75,
-    width: 75,
-    padding: 16,
+    height: 55,
+    width: 55,
+    padding: 8,
     marginVertical: 10,
     justifyContent: "center",
     alignItems: "center",
@@ -429,20 +450,17 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: isSmallDevice ? 14 : 16,
-    color: "#8B0000",
-    textAlign: "center",
+    color: "#FFF",
   },
   messageContainer: {
-    position: "absolute",
-    top: 100,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 10,
-    marginBottom: 10,
     maxWidth: "100%",
+    gap: 12,
     alignContent: "center",
     backgroundColor: "#FAA0A0",
   },

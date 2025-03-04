@@ -148,13 +148,14 @@ const Dashboard = () => {
           >
             <h1>Dashboard</h1>
           </motion.div>
-
+          <div     className="subtitle"><p>Report unprogress: </p></div>
           <motion.div
             variants={zoomIn(0.1)}
             initial="hidden"
             whileInView="show"
             className="dashboard"
           >
+          
             {emergencyType.map(({ type, key, label }) => {
               const list = filteredMessage(type);
               return (
@@ -167,10 +168,12 @@ const Dashboard = () => {
                 />
               );
             })}
+
             <div className="box8">
               <BarChartComponent />
             </div>
-            <div className="box9"><BarChartComponentPerDay /></div>
+            <div className="box9"><BarChartComponentPerDay />
+            </div>
 
           
           </motion.div>

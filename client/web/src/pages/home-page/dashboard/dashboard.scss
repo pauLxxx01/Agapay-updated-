@@ -14,6 +14,12 @@
   justify-content: center;
   color: maroon;
 }
+.subtitle{
+  color: maroon;
+  padding: 8px;
+  font-size: 16px;
+ 
+}
 
 //dashboard
 
@@ -46,9 +52,10 @@
     align-items: center;
     letter-spacing: 1px;
     font-size: 16px;
-    background-color: rgba(128, 0, 0, 0.788);
+    background-color: maroon;
     &:hover {
-      background-color: maroon;
+      background-color: rgba(128, 0, 0, 0.788);
+ 
     }
   }
 
@@ -58,9 +65,10 @@
     align-items: center;
     letter-spacing: 1px;
     font-size: 16px;
-    background-color: rgb(210, 105, 30);
+    background-color: rgba(210, 105, 30, 0.747);
     &:hover {
-      background-color: rgba(210, 105, 30, 0.747);
+      background-color: rgb(210, 105, 30);
+   
     }
   }
 

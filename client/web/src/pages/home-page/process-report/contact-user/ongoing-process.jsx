@@ -51,24 +51,22 @@ const Ongoing = () => {
   const [responder, setResponder] = useState([]);
   const [isOptionalEnabled, setIsOptionalEnabled] = useState(false);
 
-  const [selectedResponderInfo, setSelectedResponderInfo] = useState(null);
-  const [selectedResponderId, setSelectedResponderId] = useState(null);
+  const [selectedResponderInfo, setSelectedResponderInfo] = useState("");
+  const [selectedResponderId, setSelectedResponderId] = useState("");
 
-  const [selectedOptionalInfo, setSelectedOptionalInfo] = useState(null);
-  const [selectedOptionalName, setSelectedOptionalName] = useState(null);
+  const [selectedOptionalInfo, setSelectedOptionalInfo] = useState("");
+  const [selectedOptionalName, setSelectedOptionalName] = useState("");
 
   const [selectedResponders, setSelectedResponders] = useState([]);
 
-  const [selectedOfficeInfo, setSelectedOfficeInfo] = useState(null);
-  const [selectedOfficeName, setSelectedOfficeId] = useState(null);
+  const [selectedOfficeInfo, setSelectedOfficeInfo] = useState("");
+  const [selectedOfficeName, setSelectedOfficeId] = useState("");
 
   const filteredMessage = messages.find((msg) => msg._id === id);
   const filteredUser = users.find((user) => user.report_data.includes(id));
   const filteredResponder = responder.filter((res) =>
     filteredMessage.responder.includes(res._id)
   );
-
-
 
   const handleChangeDropdown = (e) => {
     const selectedId = e.target.value;
@@ -171,15 +169,7 @@ const Ongoing = () => {
         if (savedData) {
           setProcessInfo(savedData);
         }
-        if (currentStep === 1) {
-          setProgress(65);
-        }
-        if (currentStep === 2) {
-          setProgress(85);
-        }
-        if (currentStep === 3) {
-          setProgress(100);
-        }
+        updateProgress(Number(savedStep));
       } catch (error) {
         setError(`Error fetching data: ${error.message}`);
       } finally {
@@ -219,6 +209,23 @@ const Ongoing = () => {
     };
   }, [socket, id, openChat]);
 
+  const updateProgress = (currentStep) => {
+    switch (currentStep) {
+      case 1:
+        setProgress(40);
+        break;
+      case 2:
+        setProgress(65);
+        break;
+      case 3:
+        setProgress(85);
+        break;
+      default:
+        setProgress(40);
+        break;
+    }
+  };
+
   // Scroll to the bottom whenever the dialog opens or messages update
   const scrollToBottom = () => {
     if (dialogContentRef.current) {
@@ -234,7 +241,7 @@ const Ongoing = () => {
   }, [userChats, userChats]);
 
   const sendMessage = async () => {
-    if (setChat) {
+    if (chat) {
       const messageData = {
         room: id,
         message: chat,
@@ -287,38 +294,44 @@ const Ongoing = () => {
       await axios.post("/push-notification", sendNotif);
       await axios.put(`/user/message/update/${id}`, newData);
 
-      if (direction == "next" && currentStep === 2) {
-        const updateResponse = await axios.put(`/user/message/update/${id}`, {
-          percentage: progress,
-          userId: user._id,
-          id: id,
-          responderId: selectedResponders,
-        });
-      }
+      // if (direction == "next" && currentStep === 2) {
+      //   const updateResponse = await axios.put(`/user/message/update/${id}`, {
+      //     percentage: progress,
+      //     userId: user._id,
+      //     id: id,
+      //     responderId: selectedResponders,
+      //   });
+      // }
 
-      if (direction == "next" && currentStep < 5) {
-        const newStep = currentStep + 1;
-        setCurrentStep(newStep);
-        localStorage.setItem(`currentStep_${id}`, newStep); // Save current step with ID
-        localStorage.setItem(`processInfo_${id}`, JSON.stringify(processInfo)); // Save form data with ID
-      } else if (direction === "previous" && currentStep > 1) {
-        const newStep = currentStep - 1;
-        setCurrentStep(newStep);
-        localStorage.setItem(`currentStep_${id}`, newStep); // Save current step with ID
-        localStorage.setItem(`processInfo_${id}`, JSON.stringify(processInfo)); // Save form data with ID
-      }
+      // if (direction == "next" && currentStep === 3) {
+      //   const updateResponse = await axios.put(`/user/message/update/${id}`, {
+      //     percentage: progress,
+      //     userId: user._id,
+      //     id: id,
+      //     responderId: selectedResponders,
+      //   });
+      // }
+
+      const newSteps =
+        direction === "next"
+          ? Math.min(currentStep + 1, 3)
+          : Math.max(currentStep - 1, 1);
+      setCurrentStep(newSteps);
+      localStorage.setItem(`currentStep_${id}`, newSteps); // Save current step with ID
+      localStorage.setItem(`processInfo_${id}`, JSON.stringify(processInfo)); // Save form data with ID
+      updateProgress(newSteps);
+
       setOpenDialog(false);
     } catch (error) {
       console.error("Error updating progress:", error);
     }
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const updateResponse = await axios.put(`/user/message/update/${id}`, {
-      percentage: progress,
+      percentage: 100,
       userId: filteredUser._id,
       respond: "completed",
       id: id,
@@ -912,7 +925,7 @@ const Ongoing = () => {
               </div>
             </Dialog>
 
-            <Dialog></Dialog>
+   
           </div>
         ) : (
           <p>No parents available</p>
@@ -924,4 +937,3 @@ const Ongoing = () => {
   );
 };
 export default Ongoing;
-
