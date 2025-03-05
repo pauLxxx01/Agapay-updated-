@@ -100,7 +100,6 @@ const TransactionHistory = ({ navigation }) => {
 
   const renderItem = ({ item }) => {
     const isCompleted = item.percentage === "100";
-    console.log(isCompleted);
 
     if (filterStatus === "completed" && !isCompleted) {
       return null;
@@ -132,7 +131,7 @@ const TransactionHistory = ({ navigation }) => {
     console.log("deets: ", JSON.stringify(detail.percentage));
 
     setSelectedDetail(detail);
-
+    console.log("details id: ", JSON.stringify(detail._id));
     if (detail.percentage == "100") {
       setModalVisible(true);
     } else {
@@ -150,13 +149,12 @@ const TransactionHistory = ({ navigation }) => {
     return <LoadingScreen />;
   }
 
-  console.log("selected: ", selectedTransaction);
-
+  const serverIP = "192.168.1.125"; // Replace with your local IP address
   const imageUrl = selectedTransaction?.img
-    ? `http://192.168.1.125:8080/images/${selectedTransaction.img}`
+    ? `http://${serverIP}:8080/images/${selectedTransaction.img}`
     : null;
-  console.log(imageUrl);
 
+  console.log("image url: ", selectedDetail);
   return (
     <View style={styles.container}>
       <View style={styles.filterContainer}>
@@ -167,8 +165,8 @@ const TransactionHistory = ({ navigation }) => {
           onValueChange={(itemValue) => setFilterStatus(itemValue)}
         >
           <Picker.Item label="All" value="all" />
-          <Picker.Item label="Completed" value="completed" />
           <Picker.Item label="In progress" value="incomplete" />
+          <Picker.Item label="Completed" value="completed" />
         </Picker>
       </View>
       {report.length === 0 ? (
@@ -190,27 +188,38 @@ const TransactionHistory = ({ navigation }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <View style={styles.modalTextContainer}>
+            <View
+              style={[
+                styles.modalTextContainer,
+                {
+                  alignItems: "center",
+                },
+              ]}
+            >
               <Text style={styles.modalTextTitle}>
                 {selectedTransaction && selectedTransaction.emergency}
               </Text>
+              <Text style={{ fontSize: 8, color: "#4caf50" }}>Completed</Text>
             </View>
 
             <View style={styles.modalTextContainer}>
-              <Image
-                style={styles.imageContainer}
-                source={{ uri: imageUrl }}
-                contentFit='fill'
-                onError={() => console.log('Error loading image')}
-              />
+              <View style={styles.imageContainer}>
+                <Image
+                  style={styles.imageStyle}
+                  source={{ uri: imageUrl }}
+                  contentFit="fill"
+                  onError={() => console.log("Error loading image")}
+                />
+              </View>
               <View style={styles.timeAndDate}>
-                <Text style={styles.modalText}>
+                <Text style={styles.modalTextDate}>
                   {new Date(
                     selectedTransaction && selectedTransaction.createdAt
                   ).toLocaleDateString()}
+                  {" - "}
                 </Text>
 
-                <Text style={styles.modalText}>
+                <Text style={styles.modalTextDate}>
                   {new Date(
                     selectedTransaction && selectedTransaction.createdAt
                   ).toLocaleTimeString("en-US", {
@@ -223,8 +232,8 @@ const TransactionHistory = ({ navigation }) => {
             </View>
 
             <View style={styles.modalTextContainer}>
-              <Text style={styles.modalText}>
-                Nearby: {selectedTransaction && selectedTransaction.location}
+              <Text style={[styles.modalText, { fontWeight: "bold" }]}>
+                {selectedTransaction && selectedTransaction.location}
               </Text>
               <Text>
                 Latitude: {selectedTransaction && selectedTransaction.lat}
@@ -233,17 +242,15 @@ const TransactionHistory = ({ navigation }) => {
                 Longitude: {selectedTransaction && selectedTransaction.long}
               </Text>
             </View>
-
-            <View style={styles.modalTextContainer}>
-              <Text style={styles.modalText}>
-                Responder:{" "}
-                {selectedTransaction && selectedTransaction.responder}
+            <View style={styles.modalThankyouContainer}>
+              <Text style={styles.modalSubTitleText}>
+                We hope that the situation was resolved safely and efficiently.
+                If there's anything else we can do to support you, please don't
+                hesitate to reach out.
               </Text>
-              <Text>
-                Latitude: {selectedTransaction && selectedTransaction.lat}
-              </Text>
-              <Text>
-                Longitude: {selectedTransaction && selectedTransaction.long}
+              <Text style={styles.modalSubTitleText}>
+                Thank you again for choosing our app, and we wish you all the
+                best.
               </Text>
             </View>
 
@@ -263,22 +270,39 @@ const TransactionHistory = ({ navigation }) => {
 export default TransactionHistory;
 
 const styles = StyleSheet.create({
+  modalTextDate: {
+    fontSize: 8,
+    color: "#666",
+  },
+  modalThankyouContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 8,
+  },
+  modalSubTitleText: {
+    fontSize: 12,
+    color: "#666",
+    textAlign: "center",
+  },
   imageContainer: {
-    width: 200,
+    alignItems: "center",
+    padding: 4,
+  },
+  imageStyle: {
+    width: "50%",
     height: 200,
     borderRadius: 10,
- 
   },
   modalTextContainer: {
-    padding: 2,
+    padding: 4,
     backgroundColor: "#f9f9f9",
     borderRadius: 10,
   },
   timeAndDate: {
-    justifyContent: "space-between",
     flexDirection: "row",
     alignContent: "center",
     alignItems: "center",
+    justifyContent: "center",
   },
   container: {
     flex: 1,
@@ -403,7 +427,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   modalText: {
-    fontSize: getFullScreenHeight() * 0.02,
+    fontSize: getFullScreenHeight() * 0.018,
     color: "#444",
   },
   modalButton: {

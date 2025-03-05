@@ -122,7 +122,10 @@ const UpdateInfo = ({}) => {
         <Text style={styles.name}>
           {userInfo?.name || "Name not available"}
         </Text>
-
+  {/* Account ID */}
+  <Text style={[styles.studentDetails, {fontWeight: "bold"}]}>
+          {userInfo?.account_id || "Account ID not available"}
+        </Text>
         {/* Degree */}
         <Text style={styles.studentDetails}>
           {userInfo?.degree || "Degree not specified"}
@@ -130,13 +133,10 @@ const UpdateInfo = ({}) => {
 
         {/* School Year */}
         <Text style={styles.studentDetails}>
-          {userInfo?.school_year ? `${userInfo.school_year} Year` : ""}
+          {userInfo?.school_year ? `${userInfo.school_year}year` : ""}
         </Text>
 
-        {/* Account ID */}
-        <Text style={styles.studentDetails}>
-          {userInfo?.account_id || "Account ID not available"}
-        </Text>
+      
       </View>
 
       <ScrollView style={styles.infos}>
@@ -368,31 +368,33 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 100,
     overflow: "hidden",
+    marginBottom: 12,
 
   },
   name: {
     color: "black",
-    fontSize: width * 0.06,
+    fontSize: width * 0.055,
     fontWeight: "bold",
-    marginVertical: height * 0.001,
+    marginVertical: height * 0.0015,
   },
   studentDetails: {
-    color: "black",
-    fontSize: width * 0.045,
-    marginVertical: height * 0.002,
+    color: "maroon",
+    fontSize: width * 0.035,
+    marginVertical: height * 0.001,
   },
   infos: {
+
     marginTop: height * 0.05,
     paddingHorizontal: width * 0.05,
   },
   inputContainer: {
-    marginBottom: height * 0.02,
+    marginBottom: height * 0.015,
   },
   label: {
-    fontSize: width * 0.045,
+    fontSize: width * 0.040,
     color: "black",
     fontWeight: "bold",
-    marginBottom: height * 0.01,
+    marginBottom: height * 0.005,
   },
   inputWithIcon: {
     flexDirection: "row",
@@ -401,7 +403,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F1EFEF",
     borderWidth: 1,
     borderRadius: 10,
-    padding: width * 0.03,
+    paddingHorizontal: width * 0.03,
   },
   icon: {
     marginRight: width * 0.03,

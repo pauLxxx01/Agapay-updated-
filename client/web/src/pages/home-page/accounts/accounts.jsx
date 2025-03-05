@@ -2,18 +2,10 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { fadeIn } from "../../../variants"; // Ensure this is defined correctly
 import "./accounts.scss";
-import Accounts from '../responder/responder.jsx';
-import { AuthContext } from "../../../context/authContext.jsx";
+import Accounts from "../responder/responder.jsx";
+
 
 const AccountCatagory = () => {
-
-
-    const [state, ,users , , , responder] = useContext(AuthContext);
-
-
-
-  console.log("state: ", users)
-  console.log("responder: ", responder);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState("Accounts");
   const dropdownRef = useRef(null);
@@ -27,6 +19,23 @@ const AccountCatagory = () => {
   const handleOptionClick = (option) => {
     setSelectedOption(option);
     setIsOpen(false);
+    selectedOptions(option); // Call selectedOptions here
+  };
+
+  const [selected, setSelected] = useState(null);
+
+  // Update selected based on selectedOption
+  const selectedOptions = (option) => {
+    switch (option) {
+      case "Accounts":
+        setSelected("accounts");
+        break;
+      case "Responders":
+        setSelected("responder");
+        break;
+      default:
+        console.log("No matching option found.");
+    }
   };
 
   // Close dropdown when clicking outside
@@ -60,25 +69,21 @@ const AccountCatagory = () => {
           </button>
           {isOpen && (
             <ul className="dropdown-menu">
-              {options.length > 0 ? (
-                options.map((option, index) => (
-                  <li
-                    key={index}
-                    onClick={() => handleOptionClick(option)}
-                    className="dropdown-item"
-                  >
-                    {option}
-                  </li>
-                ))
-              ) : (
-                <li className="dropdown-item disabled">No options available</li>
-              )}
+              {options.map((option, index) => (
+                <li
+                  key={index}
+                  onClick={() => handleOptionClick(option)}
+                  className="dropdown-item"
+                >
+                  {option}
+                </li>
+              ))}
             </ul>
           )}
         </div>
       </div>
-      {/* Conditional rendering of Responder component */}
-      {selectedOption === "Responders" ? <Accounts selectedOption={"responder"} /> : <Accounts selectedOption={"users"} />}
+
+      <Accounts selectedOption={selected} />
     </motion.div>
   );
 };

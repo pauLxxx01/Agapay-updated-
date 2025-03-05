@@ -58,6 +58,7 @@ const ShowProgress = ({ navigation, route }) => {
   const [sound, setSound] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [travelTime, setTravelTime] = useState(null);
+  const [isReportComplete, setIsReportComplete] = useState(false); // New state variable
 
   const origin =
     report[0]?.adminLat && report[0]?.adminLong
@@ -88,7 +89,7 @@ const ShowProgress = ({ navigation, route }) => {
         );
 
         console.log("match infos: ", matchInfos);
-
+        
         setCurrentMessage(matchInfos?.message || "Progress underway...");
 
         // Fetch admin data
@@ -107,19 +108,26 @@ const ShowProgress = ({ navigation, route }) => {
 
         // Set up socket listeners
         socket.on("progressUpdate", (message) => {
-          console.log("update: message ", message.messages);
+          console.log("update message ", message.messages);
           setReport((prevReports) => {
             const reportExist = prevReports.some(
               (rpt) => rpt._id === message.messages._id
             );
-            if (reportExist) {
-              return prevReports.map((rpt) =>
-                rpt._id === message.messages._id ? message.messages : rpt
-              );
-            } else {
-              return [...prevReports, message.messages];
-            }
+
+            const updatedReports = reportExist
+              ? prevReports.map((rpt) =>
+                  rpt._id === message.messages._id ? message.messages : rpt
+                )
+              : [...prevReports, message.messages];
+
+            return updatedReports;
           });
+
+          // Check if the report is complete outside the setReport callback
+
+          if (message.messages.percentage.toString() === "100") {
+            setIsReportComplete(true);
+          }
         });
 
         socket.on("receiveMessage", (message) => {
@@ -228,11 +236,16 @@ const ShowProgress = ({ navigation, route }) => {
   const userLocation = {
     latitude: destination.latitude,
     longitude: destination.longitude,
-    latitudeDelta: 0.000992, 
-    longitudeDelta: 0.000992, 
+    latitudeDelta: 0.000992,
+    longitudeDelta: 0.000992,
   };
 
   const mapRegion = initialRegion();
+
+  const handleCompletionClose = () => {
+    setIsReportComplete(false);
+    navigation.navigate("Homepage");
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -280,7 +293,6 @@ const ShowProgress = ({ navigation, route }) => {
             />
           )}
       </MapView>
-
       {travelTime !== null && (
         <Text style={styles.travelTimeText}>
           Estimated Travel Time:
@@ -318,6 +330,7 @@ const ShowProgress = ({ navigation, route }) => {
           />
         </TouchableOpacity>
       </View>
+
       <Modal
         animationType="slide"
         transparent={true}
@@ -335,6 +348,30 @@ const ShowProgress = ({ navigation, route }) => {
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Report Completion Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isReportComplete}
+        onRequestClose={handleCompletionClose}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Report Complete!</Text>
+            <Text style={styles.modalText}>
+              Thank you for using our application! Your report is now complete.
+              Explore more features anytime.
+            </Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={handleCompletionClose}
             >
               <Text style={styles.closeButtonText}>Close</Text>
             </TouchableOpacity>
@@ -417,6 +454,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
+    textAlign: "center",
   },
   adminItem: {
     marginBottom: 10,
@@ -479,6 +517,11 @@ const styles = StyleSheet.create({
     color: "maroon",
     fontSize: 13,
     fontWeight: "bold",
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: "center",
   },
 });
 

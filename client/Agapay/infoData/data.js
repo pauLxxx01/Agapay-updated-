@@ -112,32 +112,28 @@ const emergencies = [
 const progressReportInformation = [
   {
     id: "1",
-    percentage: "10",
+    percentage: 10,
     message: "SOS alert has been successfully sent.",
   },
   {
     id: "2",
-    percentage: "40",
+    percentage: 40,
     message: "SOS alert has been received by the Admin.",
   },
   {
     id: "3",
-    percentage: "65",
+    percentage: 65,
     message: "Please stand by and admin will call you immediately.",
   },
   {
     id: "4",
-    percentage: "85",
+    percentage: 85,
     message: "The responder will go there as soon as possible.",
   },
-  {
-    id: "5",
-    percentage: "95",
-    message: "Admin will call you again soon",
-  },
+ 
   {
     id: "6",
-    percentage: "100",
+    percentage: 100,
     message: "The SOS report has been successfully completed.",
   },
 ];

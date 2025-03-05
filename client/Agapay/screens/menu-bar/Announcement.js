@@ -10,6 +10,7 @@ import {
   Modal,
   Dimensions,
   SafeAreaView,
+  ScrollView,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import axios from "axios";
@@ -187,7 +188,7 @@ const Announcement = ({ navigation }) => {
                 setSearchVisible(true);
               }}
             >
-              <Icon name="search" size={38} color="#800000" />
+              <Icon name="search" size={18} color="#800000" />
             </TouchableOpacity>
           )}
           {searchVisible && (
@@ -205,7 +206,7 @@ const Announcement = ({ navigation }) => {
                   setSearchVisible(false);
                 }}
               >
-                <Icon name="close" size={24} color="#800000" />
+                <Icon name="close" size={18} color="#800000" />
               </TouchableOpacity>
             </View>
           )}
@@ -225,34 +226,39 @@ const Announcement = ({ navigation }) => {
 
       {/* Modals */}
       <Modal visible={modalVisible} transparent animationType="fade">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTopic}>
-              {selectedAnnouncement && selectedAnnouncement.topic}
-            </Text>
-            <Text style={styles.modalDepartment}>
-              {selectedAnnouncement && selectedAnnouncement.department}
-            </Text>
-            <Text style={styles.modalDate}>
-              When:{" "}
-              {selectedAnnouncement &&
-                new Date(selectedAnnouncement.date).toLocaleDateString(
-                  undefined,
-                  {
-                    weekday: "long", // e.g., "Monday"
-                    year: "numeric", // e.g., "2024"
-                    month: "long", // e.g., "December"
-                    day: "numeric", // e.g., "7"
-                  }
-                )}
-            </Text>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContentContainer} >
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTopic}>
+                {selectedAnnouncement && selectedAnnouncement.topic}
+              </Text>
 
-            <Text style={styles.modalDuration}>
-              Duration: {selectedAnnouncement && selectedAnnouncement.duration}
-            </Text>
-            <Text style={styles.modalMessage}>
-              {selectedAnnouncement && selectedAnnouncement.description}
-            </Text>
+              <Text style={styles.modalDate}>
+                {selectedAnnouncement &&
+                  new Date(selectedAnnouncement.date).toLocaleDateString(
+                    undefined,
+                    {
+                      weekday: "long", // e.g., "Monday"
+                      year: "numeric", // e.g., "2024"
+                      month: "long", // e.g., "December"
+                      day: "numeric", // e.g., "7"
+                    }
+                  )}
+              </Text>
+
+              <Text style={styles.modalDuration}>
+                {selectedAnnouncement && selectedAnnouncement.duration}
+              </Text>
+              <Text style={styles.modalDepartment}>
+                {selectedAnnouncement && selectedAnnouncement.department}
+              </Text>
+              <ScrollView>
+              <Text style={styles.modalMessage}>
+                {selectedAnnouncement && selectedAnnouncement.description}
+              </Text>
+              </ScrollView>
+             
+            </View>
             <TouchableOpacity
               onPress={() => setModalVisible(false)}
               style={styles.closeButton}
@@ -263,6 +269,47 @@ const Announcement = ({ navigation }) => {
         </View>
       </Modal>
 
+
+      {/* <Modal visible={modalVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <ScrollView style={styles.modalContentContainer}  contentContainerStyle={styles.centeredContent}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTopic}>
+                {selectedAnnouncement && selectedAnnouncement.topic}
+              </Text>
+
+              <Text style={styles.modalDate}>
+                {selectedAnnouncement &&
+                  new Date(selectedAnnouncement.date).toLocaleDateString(
+                    undefined,
+                    {
+                      weekday: "long", // e.g., "Monday"
+                      year: "numeric", // e.g., "2024"
+                      month: "long", // e.g., "December"
+                      day: "numeric", // e.g., "7"
+                    }
+                  )}
+              </Text>
+
+              <Text style={styles.modalDuration}>
+                {selectedAnnouncement && selectedAnnouncement.duration}
+              </Text>
+              <Text style={styles.modalDepartment}>
+                {selectedAnnouncement && selectedAnnouncement.department}
+              </Text>
+              <Text style={styles.modalMessage}>
+                {selectedAnnouncement && selectedAnnouncement.description}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setModalVisible(false)}
+              style={styles.closeButton}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      </Modal> */}
       <Modal visible={menuVisible} transparent animationType="fade">
         <View style={styles.modalContainerBottom}>
           <View style={styles.modalContentBottom}>
@@ -296,6 +343,66 @@ const Announcement = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContentContainer: {
+    padding: 12  
+  },
+
+  modalContent: {
+    maxHeight: "85%",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    paddingVertical: 20,
+    paddingHorizontal: 15,
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTopic: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 4,
+    color: "#666",
+  },
+  modalDepartment: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 4,
+    fontWeight: "bold",
+  },
+  modalDate: {
+    fontSize: 12,
+    color: "#666",
+  },
+  modalDuration: {
+    fontSize: 12,
+    color: "#666",
+    marginBottom: 4,
+  },
+  modalMessage: {
+    fontSize: 15,
+    color: "#666",
+  },
+  closeButton: {
+    backgroundColor: "#dc3545",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 10,
+    alignSelf: "flex-end",
+    elevation: 2,
+  },
+  closeButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   container: {
     flex: 1,
     backgroundColor: "#fff",
@@ -310,7 +417,7 @@ const styles = StyleSheet.create({
   headerIcons: {
     flexDirection: "row",
     alignItems: "center",
-  
+
     backgroundColor: "#F0F0F0",
     padding: 8,
     borderRadius: 50,
@@ -374,50 +481,7 @@ const styles = StyleSheet.create({
   listContent: {
     padding: width * 0.05,
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-  },
-  modalContent: {
-    backgroundColor: "#ffffff",
-    borderRadius: 10,
-    padding: 20,
-    width: width - 40,
-    maxHeight: height - 150,
-  },
-  modalTopic: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  modalDepartment: {
-    fontSize: 16,
-    marginVertical: 5,
-  },
-  modalDate: {
-    fontSize: 14,
-    color: "#555",
-  },
-  modalDuration: {
-    fontSize: 14,
-    color: "#555",
-  },
-  modalMessage: {
-    fontSize: 16,
-    marginVertical: 10,
-  },
-  closeButton: {
-    backgroundColor: "#800000",
-    borderRadius: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    alignItems: "center",
-  },
-  closeButtonText: {
-    color: "#fff",
-    fontSize: 16,
-  },
+
   modalContainerBottom: {
     flex: 1,
     justifyContent: "flex-end",

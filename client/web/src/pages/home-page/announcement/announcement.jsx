@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import Loading from "../../../components/loading/loading";
 import "./announcement.scss";
-import { headerTableAnnounce } from "../../../newData";
+import { announcementHeaderTable, headerTableAnnounce } from "../../../newData";
 
 import { AuthContext } from "../../../context/authContext";
 import {
@@ -14,10 +14,14 @@ import {
   DialogContent,
   DialogTitle,
   Grow,
+  IconButton,
+  Menu,
   Typography,
+  MenuItem,
 } from "@mui/material";
 import { useSocket } from "../../../socket/Socket";
-import Table from "./../../../components/table/table";
+
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 const Announcement = () => {
   const [state, , users] = useContext(AuthContext);
@@ -47,21 +51,35 @@ const Announcement = () => {
   const [topic, setTopic] = useState("");
   const [duration, setDuration] = useState("");
 
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [currentHeaderKey, setCurrentHeaderKey] = useState(null);
+  const [filters, setFilters] = useState({});
+
+  const [showHiddenAnnouncements, setShowHiddenAnnouncements] = useState(false); // New State
+
   useEffect(() => {
     setLoading(true);
     const fetchData = async () => {
       try {
         const response = await axios.get("/get-announcement");
-        console.log("fetched announcement: ", response.data);
 
-        const sortedAnnouncements = response.data.announcements;
-        const visibleAnnouncements = sortedAnnouncements.filter(
-          (announcement) =>
-            !announcement.isHidden &&
-            !announcement.hiddenBy.includes(state.admin._id)
-        );
+        const allAnnouncements = response.data.announcements;
+        let filteredAnnouncements = allAnnouncements;
 
-        setAnnounce(visibleAnnouncements);
+        if (!showHiddenAnnouncements) {
+          filteredAnnouncements = allAnnouncements.filter(
+            (announcement) =>
+              !announcement.isHidden &&
+              !announcement.hiddenBy.includes(state.admin._id)
+          );
+        } else {
+          // Show only hidden announcements by the current user
+          filteredAnnouncements = allAnnouncements.filter((announcement) =>
+            announcement.hiddenBy.includes(state.admin._id)
+          );
+        }
+
+        setAnnounce(filteredAnnouncements);
         setLoading(false);
       } catch (error) {
         setLoading(false);
@@ -98,7 +116,7 @@ const Announcement = () => {
       socket.off("hide-status");
       socket.off("announcement");
     };
-  }, [users, socket]);
+  }, [users, socket, showHiddenAnnouncements, state.admin._id]);
 
   if (loading) {
     return <Loading />;
@@ -136,25 +154,33 @@ const Announcement = () => {
       Alert.alert("Error", "Failed to toggle announcement visibility.");
     }
   };
+  // Close dropdown menu
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
-  const filteredAnnounces = announce
-    .filter(
-      (data) =>
-        data.title
-          .toString()
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        data.topic
-          .toString()
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        data.date.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) =>
-      sortDirection === "desc"
-        ? new Date(b.createdAt) - new Date(a.createdAt)
-        : new Date(a.createdAt) - new Date(b.createdAt)
-    );
+  // Open dropdown menu
+  const handleClick = (event, headerKey) => {
+    setAnchorEl(event.currentTarget);
+    setCurrentHeaderKey(headerKey);
+  };
+  const filteredAnnounces =
+    announce?.filter((item) => {
+      const matchesSearch = Object.values(item).some((value) =>
+        value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+      const matchesFilters = Object.entries(filters).every(
+        ([key, filterValue]) =>
+          filterValue === ""
+            ? true
+            : (item[key]?.toString().toLowerCase() || "").includes(
+                filterValue.toLowerCase()
+              )
+      );
+
+      return matchesSearch && matchesFilters;
+    }) || [];
 
   const lastIndex = currentPage * recordsPerPage;
   const firstIndex = lastIndex - recordsPerPage;
@@ -225,17 +251,20 @@ const Announcement = () => {
     e.preventDefault();
     setOpenDialog(true);
   };
+  // Filter change logic
+  const handleFilterChange = (key, value) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [key]: value,
+    }));
+    handleClose();
+  };
 
   return (
-    <div>
-      <motion.div
-        variants={fadeIn("down", 0.1)}
-        initial="hidden"
-        whileInView="show"
-        className="title"
-      >
-        <h1>Announcement</h1>
-      </motion.div>
+    <motion.div variants={zoomIn(0.1)} initial="hidden" whileInView="show">
+      <div className="title">
+        <h1>{showHiddenAnnouncements ? "Hidden Announcement" : "Announcement"}</h1>
+      </div>
 
       <div className="announcement-container">
         {isModalViewOpen && (
@@ -254,11 +283,10 @@ const Announcement = () => {
                     <p className="announceTitle">{title}</p>
                   </div>
                   <div className="info-item">
-                  
                     <h3>{topic}</h3>
                     <p>{description}</p>
                   </div>
-              
+
                   <div className="info-item">
                     <h3>Department:</h3>
                     <p>{department}</p>
@@ -267,7 +295,7 @@ const Announcement = () => {
                     <h3>Date:</h3>
                     <p>{formatDate(date)}</p>
                   </div>
-                 
+
                   <div className="info-item">
                     <h3>Duration:</h3>
                     <p>{duration}</p>
@@ -280,7 +308,7 @@ const Announcement = () => {
 
         {isModalOpen && (
           <div>
-            <div className="modal">
+            <div className="modals">
               <div className="form-container-announce">
                 <form className="announce-form" onSubmit={handleToConfirm}>
                   <div className="header-container">
@@ -424,70 +452,81 @@ const Announcement = () => {
           </DialogActions>
         </Dialog>
 
-        <motion.div
-          variants={fadeIn("down", 0.1)}
-          initial="hidden"
-          whileInView="show"
-          className="btnAnnounce"
-        >
-          <div className="bnt-container" onClick={() => setModalOpen(true)}>
-            <span>Create announcement</span>
-          </div>
-        </motion.div>
-        <motion.div
-          variants={zoomIn(0.1)}
-          initial="hidden"
-          whileInView="show"
-          className="count-container"
-        >
+        <div className="count-container">
           <div className="count-history">
             <span className="dataCount">{filteredAnnounces.length}</span>
             <span className="dataCount">Total Announcements</span>
           </div>
-        </motion.div>
-        <motion.div
-          variants={fadeIn("up", 0.1)}
-          initial="hidden"
-          whileInView="show"
-          className="btn-search"
-        >
+        </div>
+        <div className="btnAnnounce">
+          <div className="bnt-container" onClick={() => setModalOpen(true)}>
+            <span>Create announcement</span>
+          </div>
+        </div>
+        <div className="btn-search">
           <input
             type="search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search announcement"
           />
-        </motion.div>
-
-        <motion.table
-          variants={fadeIn("up", 0.1)}
-          initial="hidden"
-          whileInView="show"
-          className="announce-table"
-        >
+        </div>
+        <div className="btnHideAndUnhide">
+          <button className="linksHide"  onClick={() => setShowHiddenAnnouncements(!showHiddenAnnouncements)}>
+          <p>
+            {showHiddenAnnouncements
+              ? "Check Latest Announcements?"
+              : "Check Hidden Announcements?"}
+          </p>
+          </button>
+        </div>
+        <table className="user-table">
           <thead>
             <tr>
-              {headerTableAnnounce.map((header, index) => (
-                <th
-                  key={header.Label + index}
-                  onClick={
-                    header.Label === "ANNOUNCE CREATED"
-                      ? () =>
-                          setSortDirection(
-                            sortDirection === "desc" ? "asc" : "desc"
-                          )
-                      : undefined
-                  }
-                  style={{
-                    cursor:
-                      header.Label === "ANNOUNCE CREATED"
-                        ? "pointer"
-                        : "default",
-                  }}
-                >
+              {announcementHeaderTable.map((header) => (
+                <th key={header.id}>
                   {header.Label}
-                  {header.Label === "ANNOUNCE CREATED" &&
-                    (sortDirection === "desc" ? " ↑" : " ↓")}
+                  {header.KEY !== "number" && header.KEY !== "name" && (
+                    <>
+                      <IconButton onClick={(e) => handleClick(e, header.KEY)}>
+                        <MoreVertIcon sx={{ color: "white", fontSize: 12 }} />
+                      </IconButton>
+                      <Menu
+                        id="simple-menu"
+                        anchorEl={anchorEl}
+                        keepMounted
+                        open={
+                          Boolean(anchorEl) && currentHeaderKey === header.KEY
+                        }
+                        onClose={handleClose}
+                      >
+                        <MenuItem
+                          sx={{ fontSize: 12 }}
+                          key="all-option"
+                          onClick={() => handleFilterChange(header.KEY, "")}
+                        >
+                          All
+                        </MenuItem>
+                        {[
+                          ...new Set(
+                            filteredAnnounces.map(
+                              (user) => user[header.KEY] || "No Data"
+                            )
+                          ),
+                        ].map((value) => (
+                          <MenuItem
+                            sx={{ fontSize: 12 }}
+                            key={value}
+                            onClick={() =>
+                              handleFilterChange(header.KEY, value)
+                            }
+                          >
+                            {value}
+                          </MenuItem>
+                        ))}
+                      </Menu>
+                    </>
+                  )}
                 </th>
               ))}
             </tr>
@@ -495,29 +534,61 @@ const Announcement = () => {
           <tbody>
             {currentUsers.length === 0 ? (
               <tr>
-                <td colSpan={headerTableAnnounce.length}>
-                  No announcements found
-                </td>
+                <td colSpan={announcementHeaderTable.length}>No data</td>
               </tr>
             ) : (
-              currentUsers.map((data) => (
-                <tr className="items-row" key={data._id}>
-                  <td>{data.title}</td>
-                  <td>{data.topic}</td>
-                  <td>{formatDate(data.createdAt)}</td>
-                  <td className="btn-action-container">
-                    <button onClick={() => handleRowClick(data)}>View</button>
-                    {data.hiddenBy.includes(currentUsers._id) ? (
-                      <button onClick={() => handleUnhide(data)}>Unhide</button>
-                    ) : (
-                      <button onClick={() => handleHide(data)}>Hide</button>
-                    )}
-                  </td>
+              currentUsers.map((data, index) => (
+                <tr
+                  key={`${index}-${data._id}`}
+                  onClick={() => console.log("Row clicked:", data)}
+                >
+                  {announcementHeaderTable.map((column, headerIndex) => {
+                    const columnLabel = column.KEY.toLowerCase();
+                    if (column.KEY === "action") {
+                      return (
+                        <td
+                          key={`${columnLabel}-${headerIndex}`}
+                          className="btn-action-container"
+                        >
+                          <button
+                            className="view-btn"
+                            onClick={() => handleRowClick(data)}
+                          >
+                            View
+                          </button>
+                          {data.hiddenBy.includes(state.admin._id) ? (
+                            <button
+                              className="unhide-btn"
+                              onClick={() => handleUnhide(data)}
+                            >
+                              Unhide
+                            </button>
+                          ) : (
+                            <button
+                              className="hide-btn"
+                              onClick={() => handleHide(data)}
+                            >
+                              Hide
+                            </button>
+                          )}
+                        </td>
+                      );
+                    } else {
+                      return (
+                        <td key={`${columnLabel}-${headerIndex}`}>
+                          {column.KEY === "number"
+                            ? firstIndex + index + 1
+                            : data[column.KEY]}
+                        </td>
+                      );
+                    }
+                  })}
                 </tr>
               ))
             )}
           </tbody>
-        </motion.table>
+        </table>
+
         {totalPages > 1 && (
           <motion.div
             variants={fadeIn("right", 0.1)}
@@ -620,7 +691,7 @@ const Announcement = () => {
           </motion.div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

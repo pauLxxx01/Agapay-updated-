@@ -1,14 +1,14 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../../../context/authContext";
-import { motion} from "framer-motion";
+import { motion } from "framer-motion";
 import { fadeIn, zoomIn } from "../../../variants";
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import "./responder.scss";
 import { responderTable, accountsHeaderTable } from "../../../newData";
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import moment from "moment";
+import moment from "moment"; // You aren't using moment - remove this import
+import Loading from "../../../components/loading/loading";
 
 const Accounts = ({ selectedOption }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, order: "asc" });
@@ -19,29 +19,33 @@ const Accounts = ({ selectedOption }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentHeaderKey, setCurrentHeaderKey] = useState(null);
 
-  const [state, , users, , , responder] = useContext(AuthContext);
+  const [state, , users, , , responder] = useContext(AuthContext); // Consider destructuring more descriptively
 
-  const [selectedUser, setSelectedUser] = useState(responder);
-
-  const [tableFormat, setTableFormat] = useState(accountsHeaderTable);
-  const [navigationLink, setNavigationLink] = useState(null)
-
-  console.log("responders", responder);
-  console.log("users", users);
-
-  useEffect(() => {
-    if (selectedOption !== "responder") {
-      setSelectedUser(users);
-      setTableFormat(accountsHeaderTable);
-      setNavigationLink("/home/account/user/registration")
-    } else {
-      setSelectedUser(responder);
-      setTableFormat(responderTable);
-      setNavigationLink("/home/responder/registration")
-    }
-  }, [selectedOption]);
+  const [selectedUser, setSelectedUser] = useState(users); //Initialize properly based on the default selectedOption
+  const [tableFormat, setTableFormat] = useState(accountsHeaderTable);  //Initialize properly based on the default selectedOption
+  const [navigationLink, setNavigationLink] = useState("/home/account/user/registration"); //Initialize properly based on the default selectedOption
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+
+    useEffect(() => {
+        const initializeData = () => {
+            setLoading(true);
+            if (selectedOption === "responder") {
+                setSelectedUser(responder);
+                setTableFormat(responderTable);
+                setNavigationLink("/home/responder/registration");
+            } else {
+                setSelectedUser(users);
+                setTableFormat(accountsHeaderTable);
+                setNavigationLink("/home/account/user/registration");
+            }
+            setLoading(false);
+        };
+
+        initializeData();
+    }, [selectedOption, users, responder]); // Added users and responder to dependencies
+
   // Sorting logic
   const handleSort = (key) => {
     setSortConfig((prev) => ({
@@ -116,103 +120,88 @@ const Accounts = ({ selectedOption }) => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <motion.div
-    variants={zoomIn(0.1)}
-    initial="hidden"
-    whileInView="show"
-    className="container-responder">
-      <div
-       
-        className="count-container"
-      >
-      
-       
+      variants={zoomIn(0.1)}
+      initial="hidden"
+      whileInView="show"
+      className="container-responder"
+    >
+      <div className="count-container">
         <div className="count-history">
           <span className="dataCount">{selectedUser?.length || 0}</span>
           <span className="dataCount">Total User Accounts</span>
         </div>
       </div>
-      
+
       <div className="searchAndBtnContainer">
+        <div className="btn-create-responder">
+          <button
+            className="btn-create"
+            onClick={() => navigate(navigationLink)}
+          >
+            Create User
+          </button>
+        </div>
 
-      <div className="btn-create-responder">
-        <button
-          className="btn-create"
-          onClick={() => navigate(navigationLink)}
-        >
-          Create User
-        </button>
+        <div className="searchContainer">
+          <input
+            type="search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search..."
+          />
+        </div>
       </div>
-
-      <div
-      
-        className="searchContainer"
-      >
-        <input
-          type="search"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search..."
-        />
-      </div>
-      </div>
-      <table
-       
-        className="user-table"
-      >
+      <table className="user-table">
         <thead>
           <tr>
             {tableFormat.map((header) => (
               <th key={header.id}>
                 {header.Label}
-                {header.KEY !== "number" &&
-                  header.KEY !== "name" &&
-                   (
-                    <>
-                      <IconButton onClick={(e) => handleClick(e, header.KEY)}>
-                        <MoreVertIcon
-                       
-                          sx={{ color: "white" , fontSize: 12}}
-                        />
-                      </IconButton>
-                      <Menu
-                        id="simple-menu"
-                        anchorEl={anchorEl}
-                        keepMounted
-                        open={
-                          Boolean(anchorEl) && currentHeaderKey === header.KEY
-                        }
-                        onClose={handleClose}
+                {header.KEY !== "number" && header.KEY !== "name" && (
+                  <>
+                    <IconButton onClick={(e) => handleClick(e, header.KEY)}>
+                      <MoreVertIcon sx={{ color: "white", fontSize: 12 }} />
+                    </IconButton>
+                    <Menu
+                      id="simple-menu"
+                      anchorEl={anchorEl}
+                      keepMounted
+                      open={
+                        Boolean(anchorEl) && currentHeaderKey === header.KEY
+                      }
+                      onClose={handleClose}
+                    >
+                      <MenuItem
+                        sx={{ fontSize: 12 }}
+                        key="all-option"
+                        onClick={() => handleFilterChange(header.KEY, "")}
                       >
+                        All
+                      </MenuItem>
+                      {[
+                        ...new Set(
+                          filteredResponders.map(
+                            (user) => user[header.KEY] || "No Data"
+                          )
+                        ),
+                      ].map((value) => (
                         <MenuItem
-                                  sx={{  fontSize: 12}}
-                          key="all-option"
-                          onClick={() => handleFilterChange(header.KEY, "")}
+                          sx={{ fontSize: 12 }}
+                          key={value}
+                          onClick={() => handleFilterChange(header.KEY, value)}
                         >
-                          All
+                          {value}
                         </MenuItem>
-                        {[
-                          ...new Set(
-                            filteredResponders.map(
-                              (user) => user[header.KEY] || "No Data"
-                            )
-                          ),
-                        ].map((value) => (
-                          <MenuItem
-                          sx={{  fontSize: 12}}
-                            key={value}
-                            onClick={() =>
-                              handleFilterChange(header.KEY, value)
-                            }
-                          >
-                            {value}
-                          </MenuItem>
-                        ))}
-                      </Menu>
-                    </>
-                  )}
+                      ))}
+                    </Menu>
+                  </>
+                )}
               </th>
             ))}
           </tr>
@@ -224,21 +213,20 @@ const Accounts = ({ selectedOption }) => {
             </tr>
           ) : (
             currentUsers.map((data, index) => (
-              <tr key={`${index}-${data._id}`} onClick={() => console.log("Row clicked:", data)}>
+              <tr
+                key={`${index}-${data._id}`}
+                onClick={() => console.log("Row clicked:", data)}
+              >
                 {tableFormat.map((column, headerIndex) => {
-                 const columnLabel = column.KEY.toLowerCase();
-
-                 
-                 return ( 
-                  <td key={`${columnLabel}-${headerIndex}`}>
-
-                    {column.KEY === "number"
-                      ? firstIndex + index + 1
-                      : data[column.KEY]}
-                  </td>
-                  )
-                  
-})}
+                  const columnLabel = column.KEY.toLowerCase();
+                  return (
+                    <td key={`${columnLabel}-${headerIndex}`}>
+                      {column.KEY === "number"
+                        ? firstIndex + index + 1
+                        : data[column.KEY]}
+                    </td>
+                  );
+                })}
               </tr>
             ))
           )}
@@ -246,10 +234,7 @@ const Accounts = ({ selectedOption }) => {
       </table>
 
       {totalPages > 1 && (
-        <div
-        
-          className="containerNav"
-        >
+        <div className="containerNav">
           <nav>
             <ul className="pagination-modal">
               {currentPage > 1 && (

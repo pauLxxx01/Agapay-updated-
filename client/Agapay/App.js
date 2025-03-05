@@ -91,7 +91,7 @@ export default function App() {
 
             <Stack.Screen name="About" component={About} />
             <Stack.Screen name="Feedback" component={FeedbackComponent} />
-            <Stack.Screen name="UpdateInfo" component={UpdateInfo} />
+            <Stack.Screen name="UpdateInfo" component={UpdateInfo}   options={{ title: 'Personal details' }} />
             <Stack.Screen name="Announcement" component={Announcement} />
             <Stack.Screen name="Transaction" component={History} />
             {/* Report Progress */}

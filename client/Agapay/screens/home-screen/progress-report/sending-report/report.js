@@ -396,13 +396,13 @@ const styles = StyleSheet.create({
   },
   map: {
     width: "100%",
-    height: 200,
+    height: 150,
     borderRadius: 10,
     overflow: "hidden", // Clip content to the border
   },
   buttonContainer: {
-    padding: 10,
-    alignItems: "center",
+    marginVertical: 8,
+    alignItems: "flex-end",
   },
   container: {
     paddingTop: statusBarSize(),
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   locationContainer: {
-    marginHorizontal: width * 0.05, // Consistent horizontal margins
+  
     marginBottom: width * 0.04, // Spacing before the button
   },
   headerTitle: {
@@ -463,7 +463,7 @@ const styles = StyleSheet.create({
   imageScrollView: {
     backgroundColor: "#fff",
     borderRadius: 10,
-    marginHorizontal: width * 0.05,
+   
     padding: 5,
     borderWidth: 1,
     borderColor: secondaryColor,
@@ -531,12 +531,11 @@ const styles = StyleSheet.create({
   textContainer: {
     backgroundColor: "#fff",
     borderRadius: 10,
-    marginHorizontal: width * 0.05,
     marginBottom: width * 0.04,
     padding: width * 0.04,
     borderColor: secondaryColor,
     borderWidth: 1,
-    height: width * 0.4, // Fixed height for the container
+    height: width * 0.3, // Fixed height for the container
     overflow: 'hidden', // Clip content that overflows
   },
   input: {

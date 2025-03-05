@@ -227,22 +227,51 @@ export const responderTable = [
 ];
 
 export const accountsHeaderTable = [
-  { KEY: "number", Label: "#" },
+  { id: 1, KEY: "number", Label: "#" },
   {
+    id: 2,
     KEY: "name",
     Label: "NAME",
   },
   {
+    id: 3,
     KEY: "account_id",
     Label: "USER ID",
   },
   {
+    id: 4,
     KEY: "department",
     Label: "DEPARTMENT",
   },
 
   {
+    id: 5,
     KEY: "degree",
     Label: "COURSE",
   },
 ];
+
+export const announcementHeaderTable = [
+  { id: 1, KEY: "number", Label: "#" },
+  {
+    id: 2,
+    KEY: "title",
+    Label: "TITLE",
+
+  },
+  {
+    id: 3,
+    KEY: "topic",
+    Label: "TOPIC",
+  },
+  {
+    id: 4,
+    KEY: "date",
+    Label: "DATE",
+  },
+  {
+    id: 5,
+    KEY: "action",
+    Label: "ACTION",
+  }
+]
