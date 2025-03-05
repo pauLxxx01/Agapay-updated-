@@ -1,5 +1,3 @@
-// src/components/LineChartComponent.js
-
 import React, { useState, useContext } from "react";
 import {
   LineChart,
@@ -12,7 +10,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { AuthContext } from "../../context/authContext";
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+
+dayjs.extend(isSameOrBefore);
 
 const LineChartComponent = () => {
   const [, messages] = useContext(AuthContext);
@@ -21,29 +22,41 @@ const LineChartComponent = () => {
   const [availableDates, setAvailableDates] = useState([]);
   const [noDataMessage, setNoDataMessage] = useState(""); // State to hold the message
 
-  // Function to get unique dates from completed messages
-  const getAvailableDates = (messages) => {
-    const completedMessages = messages.filter(
-      (message) => message.respond === "completed"
-    );
+  // Function to generate all dates in a range
+  const generateAllDatesInRange = (startDate, endDate) => {
+    const dates = [];
+    let currentDate = dayjs(startDate);
 
-    const dates = completedMessages.map((message) =>
-      dayjs(message.createdAt).format("YYYY-MM-DD")
-    );
+    while (currentDate.isSameOrBefore(endDate)) {
+      dates.push(currentDate.format("YYYY-MM-DD"));
+      currentDate = currentDate.add(1, "day");
+    }
 
-    // Create a unique set of dates
-    return [...new Set(dates)];
+    return dates;
   };
 
   // Set available dates when component mounts or messages change
   React.useEffect(() => {
-    const dates = getAvailableDates(messages);
-    setAvailableDates(dates);
+    const completedMessages = messages.filter(
+      (message) => message.respond === "completed"
+    );
 
-    // Display message if no completed messages are available
-    if (dates.length === 0) {
+    if (completedMessages.length === 0) {
+      setAvailableDates([]);
       setNoDataMessage("There are no completed reports yet.");
     } else {
+      const earliestDate = completedMessages.reduce((minDate, message) => {
+        const currentDate = dayjs(message.createdAt);
+        return !minDate || currentDate.isBefore(minDate) ? currentDate : minDate;
+      }, null);
+
+      const latestDate = completedMessages.reduce((maxDate, message) => {
+        const currentDate = dayjs(message.createdAt);
+        return !maxDate || currentDate.isAfter(maxDate) ? currentDate : maxDate;
+      }, null);
+
+      const allDates = generateAllDatesInRange(earliestDate.format("YYYY-MM-DD"), latestDate.format("YYYY-MM-DD"));
+      setAvailableDates(allDates);
       setNoDataMessage(""); // Clear the message if there are completed messages
     }
   }, [messages]);
@@ -61,17 +74,15 @@ const LineChartComponent = () => {
     completedMessages.forEach((message) => {
       const dateKey = dayjs(message.createdAt).format("YYYY-MM-DD");
 
-      if (availableDates.includes(dateKey)) {
-        if (!countByDate[dateKey]) {
-          countByDate[dateKey] = 0;
-        }
-        countByDate[dateKey] += 1; // Increment the count for this date key
+      if (!countByDate[dateKey]) {
+        countByDate[dateKey] = 0;
       }
+      countByDate[dateKey] += 1; // Increment the count for this date key
     });
 
     // Convert the count object to an array suitable for Recharts
     return availableDates.map((date) => ({
-      time: date || 0,
+      time: date,
       count: countByDate[date] || 0, // Default to 0 if no data
     }));
   };
