@@ -4,6 +4,17 @@
   display: flex;
   flex-direction: column;
   color: $main-color;
+
+  tr:hover{
+    background-color: rgba(213, 210, 210, 0.16);
+    cursor: pointer;
+  
+  }
+  tr{
+    transition: all 0.3s ease-in-out;
+   
+  }
+  
 }
 .count-container {
   display: flex;
@@ -65,13 +76,4 @@
   border-radius: 20px;
   border: 1px solid #eee;
   background-color: #fff;
-}
-tr:hover{
-  background-color: rgba(213, 210, 210, 0.16);
-  cursor: pointer;
-
-}
-tr{
-  transition: all 0.3s ease-in-out;
- 
 }

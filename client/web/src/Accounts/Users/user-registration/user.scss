@@ -76,7 +76,7 @@ select {
   scale: 0.95;
   &:hover {
     background-color: #fe9d00;
-   scale: 1; // Zoom in effect
+    scale: 1; // Zoom in effect
   }
 }
 
@@ -90,11 +90,10 @@ select {
 }
 .btn-container-user {
   display: flex;
+  width: 100%;
   gap: 12px;
-  padding: 12px 0px;
-  justify-content: end;
 
-  grid-column: span 3;
+  justify-content: end;
 }
 .submit-button-register {
   color: white;
@@ -108,10 +107,10 @@ select {
   scale: 0.95;
   &:hover {
     background-color: green;
-   scale: 1; // Zoom in effect
+    scale: 1; // Zoom in effect
   }
 }
-.delete-button-register{
+.delete-button-register {
   color: white;
   background-color: maroon;
   border: none; // No border
@@ -123,18 +122,44 @@ select {
   scale: 0.95;
   &:hover {
     background-color: maroon;
-   scale: 1; // Zoom in effect
+    scale: 1; // Zoom in effect
   }
 }
 
-.btn-top-container{
+.btn-top-container {
   width: 100%;
   display: flex;
-  padding: 14px;
+  padding: 14px 0px;
   gap: 12px;
   justify-content: flex-end;
 
-  .btn-en{
+  .edit-back-btn {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+  .readOnly-clear-btn{
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .btn-back {
+    background-color: transparent;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    border: none;
+    color: maroon;
+    border-radius: 8px;
+    border: 1px white solid;
+    transition: background-color 0.3s ease-in-out;
+    &:hover {
+      background-color: #80000030;
+      color: maroon;
+    }
+  }
+
+  .btn-en {
     cursor: pointer;
     padding: 8px;
     background-color: green;
@@ -143,13 +168,13 @@ select {
     border-radius: 8px;
     border: 1px white solid;
     transition: background-color 0.3s ease-in-out;
-    &:hover{
+    &:hover {
       background-color: transparent;
       border: 1px green solid;
-      color: green
+      color: green;
     }
   }
-  .btn-dis{
+  .btn-dis {
     cursor: pointer;
     padding: 8px;
     background-color: transparent;
@@ -159,15 +184,14 @@ select {
     border-radius: 8px;
     transition: background-color 0.3s ease-in-out;
 
-    &:hover{
-
+    &:hover {
       background-color: maroon;
       border: 1px white solid;
-      color: white
+      color: white;
     }
   }
 }
-input:read-only{
+input:read-only {
   outline: none; /* Removes the default outline */
   border: none; /* Removes the border */
   box-shadow: none; /* Removes any shadow effects */
@@ -178,22 +202,91 @@ select:disabled {
   color: maroon;
   outline: none; /* Removes the default outline */
   border: none; /* Removes the border */
-  
+
   cursor: not-allowed; /* Optional: Change cursor to indicate non-editable state */
 }
 
-.btn-clear{
+.btn-clear {
   cursor: pointer;
   padding: 8px;
-  background-color: green;
+  background-color: #007bff;
   border: none;
   color: white;
   border-radius: 8px;
   border: 1px white solid;
   transition: background-color 0.3s ease-in-out;
-  &:hover{
+  &:hover {
     background-color: transparent;
-    border: 1px green solid;
-    color: green
+    border: 1px #007bff solid;
+    color: #007bff;
   }
+}
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  color: maroon;
+  width: 100%;
+
+  .profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 12px 0px;
+  }
+
+  .profile-info-user {
+    padding: 12px 22px;
+    border-radius: 12px;
+    background-color: rgba(204, 204, 204, 0.237);
+    height: fit-content;
+    .name-description-main {
+      display: flex;
+      flex-direction: column;
+      padding: 8px 0px;
+      .highlight-text {
+        color: maroon;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+      .highlight-subtext {
+        font-size: 12px;
+        color: rgba(128, 0, 0, 0.501);
+        text-transform: uppercase;
+      }
+    }
+
+    .profile-info-details {
+      p {
+        display: flex;
+        font-size: 16px;
+        align-items: center;
+        margin: 8px 0px;
+      }
+    }
+  }
+}
+
+.profile-modal {
+  background-color: white;
+  position: fixed;
+  top: 0;
+ 
+}
+.btn-back {
+  background-color: transparent;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  border: none;
+  color: maroon;
+  border-radius: 8px;
+  border: 1px white solid;
+  transition: background-color 0.3s ease-in-out;
+  &:hover {
+    background-color: #80000030;
+    color: maroon;
+  }
+}
+.title-table{
+  padding: 12px 0px;
 }

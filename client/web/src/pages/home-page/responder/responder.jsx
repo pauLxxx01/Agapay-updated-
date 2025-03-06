@@ -177,6 +177,7 @@ const Accounts = ({ selectedOption }) => {
                 {header.Label}
                 {header.KEY !== "number" &&
                   header.KEY !== "name" &&
+                  header.KEY !== "reports" &&
                   header.KEY !== "account_id" && (
                     <>
                       <IconButton onClick={(e) => handleClick(e, header.KEY)}>
@@ -248,11 +249,22 @@ const Accounts = ({ selectedOption }) => {
                   const columnLabel = column.KEY.toLowerCase();
                   return (
                     <td key={`${columnLabel}-${headerIndex}`}>
-                      {column.KEY === "number"
-                        ? firstIndex + index + 1
-                        : data[column.KEY]}
+                      {column.KEY === "number" 
+                      ? firstIndex + index + 1
+                      : data[column.KEY]}
+                      {
+                        column.KEY === "reports" && (
+                          data.report_data.length
+                        )
+                      }
+                       {
+                        column.KEY === "school_year" && (
+                          "Year"
+                        )
+                      }
                     </td>
                   );
+                 
                 })}
               </tr>
             ))

@@ -6,9 +6,16 @@ const responderModel = require("../model/responderModel");
 
 const sendReportToAdmin = async (req, res) => {
   try {
-    const { emergency, location, message, senderId, percentage, respond, lat, long } =
-      req.body;
-
+    const {
+      emergency,
+      location,
+      message,
+      senderId,
+      percentage,
+      respond,
+      lat,
+      long,
+    } = req.body;
 
     if (!req.file) {
       console.error("No file uploaded!.");
@@ -17,11 +24,15 @@ const sendReportToAdmin = async (req, res) => {
 
     if (!lat) {
       console.error("Latitude is required!");
-      return res.status(400).send({success: false, message: "Latitude is required!"});
+      return res
+        .status(400)
+        .send({ success: false, message: "Latitude is required!" });
     }
     if (!long) {
       console.error("Longitude is required!");
-      return res.status(400).send({success: false, message: "Longitude is required!"});
+      return res
+        .status(400)
+        .send({ success: false, message: "Longitude is required!" });
     }
     if (!emergency) {
       console.log("ERROR ", emergency);
@@ -157,8 +168,10 @@ const getSpecificReportMessage = async (req, res) => {
 
 const updateReportMessage = async (req, res) => {
   const { id } = req.params; // Assuming the ID comes from the request parameters
-  const { respond, percentage, userId, responderId, adminLat, adminLong } = req.body; // Assuming the respond data comes from the request body
+  const { respond, percentage, userId, responderId, adminLat, adminLong } =
+    req.body; // Assuming the respond data comes from the request body
 
+  console.log(responderId);
   try {
     const updatedMessage = await ReportModel.findByIdAndUpdate(
       id,
@@ -174,19 +187,38 @@ const updateReportMessage = async (req, res) => {
       });
     }
 
-    const responder = await responderModel.findById(responderId);
-    if (!responder) {
-      console.log("Responder not found");
-    }
-    if (responder) {
-      console.log(`Responder: ${responder}`);
-      responder.report = responder.report || [];
-      // Check if the report ID already exists in the responder's report array
-      if (!responder.report.includes(id)) {
-        responder.report.push(id); 
+    // Handle responderId as an array
+    if (Array.isArray(responderId)) {
+      for (const id of responderId) {
+        const responder = await responderModel.findById(id);
+        if (responder) {
+          if (!responder.report) {
+            responder.report = [];
+          }
+          if (!responder.report.includes(updatedMessage._id)) {
+            responder.report.push(updatedMessage._id);
+          }
+          await responder.save();
+        } else {
+          console.log(`Responder ${id} not found`);
+        }
       }
-
-      await responder.save(); // Save the updated responder document
+    } else {
+      // Handle single responderId
+      const responder = await responderModel.findById(responderId);
+      if (responder) {
+        if (!responder.report) {
+          responder.report = [];
+        }
+        if (!responder.report.includes(updatedMessage._id)) {
+          responder.report.push(updatedMessage._id);
+          console.log('Responder updated successfully')
+        }
+       
+        await responder.save();
+      } else {
+        console.log(`Responder ${responderId} not found`);
+      }
     }
 
     updateProgress(updatedMessage, user);

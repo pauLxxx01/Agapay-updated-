@@ -7,9 +7,8 @@
   gap: 12px;
 }
 .btn-search {
-
   display: flex;
-  
+
   justify-content: flex-end;
   input[type="search"] {
     width: 50%;
@@ -92,7 +91,6 @@
     transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
     &:hover {
       transform: scale(1.05);
-
     }
   }
   .view-btn {
@@ -102,22 +100,26 @@
     background-color: red;
     color: white;
   }
-  .unhide-btn{
+  .unhide-btn {
     background-color: green;
     color: white;
   }
-  
 }
 
 .announce-form {
   background-color: rgb(253, 253, 253);
   border-radius: 12px;
   width: 100%;
-
+  display: flex;
+  height: 100%;
+  flex-direction: column;
   .announce-container {
     padding: 12px;
-
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     border-radius: 0px 0px 12px 12px;
+    height: 100%;
   }
 
   .form-group-announce {
@@ -132,17 +134,20 @@
     padding: 12px;
     border-radius: 8px;
     background-color: transparent;
-   
   }
+  .btn-container-announcement {
+    display: flex;
 
+    justify-content: flex-end;
+  }
   input::placeholder {
     font-weight: bold;
- 
+
     color: maroon;
     text-transform: uppercase;
   }
   textarea::placeholder {
- font-family: sans-serif;
+    font-family: "Arial", sans-serif;
     color: rgba(128, 0, 0, 0.318);
     text-transform: uppercase;
   }
@@ -156,9 +161,10 @@
   }
   textarea {
     font-family: "Arial", sans-serif;
-   width: 100%;
-    min-height: 200px;
-    font-size: 12px;
+    width: 100%;
+    min-height: 300px;
+
+    font-size: 14px;
     color: maroon;
     resize: none;
     padding: 12px;
@@ -179,13 +185,15 @@
 .modal-header {
   display: flex;
   justify-content: flex-end;
+  background-color: maroon;
 
-  padding: 12px 0;
+  padding: 12px;
   h2 {
     font-size: 24px;
     color: maroon;
   }
   .close-btn {
+    color: white;
     background-color: transparent;
     border: none;
     font-size: 22px;
@@ -200,6 +208,25 @@
     }
   }
 }
+
+.btn-container-view-announce {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px;
+  .close-btn {
+    color: white;
+    background-color: maroon;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    &:hover {
+      background-color: rgba(135, 17, 17, 0.534);
+    }
+  }
+}
 .modal-body {
   display: flex;
   flex-direction: column;
@@ -209,39 +236,49 @@
 .info-item {
   display: flex;
   flex-direction: column;
-
+  gap: 4px;
+  color: maroon;
   h3 {
-    font-size: 16px;
+    font-size: calc(100% - 0.5px);
     text-transform: uppercase;
-    color: maroon;
+
     font-weight: bold;
   }
   p {
-    font-size: calc(100% - 2.5px);
+    font-size: calc(100% - 1px);
   }
- 
-
 }
-.announceTitle {
-  font-size: 18px;
-  font-weight: bold;
+.info-title {
+  display: flex;
+  text-align: center;
   background-color: maroon;
-  color: white;
-  padding: 8px;
+  border-radius: 8px 8px 0 0;
+  padding: 22px;
   display: flex;
   justify-content: center;
+  h2 {
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 0px;
+  }
+}
+.info-items-container {
+  padding: 8px 42px;
+  gap: 22px;
+  display: flex;
+  flex-direction: column;
 }
 .btnHideAndUnhide {
   display: flex;
- 
+
   justify-content: flex-end;
   .linksHide {
     cursor: pointer;
-    
+
     border: none;
     background-color: transparent;
     position: relative; /* Add this for positioning the underline */
-   
 
     &:hover {
       /* Add an underline that animates from start to end */
@@ -276,18 +313,30 @@
   padding: 42px;
   color: maroon;
 }
-.modals{
+.modals {
+  display: flex;
   position: fixed;
+  padding: 42px;
+  background-color: rgba(38, 38, 38, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 10;
   top: 0;
- 
-  width: 100%;
-  background-color: white;
- display: flex;
- justify-content: center;
-  color: maroon;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  justify-content: center;
+  overflow: auto;
+  align-items: center;
 }
 .form-container-announce {
   width: 60%;
+  background-color: #f9f9f9; /* Light background color */
+  border-radius: 10px; /* Rounded corners for a smoother look */
+  box-shadow: 18px 15px 20px 20px rgba(0, 0, 0, 0.1);
+}
+.modalCardContainer {
+  width: 60%;
+  height: fit-content;
   background-color: #f9f9f9; /* Light background color */
   border-radius: 10px; /* Rounded corners for a smoother look */
   box-shadow: 18px 15px 20px 20px rgba(0, 0, 0, 0.1);

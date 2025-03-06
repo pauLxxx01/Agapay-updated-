@@ -148,7 +148,7 @@ td {
 .user-table th,
 .user-table td {
   border: 1px solid rgba(141, 98, 98, 0.211); 
-  min-width: 100px;
+
 }
 .checkedAll{
   display: flex;
@@ -258,7 +258,11 @@ td {
   cursor: pointer;
 
 }
-.user-table th:nth-child(2),
-.user-table td:nth-child(2) {
-  width: 250px;
+.items-row.clickable {
+
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+  &:hover {
+    background-color: rgba(154, 30, 30, 0.215);
+  }
 }

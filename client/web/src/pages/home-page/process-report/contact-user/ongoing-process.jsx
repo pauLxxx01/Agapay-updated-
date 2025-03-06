@@ -67,7 +67,7 @@ const Ongoing = () => {
   const filteredResponder = responder.filter((res) =>
     filteredMessage.responder.includes(res._id)
   );
-
+console.log(selectedResponders, "hello selected responder");
   const handleChangeDropdown = (e) => {
     const selectedId = e.target.value;
     setSelectedResponderId(selectedId);
@@ -101,6 +101,7 @@ const Ongoing = () => {
 
   const handleChangeDropdownOptional = (e) => {
     const selectedOId = e.target.value;
+   
     setSelectedOptionalName(selectedOId);
     setSelectedResponders((prev) => [...prev, selectedOId]);
 
@@ -280,6 +281,7 @@ const Ongoing = () => {
         percentage: progress,
         userId: user._id,
         id: id,
+        responderId: selectedResponders,
       };
       const sendNotif = {
         to: `${user.pushToken}`,
@@ -294,24 +296,7 @@ const Ongoing = () => {
       await axios.post("/push-notification", sendNotif);
       await axios.put(`/user/message/update/${id}`, newData);
 
-      // if (direction == "next" && currentStep === 2) {
-      //   const updateResponse = await axios.put(`/user/message/update/${id}`, {
-      //     percentage: progress,
-      //     userId: user._id,
-      //     id: id,
-      //     responderId: selectedResponders,
-      //   });
-      // }
-
-      // if (direction == "next" && currentStep === 3) {
-      //   const updateResponse = await axios.put(`/user/message/update/${id}`, {
-      //     percentage: progress,
-      //     userId: user._id,
-      //     id: id,
-      //     responderId: selectedResponders,
-      //   });
-      // }
-
+     
       const newSteps =
         direction === "next"
           ? Math.min(currentStep + 1, 3)
@@ -335,6 +320,7 @@ const Ongoing = () => {
       userId: filteredUser._id,
       respond: "completed",
       id: id,
+      responderId: selectedResponders,
     });
     console.log("id", id);
     console.log("Update response: ", updateResponse);

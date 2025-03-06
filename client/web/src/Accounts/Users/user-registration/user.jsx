@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import formatPhilippinePhoneNumber from "../../helper/phoneFormat";
 import axios from "axios";
 import { toast } from "react-toastify"; // Import Toastify
@@ -9,16 +9,44 @@ import { useNavigate } from "react-router-dom";
 import { zoomIn } from "../../../variants";
 import ConfirmDialog from "../../../components/confirmDialog/confirmDialog";
 
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import EmailIcon from "@mui/icons-material/Email";
+import BusinessIcon from "@mui/icons-material/Business";
+import HomeIcon from "@mui/icons-material/Home";
+import ContactMailIcon from "@mui/icons-material/ContactMail";
+import ApartmentIcon from "@mui/icons-material/Apartment";
+import MapsHomeWorkIcon from "@mui/icons-material/MapsHomeWork";
+import SchoolIcon from "@mui/icons-material/School";
+import ContactPhoneIcon from "@mui/icons-material/ContactPhone";
+import { AuthContext } from "../../../context/authContext";
+import Table from "./table";
+import { viewReportTable } from "../../../newData";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 const User = ({ isUpdate = false, initialData = {} }) => {
   const [parent, setParent] = useState([]);
 
   const [readOnly, setReadOnly] = useState(isUpdate);
 
-  const toggleReadOnly = () => {
+  const [, messages] = useContext(AuthContext);
+
+  const [filteredSelectedUserData, setFilteredSelectedUserData] = useState([]);
+  console.log(messages);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isUpdate) {
+      const filteredUserData = messages.filter((user) =>
+        initialData.report_data.includes(user._id)
+      );
+      setFilteredSelectedUserData(filteredUserData);
+    }
+  }, [isUpdate, messages, initialData.report_data]); // Add dependencies!
+
+  const toggleReadOnly = useCallback(() => {
     if (isUpdate) {
       setReadOnly(!readOnly);
-    } 
-  };
+    }
+  }, [isUpdate, readOnly]);
 
   useEffect(() => {
     if (isUpdate) {
@@ -280,12 +308,23 @@ const User = ({ isUpdate = false, initialData = {} }) => {
     >
       <div className="btn-top-container">
         {isUpdate && (
-          <button
-            className={readOnly ? "btn-en" : "btn-dis"}
-            onClick={toggleReadOnly}
-          >
-            {readOnly ? "Edit" : "Read only"}
-          </button>
+          <div className={readOnly ? "edit-back-btn" :"readOnly-clear-btn"}>
+            {isUpdate && readOnly && (
+              <button
+                className="btn-back"
+                onClick={() => navigate("/home/accounts")}
+              >
+                <ArrowBackIcon />
+              </button>
+            )}
+
+            <button
+              className={readOnly ? "btn-en" : "btn-dis"}
+              onClick={toggleReadOnly}
+            >
+              {readOnly ? "Edit" : "Read only"}
+            </button>
+          </div>
         )}
 
         {isUpdate && !readOnly && (
@@ -294,325 +333,329 @@ const User = ({ isUpdate = false, initialData = {} }) => {
           </button>
         )}
       </div>
-      <form onSubmit={handleUpload} className="user-form">
-        <div className="header-container">
-          <h2>
-            {isUpdate
-              ? `Update ${initialData.name}'s Profile `
-              : "User Registration"}
-          </h2>
-        </div>
+      {!readOnly ? (
+        <>
+          <form onSubmit={handleUpload} className="user-form">
+            <div className="header-container">
+              <h2>
+                {isUpdate
+                  ? `Update ${initialData.name}'s Profile `
+                  : "User Registration"}
+              </h2>
+            </div>
 
-        <div className="grid-container">
-          <div className="user-info">
-            <h3>User Information</h3>
-            <div className="form-group">
-              <label>Role</label>
-              <div className="radio-group">
-                <label>
+            <div className="grid-container">
+              <div className="user-info">
+                <h3>User Information</h3>
+                <div className="form-group">
+                  <label>Role</label>
+                  <div className="radio-group">
+                    <label>
+                      <input
+                        type="radio"
+                        name="role"
+                        value="Professor"
+                        checked={role === "Professor"}
+                        onChange={handleRoleChange}
+                        readOnly={readOnly}
+                      />
+                      Professor
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="role"
+                        value="Student"
+                        checked={role === "Student"}
+                        onChange={handleRoleChange}
+                        readOnly={readOnly}
+                      />
+                      Student
+                    </label>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="name">Full Name</label>
                   <input
-                    type="radio"
-                    name="role"
-                    value="Professor"
-                    checked={role === "Professor"}
-                    onChange={handleRoleChange}
+                    type="text"
+                    id="name"
+                    placeholder="Name"
+                    value={name}
                     readOnly={readOnly}
+                    onChange={(e) => setName(e.target.value)}
+                    required
                   />
-                  Professor
-                </label>
-                <label>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="email">Email</label>
                   <input
-                    type="radio"
-                    name="role"
-                    value="Student"
-                    checked={role === "Student"}
-                    onChange={handleRoleChange}
+                    type="email"
+                    id="email"
+                    placeholder="Email"
+                    value={email}
                     readOnly={readOnly}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
                   />
-                  Student
-                </label>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="password">Password</label>
+                  <input
+                    type="password"
+                    id="password"
+                    placeholder="Password"
+                    value={password}
+                    readOnly={readOnly}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="accountId">User ID</label>
+                  <input
+                    type="text"
+                    placeholder="University Account ID"
+                    id="accountId"
+                    value={accountId}
+                    readOnly={readOnly}
+                    onChange={(e) => setAccountId(e.target.value.toUpperCase())}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="schoolYear">School Year</label>
+                  <select
+                    id="schoolYear"
+                    value={schoolYear}
+                    readOnly={readOnly}
+                    disabled={readOnly}
+                    onChange={(e) => setSchoolYear(e.target.value)}
+                    required={readOnly ? false : true} // Disable required when disabled
+                  >
+                    <option value="" disabled>
+                      Year
+                    </option>
+                    <option value="1st ">1st Year</option>
+                    <option value="2nd ">2nd Year</option>
+                    <option value="3rd ">3nd Year</option>
+                    <option value="4th ">4th Year</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="user-info">
+                <div className="form-group">
+                  <label htmlFor="degree">Degree</label>
+                  <select
+                    id="degree"
+                    value={degree}
+                    readOnly={readOnly}
+                    onChange={(e) => setDegree(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>
+                      Select a Degree
+                    </option>
+                    <option value="Bachelor of Science in Information Technology">
+                      Bachelor of Science in Information Technology
+                    </option>
+                    <option value="Bachelor of Science in Civil Engineering">
+                      Bachelor of Science in Civil Engineering
+                    </option>
+                    <option value="Bachelor of Science in Architecture">
+                      Bachelor of Science in Architecture
+                    </option>
+                    <option value="Bachelor of Science in International Travel and Tourism Management">
+                      Bachelor of Science in International Travel and Tourism
+                      Management
+                    </option>
+                    <option value="Bachelor of Science in Business Administration">
+                      Bachelor of Science in Business Administration
+                    </option>
+                    <option value="Bachelor of Secondary Education">
+                      Bachelor of Secondary Education
+                    </option>
+                    <option value="Bachelor of Science in Biochemistry">
+                      Bachelor of Science in Biochemistry
+                    </option>
+                    <option value="Bachelor of Science in Business Administration">
+                      Bachelor of Science in Business Administration
+                    </option>
+                    <option value="Bachelor of Science in Criminology">
+                      Bachelor of Science in Criminology
+                    </option>
+                    <option value="Bachelor of Science in Marine Engineering">
+                      Bachelor of Science in Marine Engineering
+                    </option>
+                    <option value="Bachelor of Science in Nursing">
+                      Bachelor of Science in Nursing
+                    </option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="department">Department</label>
+                  <select
+                    id="department"
+                    value={department}
+                    readOnly={readOnly}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>
+                      Select a department
+                    </option>
+                    <option value="CCMS">CCMS</option>
+                    <option value="CENG">CENG</option>
+                    <option value="CAFA">CAFA</option>
+                    <option value="CIHTM">CIHTM</option>
+                    <option value="ABM">ABM</option>
+                    <option value="CE">CE</option>
+                    <option value="CAS">CAS</option>
+                    <option value="CBA">CBA</option>
+                    <option value="CCJC">CCJC</option>
+                    <option value="CME">CME</option>
+                    <option value="CNAHS">CNAHS</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="phoneNumber">Phone Number</label>
+                  <input
+                    type="text"
+                    id="phoneNumber"
+                    readOnly={readOnly}
+                    placeholder="Phone number"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="phoneSecondaryNumber">
+                    Secondary Phone Number
+                  </label>
+                  <input
+                    type="text"
+                    id="phoneSecondaryNumber"
+                    readOnly={readOnly}
+                    placeholder="Secondary Phone Number"
+                    value={altPhoneNumber}
+                    onChange={(e) => setAltPhoneNumber(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="address">Full Address</label>
+                  <input
+                    type="text"
+                    id="address"
+                    readOnly={readOnly}
+                    placeholder="Address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="Secondaryaddress">Secondary Address</label>
+                  <input
+                    type="text"
+                    id="Secondaryaddress"
+                    placeholder="Address"
+                    readOnly={readOnly}
+                    value={altAddress}
+                    onChange={(e) => setAltAddress(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="parent-info">
+                <h3>Parent Information</h3>
+                <div className="form-group">
+                  <label htmlFor="parentName">Parent Name</label>
+                  <input
+                    type="text"
+                    id="parentName"
+                    readOnly={readOnly}
+                    value={parentName}
+                    onChange={(e) => setParentName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="parentPhone">Phone Number</label>
+                  <input
+                    type="text"
+                    id="parentPhone"
+                    readOnly={readOnly}
+                    placeholder="Phone Number"
+                    value={parentPhone}
+                    onChange={(e) => setParentPhone(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="parentAltPhone">Secondary Phone Number</label>
+                  <input
+                    type="text"
+                    id="parentAltPhone"
+                    readOnly={readOnly}
+                    placeholder="Secondary Phone Number"
+                    value={parentAltPhone}
+                    onChange={(e) => setParentAltPhone(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="parentAddress">Parent's Address</label>
+                  <input
+                    type="text"
+                    id="parentAddress"
+                    placeholder="Address"
+                    readOnly={readOnly}
+                    value={parentAddress}
+                    onChange={(e) => setParentAddress(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="parentAltAddress">
+                    Secondary Parent's Address
+                  </label>
+                  <input
+                    type="text"
+                    id="parentAltAddress"
+                    readOnly={readOnly}
+                    placeholder="Secondary Address"
+                    value={parentAltAddress}
+                    onChange={(e) => setParentAltAddress(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="parentRelationship">Relationship</label>
+                  <select
+                    id="parentRelationship"
+                    readOnly={readOnly}
+                    value={parentRelationship}
+                    onChange={(e) => setParentRelationship(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>
+                      Select a relationship
+                    </option>
+                    <option value="Mother">MOTHER</option>
+                    <option value="Father">FATHER</option>
+                    <option value="Guardian">GUARDIAN</option>
+                  </select>
+                </div>
               </div>
             </div>
-            <div className="form-group">
-              <label htmlFor="name">Full Name</label>
-              <input
-                type="text"
-                id="name"
-                placeholder="Name"
-                value={name}
-                readOnly={readOnly}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                placeholder="Email"
-                value={email}
-                readOnly={readOnly}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                placeholder="Password"
-                value={password}
-                readOnly={readOnly}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="accountId">User ID</label>
-              <input
-                type="text"
-                placeholder="University Account ID"
-                id="accountId"
-                value={accountId}
-                readOnly={readOnly}
-                onChange={(e) => setAccountId(e.target.value.toUpperCase())}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="schoolYear">School Year</label>
-              <select
-                id="schoolYear"
-                value={schoolYear}
-                readOnly={readOnly}
-                disabled={readOnly}
-                onChange={(e) => setSchoolYear(e.target.value)}
-                required={readOnly ? false : true} // Disable required when disabled
-              >
-                <option value="" disabled>
-                  Year
-                </option>
-                <option value="1st ">1st Year</option>
-                <option value="2nd ">2nd Year</option>
-                <option value="3rd ">3nd Year</option>
-                <option value="4th ">4th Year</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="user-info">
-            <div className="form-group">
-              <label htmlFor="degree">Degree</label>
-              <select
-                id="degree"
-                value={degree}
-                readOnly={readOnly}
-                onChange={(e) => setDegree(e.target.value)}
-                required
-              >
-                <option value="" disabled>
-                  Select a Degree
-                </option>
-                <option value="Bachelor of Science in Information Technology">
-                  Bachelor of Science in Information Technology
-                </option>
-                <option value="Bachelor of Science in Civil Engineering">
-                  Bachelor of Science in Civil Engineering
-                </option>
-                <option value="Bachelor of Science in Architecture">
-                  Bachelor of Science in Architecture
-                </option>
-                <option value="Bachelor of Science in International Travel and Tourism Management">
-                  Bachelor of Science in International Travel and Tourism
-                  Management
-                </option>
-                <option value="Bachelor of Science in Business Administration">
-                  Bachelor of Science in Business Administration
-                </option>
-                <option value="Bachelor of Secondary Education">
-                  Bachelor of Secondary Education
-                </option>
-                <option value="Bachelor of Science in Biochemistry">
-                  Bachelor of Science in Biochemistry
-                </option>
-                <option value="Bachelor of Science in Business Administration">
-                  Bachelor of Science in Business Administration
-                </option>
-                <option value="Bachelor of Science in Criminology">
-                  Bachelor of Science in Criminology
-                </option>
-                <option value="Bachelor of Science in Marine Engineering">
-                  Bachelor of Science in Marine Engineering
-                </option>
-                <option value="Bachelor of Science in Nursing">
-                  Bachelor of Science in Nursing
-                </option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label htmlFor="department">Department</label>
-              <select
-                id="department"
-                value={department}
-                readOnly={readOnly}
-                onChange={(e) => setDepartment(e.target.value)}
-                required
-              >
-                <option value="" disabled>
-                  Select a department
-                </option>
-                <option value="CCMS">CCMS</option>
-                <option value="CENG">CENG</option>
-                <option value="CAFA">CAFA</option>
-                <option value="CIHTM">CIHTM</option>
-                <option value="ABM">ABM</option>
-                <option value="CE">CE</option>
-                <option value="CAS">CAS</option>
-                <option value="CBA">CBA</option>
-                <option value="CCJC">CCJC</option>
-                <option value="CME">CME</option>
-                <option value="CNAHS">CNAHS</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label htmlFor="phoneNumber">Phone Number</label>
-              <input
-                type="text"
-                id="phoneNumber"
-                readOnly={readOnly}
-                placeholder="Phone number"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="phoneSecondaryNumber">
-                Secondary Phone Number
-              </label>
-              <input
-                type="text"
-                id="phoneSecondaryNumber"
-                readOnly={readOnly}
-                placeholder="Secondary Phone Number"
-                value={altPhoneNumber}
-                onChange={(e) => setAltPhoneNumber(e.target.value)}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="address">Full Address</label>
-              <input
-                type="text"
-                id="address"
-                readOnly={readOnly}
-                placeholder="Address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="Secondaryaddress">Secondary Address</label>
-              <input
-                type="text"
-                id="Secondaryaddress"
-                placeholder="Address"
-                readOnly={readOnly}
-                value={altAddress}
-                onChange={(e) => setAltAddress(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-          <div className="parent-info">
-            <h3>Parent Information</h3>
-            <div className="form-group">
-              <label htmlFor="parentName">Parent Name</label>
-              <input
-                type="text"
-                id="parentName"
-                readOnly={readOnly}
-                value={parentName}
-                onChange={(e) => setParentName(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="parentPhone">Phone Number</label>
-              <input
-                type="text"
-                id="parentPhone"
-                readOnly={readOnly}
-                placeholder="Phone Number"
-                value={parentPhone}
-                onChange={(e) => setParentPhone(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="parentAltPhone">Secondary Phone Number</label>
-              <input
-                type="text"
-                id="parentAltPhone"
-                readOnly={readOnly}
-                placeholder="Secondary Phone Number"
-                value={parentAltPhone}
-                onChange={(e) => setParentAltPhone(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="parentAddress">Parent's Address</label>
-              <input
-                type="text"
-                id="parentAddress"
-                placeholder="Address"
-                readOnly={readOnly}
-                value={parentAddress}
-                onChange={(e) => setParentAddress(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="parentAltAddress">
-                Secondary Parent's Address
-              </label>
-              <input
-                type="text"
-                id="parentAltAddress"
-                readOnly={readOnly}
-                placeholder="Secondary Address"
-                value={parentAltAddress}
-                onChange={(e) => setParentAltAddress(e.target.value)}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="parentRelationship">Relationship</label>
-              <select
-                id="parentRelationship"
-                readOnly={readOnly}
-                value={parentRelationship}
-                onChange={(e) => setParentRelationship(e.target.value)}
-                required
-              >
-                <option value="" disabled>
-                  Select a relationship
-                </option>
-                <option value="Mother">MOTHER</option>
-                <option value="Father">FATHER</option>
-                <option value="Guardian">GUARDIAN</option>
-              </select>
-            </div>
-          </div>
+          </form>
           <div className="btn-container-user">
             <button
               onClick={() => navigate("/home/accounts")}
@@ -627,13 +670,82 @@ const User = ({ isUpdate = false, initialData = {} }) => {
               Delete
             </button>
             {!readOnly && (
-              <button type="submit" className="submit-button-register">
+              <button onClick={handleUpload} className="submit-button-register">
                 {isUpdate ? "Update" : "Register"}
               </button>
             )}
           </div>
+        </>
+      ) : (
+        <div className="profile-container">
+          <div className="profile-grid">
+            <div className="profile-info-user">
+              <div className="name-description-main">
+                <p className="highlight-text">{initialData.name}</p>
+                <p className="highlight-subtext">
+                  {initialData.school_year} year - {initialData.role}
+                </p>
+              </div>
+              <div className="profile-info-details">
+                <p>
+                  <ContactMailIcon style={{ marginRight: "8px" }} />
+                  {initialData.account_id}
+                </p>
+                <p>
+                  <ContactPhoneIcon style={{ marginRight: "8px" }} />
+                  {initialData.phone_number} / {initialData.alt_phone_number}
+                </p>
+
+                <p>
+                  <EmailIcon style={{ marginRight: "8px" }} />
+                  {initialData.email}
+                </p>
+                <p>
+                  <SchoolIcon style={{ marginRight: "8px" }} />
+                  {initialData.degree}
+                </p>
+                <p>
+                  <HomeIcon style={{ marginRight: "8px" }} />
+                  {initialData.address}
+                </p>
+                <p>
+                  <MapsHomeWorkIcon style={{ marginRight: "8px" }} />
+                  {initialData.alt_address}
+                </p>
+              </div>
+            </div>
+
+            <div className="profile-info-user">
+              <div className="name-description-main">
+                <p className="highlight-text">{parent.name}</p>
+                <p className="highlight-subtext">{parent.relationship}</p>
+              </div>
+              <div className="profile-info-details">
+                <p>
+                  <ContactPhoneIcon style={{ marginRight: "8px" }} />
+                  {parent.phone} / {parent.alt_phone}
+                </p>
+
+                <p>
+                  <HomeIcon style={{ marginRight: "8px" }} />
+                  {parent.address}
+                </p>
+                <p>
+                  <MapsHomeWorkIcon style={{ marginRight: "8px" }} />
+                  {parent.alt_address}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="table-container">
+            <Table
+              tableFormat={viewReportTable}
+              filteredMessages={filteredSelectedUserData}
+            />
+          </div>
         </div>
-      </form>
+      )}
       <ConfirmDialog
         open={confirmOpen}
         onClose={handleCloseConfirm}

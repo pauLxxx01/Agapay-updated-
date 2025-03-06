@@ -13,7 +13,7 @@ import OngoingReports from "./pages/home-page/process-report/contact-user/ongoin
 import Announcement from "./pages/home-page/announcement/announcement.jsx";
 import History from "./pages/home-page/history/history.jsx";
 import Responder from "./pages/home-page/responder/responder.jsx";
-
+import ViewModal from './components/viewModal/viewModal.jsx';
 import AccountCatagory from "./pages/home-page/accounts/accounts.jsx";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -145,6 +145,14 @@ function App() {
           element: (
             <PrivateRoute>
               <History />
+            </PrivateRoute>
+          ),
+        },
+        {
+          path: "/home/history/:id",
+          element: (
+            <PrivateRoute>
+              <ViewModal />
             </PrivateRoute>
           ),
         },

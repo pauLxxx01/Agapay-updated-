@@ -108,8 +108,6 @@ const viewReports = () => {
   const filteredMessage = messages.find((msg) => msg._id === id);
   const filteredUser = users.find((user) => user.report_data.includes(id));
 
-  console.log("filtered message: ", filteredMessage);
-  console.log("filtered user: ", filteredUser);
 
   if (
     filteredMessage &&

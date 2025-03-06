@@ -9,6 +9,7 @@ import Error from "../error/error";
 import axios from "axios";
 import { Alert, IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import ModalView from "../viewModal/viewModal";
 
 const Table = ({ messages, users, headerTable, filterStatus }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,7 +17,6 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
   const [sortDirection, setSortDirection] = useState("desc");
   const recordsPerPage = 5;
 
-  console.log(headerTable, "header table");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogData, setDialogData] = useState({
     message: null,
@@ -218,6 +218,15 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
     setIsChecked(false);
     setSelectedRows([]);
   };
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [data, setData] = useState([]);
+  const handleRowClickModal = (data) => {
+    navigate(`/home/history/${data}`);
+    const filteredMessage = messages.find((msg) => msg._id === data);
+    setModalOpen(true);
+    setData(filteredMessage);
+    console.log("Received success " + JSON.stringify(data));
+  };
 
   const handleRowSelection = (selectedRow) => {
     setSelectedRows((prev) => {
@@ -230,17 +239,13 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
     });
   };
 
-
   const completedCount = selectedRows.filter((id) =>
     currentUsers.find(
       (user) => user.messageID === id && user.respond === "completed"
     )
   ).length;
 
-
-
-  const isSelected = (id) => selectedRows.some(row => row.id === id);
-
+  const isSelected = (id) => selectedRows.some((row) => row.id === id);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentHeaderKey, setCurrentHeaderKey] = useState(null);
@@ -262,30 +267,30 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
 
     // Check if there are any selected rows
     if (selectedRows.length === 0) {
-        console.log("No rows selected for update.");
-        return; // Exit if no rows are selected
+      console.log("No rows selected for update.");
+      return; // Exit if no rows are selected
     }
 
     // Iterate through each selected row object
     for (const { id, user_id } of selectedRows) {
-        try {
-            // Send PUT request to update the message
-            const response = await axios.put(`/user/message/update/${id}`, {
-                percentage: 100, // Assuming this is a required field
-                userId: user_id, // Use user_id from the current object
-                respond: "completed", // Other fields as necessary
-            });
-            console.log(`Successfully updated message ${id}:`, response.data);
-        } catch (error) {
-            // Log the error message for the specific ID
-            console.error(`Error updating message ${id}:`, error.message);
-        }
+      try {
+        // Send PUT request to update the message
+        const response = await axios.put(`/user/message/update/${id}`, {
+          percentage: 100, // Assuming this is a required field
+          userId: user_id, // Use user_id from the current object
+          respond: "completed", // Other fields as necessary
+        });
+        console.log(`Successfully updated message ${id}:`, response.data);
+      } catch (error) {
+        // Log the error message for the specific ID
+        console.error(`Error updating message ${id}:`, error.message);
+      }
     }
-};
-
+  };
 
   return (
     <>
+     {isModalOpen && <ModalView data={data} />}
       <motion.div
         variants={fadeIn("up", 0.1)}
         initial="hidden"
@@ -425,7 +430,17 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
               const isItemSelected = isSelected(data.messageID);
               return (
                 <tr
-                  className={`items-row ${isItemSelected ? "selected" : ""}`}
+                  onClick={
+                    filterStatus.toString() === "completed"
+                      ? () => {
+                          console.log("Row clicked:", data.messageID);
+                          handleRowClickModal(data.messageID);
+                        }
+                      : undefined
+                  }
+                  className={`items-row ${isItemSelected ? "selected" : ""} ${
+                    filterStatus.toString() === "completed" ? "clickable" : ""
+                  }`}
                   key={`${index}-${data._id}`}
                 >
                   {headerTable.map((header, headerIndex) => {
@@ -462,7 +477,10 @@ const Table = ({ messages, users, headerTable, filterStatus }) => {
                             className="action-btn select-btn"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleRowSelection({id: data.messageID, user_id: data._id});
+                              handleRowSelection({
+                                id: data.messageID,
+                                user_id: data._id,
+                              });
                             }}
                           >
                             {isItemSelected ? "Deselect" : `Select`}

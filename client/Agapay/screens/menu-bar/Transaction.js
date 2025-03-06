@@ -149,12 +149,12 @@ const TransactionHistory = ({ navigation }) => {
     return <LoadingScreen />;
   }
 
-  const serverIP = "192.168.1.125"; // Replace with your local IP address
+  const serverIP = "192.168.18.42"; // Replace with your local IP address
   const imageUrl = selectedTransaction?.img
     ? `http://${serverIP}:8080/images/${selectedTransaction.img}`
     : null;
 
-  console.log("image url: ", selectedDetail);
+  console.log("image url: ", imageUrl);
   return (
     <View style={styles.container}>
       <View style={styles.filterContainer}>

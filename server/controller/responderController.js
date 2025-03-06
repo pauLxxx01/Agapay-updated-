@@ -2,8 +2,42 @@ const responderModel = require("../model/responderModel");
 
 const registerResponder = async (req, res) => {
   try {
-    const { name, account_id, phone, emergency_role, university_office } =
+    const { name, account_id, phone, emergency_role, university_office, 
+      email, address, alt_address, birthdate, alt_phone
+     } =
       req.body;
+
+      if(!email){
+        return res.status(400).send({
+          success: false,
+          message: "Email is required!",
+        });
+      }
+      if(!address){
+        return res.status(400).send({
+          success: false,
+          message: "Address is required!",
+        });
+      }
+      if(!alt_address){
+        return res.status(400).send({
+          success: false,
+          message: "Alternative Address is required!",
+        });
+      }
+      if(!birthdate){
+        return res.status(400).send({
+          success: false,
+          message: "Birthdate is required!",
+        });
+      }
+     
+      if(!alt_phone){
+        return res.status(400).send({
+          success: false,
+          message: "Alternative phone number is required!",
+        });
+      }
 
     if (!name) {
       return res.status(400).send({
@@ -60,6 +94,11 @@ const registerResponder = async (req, res) => {
       phone,
       emergency_role,
       university_office,
+      email,
+      address,
+      alt_address,
+      birthdate,
+      alt_phone,
     });
 
     // Save the responder
@@ -98,8 +137,41 @@ const getResponder = async (req, res) => {
 const updateResponder = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, account_id, phone, emergency_role, university_office } =
-      req.body;
+    const { name, account_id, phone, emergency_role, university_office, 
+      email, address, alt_address, birthdate, alt_phone } = req.body;
+    
+
+    if(!email){
+      return res.status(400).send({
+        success: false,
+        message: "Email is required!",
+      });
+    }
+    if(!address){
+      return res.status(400).send({
+        success: false,
+        message: "Address is required!",
+      });
+    }
+    if(!birthdate){
+      return res.status(400).send({
+        success: false,
+        message: "Birthdate is required!",
+      });
+    }
+    if(!alt_address){
+      return res.status(400).send({
+        success: false,
+        message: "Alternative Address is required!",
+      });
+    }
+    if(!alt_phone){
+      return res.status(400).send({
+        success: false,
+        message: "Alternative phone number is required!",
+      });
+    }
+
 
     if (!name) {
       return res.status(400).send({
@@ -141,6 +213,11 @@ const updateResponder = async (req, res) => {
         phone,
         emergency_role,
         university_office,
+        email,
+        address,
+        alt_address,
+        birthdate,
+        alt_phone,
       },
       { new: true }
     );

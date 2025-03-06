@@ -231,25 +231,42 @@ export const accountsHeaderTable = [
   { id: 1, KEY: "number", Label: "#" },
   {
     id: 2,
-    KEY: "name",
-    Label: "NAME",
+    KEY: "role",
+    Label: "ROLE",
   },
   {
     id: 3,
+    KEY: "name",
+    Label: "NAME",
+  },
+  
+  {
+    id: 4,
+    KEY: "school_year",
+    Label: "SCHOOL YEAR",
+  },
+  {
+    id: 5,
     KEY: "account_id",
     Label: "USER ID",
   },
   {
-    id: 4,
+    id: 6,
     KEY: "department",
     Label: "DEPARTMENT",
   },
 
   {
-    id: 5,
+    id: 7,
     KEY: "degree",
     Label: "COURSE",
   },
+  {id: 8,
+    KEY: "reports",
+    Label: "REPORTS",
+  }
+  
+
  
 ];
 
@@ -276,4 +293,10 @@ export const announcementHeaderTable = [
     KEY: "action",
     Label: "ACTION",
   }
+]
+
+export const viewReportTable = [
+  { id: 1, KEY: "number", Label: "#" },
+  { id: 2, KEY: "emergency", Label: "EMERGENCY" },
+  { id: 3, KEY: "date", Label: "DATE" },
 ]
