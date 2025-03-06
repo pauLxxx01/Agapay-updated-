@@ -7,25 +7,48 @@ import { motion } from "framer-motion";
 import { fadeIn, zoomIn } from "../../../variants";
 import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
-const Responder = () => {
-  const [name, setName] = useState("");
+import ConfirmDialog from "../../../components/confirmDialog/confirmDialog";
+import Loading from "../../../components/loading/loading";
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+const Responder = ({ isUpdate = false, initialData = {} }) => {
+  const [name, setName] = useState("");
 
   const navigate = useNavigate();
 
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   useEffect(() => {
     setName(`${firstName} ${lastName}`.trim());
   }, [firstName, lastName]);
 
-  const [phone, setPhoneNumber] = useState("");
+  const [phone, setPhoneNumber] = useState(initialData.phone || "");
 
-  const [account_id, setAccount_id] = useState("");
-  const [university_office, setUniversity_office] = useState("");
-  const [emergency_role, setEmergency_role] = useState("");
+  const [account_id, setAccount_id] = useState(initialData.account_id || "");
+  const [university_office, setUniversity_office] = useState(
+    initialData.university_office || ""
+  );
+  const [emergency_role, setEmergency_role] = useState(
+    initialData.emergency_role || ""
+  );
 
   const [visibleIndex, setVisibleIndex] = useState(null);
+  const [key, setKey] = useState(0);
+  useEffect(() => {
+    if (isUpdate) {
+      const nameParts = initialData.name.trim().split(" ");
+
+      console.log(nameParts);
+      const firstN = nameParts[0];
+      const lastN = nameParts[nameParts.length - 1];
+
+      setFirstName(firstN);
+      setLastName(lastN);
+      setPhoneNumber(initialData.phone);
+      setAccount_id(initialData.account_id);
+      setUniversity_office(initialData.university_office);
+      setEmergency_role(initialData.emergency_role);
+    }
+  }, [isUpdate, initialData]);
 
   // Function to toggle visibility of the dropdown
   const toggleVisibility = (index) => {
@@ -40,28 +63,39 @@ const Responder = () => {
     e.preventDefault();
 
     console.log(name, account_id, phone, emergency_role, university_office);
-    axios
-      .post("/admin/responder/register", {
+    const endpoint = isUpdate
+      ? `/admin/responder/update/${initialData._id}`
+      : "/admin/responder/register";
+    const method = isUpdate ? "put" : "post";
+
+    axios({
+      method: method,
+      url: endpoint,
+      data: {
         name,
         account_id,
         phone,
         emergency_role,
         university_office,
-      })
+      },
+    })
       .then((res) => {
-        console.log("Data sent: ", {
-          name,
-          account_id,
-          phone,
-          emergency_role,
-          university_office,
-        });
-        toast.success("Registration successfully!");
-        setFirstName("");
-        setLastName("");
-        setPhoneNumber("");
-        setEmergency_role("");
-        setAccount_id("");
+        toast.success(
+          isUpdate
+            ? "Profile updated successfully!"
+            : "Registration successful!"
+        );
+
+        if (!isUpdate) {
+          setFirstName("");
+          setLastName("");
+          setPhoneNumber("");
+          setEmergency_role("");
+          setAccount_id("");
+        }
+
+        navigate("/home/accounts");
+
         console.log(res);
       })
 
@@ -75,17 +109,49 @@ const Responder = () => {
       });
   };
 
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [idToDelete, setIdToDelete] = useState(null);
+
+  const handleDelete = async (id) => {
+    setIdToDelete(id);
+    setConfirmOpen(true);
+  };
+  const handleConfirmDelete = async () => {
+    try {
+      const response = await axios.delete(
+        `/admin/responder/delete/${idToDelete}`
+      );
+      toast.success("Responder deleted successfully!");
+      navigate("/home/accounts");
+    } catch (error) {
+      if (error.response) {
+        toast.error(error.response.data.message || error.response.statusText);
+      } else {
+        toast.error(error.message);
+      }
+    } finally {
+      setConfirmOpen(false);
+    }
+  };
+
+  const handleCloseConfirm = () => {
+    setConfirmOpen(false);
+  };
 
   return (
     <div className="container-form-responder">
       <motion.div
-        variants={zoomIn( 0.1)}
+        variants={zoomIn(0.1)}
         initial="hidden"
         whileInView="show"
         className="register"
       >
         <div className="card">
-          <div className="card-header">Responder Registration</div>
+          <div className="card-header">
+            {isUpdate
+              ? `Update ${initialData.name}'s Profile `
+              : "Responder Registration"}
+          </div>
           <div className="card-body">
             <form onSubmit={handleUpload}>
               <div className="form-group">
@@ -95,6 +161,7 @@ const Responder = () => {
                   autoComplete="firstName"
                   type="text"
                   name="firstName"
+                  value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="Enter First Name"
                   required
@@ -107,6 +174,7 @@ const Responder = () => {
                   autoComplete="lastName"
                   type="text"
                   name="lastName"
+                  value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="Enter Last Name"
                   required
@@ -212,25 +280,36 @@ const Responder = () => {
               </div>
               <div className="btn-container">
                 <button
-                  className="btn-primary"
+                  className="btn-primary cancel"
                   onClick={() => navigate("/home/accounts")}
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary">
-                  Register
+                <button
+                  className="btn-primary delete"
+                  onClick={() => handleDelete(initialData._id)}
+                >
+                  Delete
+                </button>
+                <button type="submit" className="btn-primary update">
+                  {isUpdate ? "Update" : "Register"}
                 </button>
               </div>
             </form>
           </div>
         </div>
       </motion.div>
-      <motion.div 
-       variants={zoomIn( 0.1)}
-       initial="hidden"
-       whileInView="show"
-      
-      className="role">
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={handleCloseConfirm}
+        onConfirm={handleConfirmDelete}
+      />
+      <motion.div
+        variants={zoomIn(0.1)}
+        initial="hidden"
+        whileInView="show"
+        className="role"
+      >
         <div className="card">
           <div className="card-header">University Office</div>
           <div className="card-body">

@@ -9,12 +9,13 @@ import { responderTable, accountsHeaderTable } from "../../../newData";
 import { Link, useNavigate } from "react-router-dom";
 import moment from "moment"; // You aren't using moment - remove this import
 import Loading from "../../../components/loading/loading";
+import Responder from "../../../Accounts/Responder/responder-registration/responder-register";
 
 const Accounts = ({ selectedOption }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, order: "asc" });
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 7;
+  const recordsPerPage = 5;
   const [filters, setFilters] = useState({});
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentHeaderKey, setCurrentHeaderKey] = useState(null);
@@ -22,29 +23,30 @@ const Accounts = ({ selectedOption }) => {
   const [state, , users, , , responder] = useContext(AuthContext); // Consider destructuring more descriptively
 
   const [selectedUser, setSelectedUser] = useState(users); //Initialize properly based on the default selectedOption
-  const [tableFormat, setTableFormat] = useState(accountsHeaderTable);  //Initialize properly based on the default selectedOption
-  const [navigationLink, setNavigationLink] = useState("/home/account/user/registration"); //Initialize properly based on the default selectedOption
+  const [tableFormat, setTableFormat] = useState(accountsHeaderTable); //Initialize properly based on the default selectedOption
+  const [navigationLink, setNavigationLink] = useState(
+    "/home/account/user/registration/false"
+  ); //Initialize properly based on the default selectedOption
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  useEffect(() => {
+    const initializeData = () => {
+      setLoading(true);
+      if (selectedOption === "responder") {
+        setSelectedUser(responder);
+        setTableFormat(responderTable);
+        setNavigationLink("/home/responder/registration/false");
+      } else {
+        setSelectedUser(users);
+        setTableFormat(accountsHeaderTable);
+        setNavigationLink("/home/account/user/registration/false");
+      }
+      setLoading(false);
+    };
 
-    useEffect(() => {
-        const initializeData = () => {
-            setLoading(true);
-            if (selectedOption === "responder") {
-                setSelectedUser(responder);
-                setTableFormat(responderTable);
-                setNavigationLink("/home/responder/registration");
-            } else {
-                setSelectedUser(users);
-                setTableFormat(accountsHeaderTable);
-                setNavigationLink("/home/account/user/registration");
-            }
-            setLoading(false);
-        };
-
-        initializeData();
-    }, [selectedOption, users, responder]); // Added users and responder to dependencies
+    initializeData();
+  }, [selectedOption, users, responder]); // Added users and responder to dependencies
 
   // Sorting logic
   const handleSort = (key) => {
@@ -124,6 +126,12 @@ const Accounts = ({ selectedOption }) => {
     return <Loading />;
   }
 
+  const [showResponder, setShowResponder] = useState(false);
+
+  const toggleResponder = () => {
+    setShowResponder(!showResponder);
+  };
+
   return (
     <motion.div
       variants={zoomIn(0.1)}
@@ -134,7 +142,7 @@ const Accounts = ({ selectedOption }) => {
       <div className="count-container">
         <div className="count-history">
           <span className="dataCount">{selectedUser?.length || 0}</span>
-          <span className="dataCount">Total User Accounts</span>
+          <span className="dataCount">Total {selectedOption}</span>
         </div>
       </div>
 
@@ -147,7 +155,11 @@ const Accounts = ({ selectedOption }) => {
             Create User
           </button>
         </div>
-
+        {showResponder && (
+          <div style={{ marginTop: "20px" }}>
+            <Responder />
+          </div>
+        )}
         <div className="searchContainer">
           <input
             type="search"
@@ -163,45 +175,49 @@ const Accounts = ({ selectedOption }) => {
             {tableFormat.map((header) => (
               <th key={header.id}>
                 {header.Label}
-                {header.KEY !== "number" && header.KEY !== "name" && (
-                  <>
-                    <IconButton onClick={(e) => handleClick(e, header.KEY)}>
-                      <MoreVertIcon sx={{ color: "white", fontSize: 12 }} />
-                    </IconButton>
-                    <Menu
-                      id="simple-menu"
-                      anchorEl={anchorEl}
-                      keepMounted
-                      open={
-                        Boolean(anchorEl) && currentHeaderKey === header.KEY
-                      }
-                      onClose={handleClose}
-                    >
-                      <MenuItem
-                        sx={{ fontSize: 12 }}
-                        key="all-option"
-                        onClick={() => handleFilterChange(header.KEY, "")}
+                {header.KEY !== "number" &&
+                  header.KEY !== "name" &&
+                  header.KEY !== "account_id" && (
+                    <>
+                      <IconButton onClick={(e) => handleClick(e, header.KEY)}>
+                        <MoreVertIcon sx={{ color: "white", fontSize: 12 }} />
+                      </IconButton>
+                      <Menu
+                        id="simple-menu"
+                        anchorEl={anchorEl}
+                        keepMounted
+                        open={
+                          Boolean(anchorEl) && currentHeaderKey === header.KEY
+                        }
+                        onClose={handleClose}
                       >
-                        All
-                      </MenuItem>
-                      {[
-                        ...new Set(
-                          filteredResponders.map(
-                            (user) => user[header.KEY] || "No Data"
-                          )
-                        ),
-                      ].map((value) => (
                         <MenuItem
                           sx={{ fontSize: 12 }}
-                          key={value}
-                          onClick={() => handleFilterChange(header.KEY, value)}
+                          key="all-option"
+                          onClick={() => handleFilterChange(header.KEY, "")}
                         >
-                          {value}
+                          All
                         </MenuItem>
-                      ))}
-                    </Menu>
-                  </>
-                )}
+                        {[
+                          ...new Set(
+                            filteredResponders.map(
+                              (user) => user[header.KEY] || "No Data"
+                            )
+                          ),
+                        ].map((value) => (
+                          <MenuItem
+                            sx={{ fontSize: 12 }}
+                            key={value}
+                            onClick={() =>
+                              handleFilterChange(header.KEY, value)
+                            }
+                          >
+                            {value}
+                          </MenuItem>
+                        ))}
+                      </Menu>
+                    </>
+                  )}
               </th>
             ))}
           </tr>
@@ -215,7 +231,18 @@ const Accounts = ({ selectedOption }) => {
             currentUsers.map((data, index) => (
               <tr
                 key={`${index}-${data._id}`}
-                onClick={() => console.log("Row clicked:", data)}
+                onClick={() => {
+                  console.log("Row clicked:", data);
+                  {
+                    selectedOption == "responder"
+                      ? navigate(`/home/responder/registration/true`, {
+                          state: { userData: data },
+                        })
+                      : navigate("/home/account/user/registration/true", {
+                          state: { userData: data },
+                        });
+                  }
+                }}
               >
                 {tableFormat.map((column, headerIndex) => {
                   const columnLabel = column.KEY.toLowerCase();

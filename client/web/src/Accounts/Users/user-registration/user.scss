@@ -59,24 +59,24 @@ select {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  transition: border-color 0.3s;
+  transition: border-color 0.3s ease-in-out;
   &:focus {
     border-color: #4caf50;
   }
 }
 .cancel-button-register {
   color: white;
-  background-color: #4caf50;
+  background-color: #fe9d00;
   border: none; // No border
   padding: 10px 20px; // Padding inside the button
   font-size: 16px; // Font size
   cursor: pointer; // Cursor pointer on hover
-  transition: transform 0.2s; // Smooth transition for transform
+  transition: background-color 0.3s ease-in-out, scale 0.3s ease-in-out;
   border-radius: 5px;
-  scale: 1; 
+  scale: 0.95;
   &:hover {
-    background-color: #4caf50;
-    transform: scale(1.02); // Zoom in effect
+    background-color: #fe9d00;
+   scale: 1; // Zoom in effect
   }
 }
 
@@ -97,17 +97,103 @@ select {
   grid-column: span 3;
 }
 .submit-button-register {
-  background-color: maroon; // Background color of the button
-  color: #fff;
+  color: white;
+  background-color: green;
   border: none; // No border
   padding: 10px 20px; // Padding inside the button
   font-size: 16px; // Font size
   cursor: pointer; // Cursor pointer on hover
-  transition: transform 0.2s; // Smooth transition for transform
+  transition: background-color 0.3s ease-in-out, scale 0.3s ease-in-out;
   border-radius: 5px;
- 
+  scale: 0.95;
   &:hover {
-    background-color: rgb(97, 26, 26);
-    transform: scale(1.02); // Zoom in effect
+    background-color: green;
+   scale: 1; // Zoom in effect
+  }
+}
+.delete-button-register{
+  color: white;
+  background-color: maroon;
+  border: none; // No border
+  padding: 10px 20px; // Padding inside the button
+  font-size: 16px; // Font size
+  cursor: pointer; // Cursor pointer on hover
+  transition: background-color 0.3s ease-in-out, scale 0.3s ease-in-out;
+  border-radius: 5px;
+  scale: 0.95;
+  &:hover {
+    background-color: maroon;
+   scale: 1; // Zoom in effect
+  }
+}
+
+.btn-top-container{
+  width: 100%;
+  display: flex;
+  padding: 14px;
+  gap: 12px;
+  justify-content: flex-end;
+
+  .btn-en{
+    cursor: pointer;
+    padding: 8px;
+    background-color: green;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    border: 1px white solid;
+    transition: background-color 0.3s ease-in-out;
+    &:hover{
+      background-color: transparent;
+      border: 1px green solid;
+      color: green
+    }
+  }
+  .btn-dis{
+    cursor: pointer;
+    padding: 8px;
+    background-color: transparent;
+    border: none;
+    color: maroon;
+    border: 1px maroon solid;
+    border-radius: 8px;
+    transition: background-color 0.3s ease-in-out;
+
+    &:hover{
+
+      background-color: maroon;
+      border: 1px white solid;
+      color: white
+    }
+  }
+}
+input:read-only{
+  outline: none; /* Removes the default outline */
+  border: none; /* Removes the border */
+  box-shadow: none; /* Removes any shadow effects */
+  background-color: transparent; /* Optional: Makes the background transparent */
+  cursor: default; /* Optional: Changes the cursor to indicate non-editable state */
+}
+select:disabled {
+  color: maroon;
+  outline: none; /* Removes the default outline */
+  border: none; /* Removes the border */
+  
+  cursor: not-allowed; /* Optional: Change cursor to indicate non-editable state */
+}
+
+.btn-clear{
+  cursor: pointer;
+  padding: 8px;
+  background-color: green;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  border: 1px white solid;
+  transition: background-color 0.3s ease-in-out;
+  &:hover{
+    background-color: transparent;
+    border: 1px green solid;
+    color: green
   }
 }

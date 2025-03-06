@@ -228,6 +228,7 @@ const UserAccounts = ({ users }) => {
                             type="radio"
                             name="role"
                             value="Professor"
+                     
                             checked={role === "Professor"}
                             onChange={handleRoleChange}
                           />
@@ -251,6 +252,9 @@ const UserAccounts = ({ users }) => {
                         type="text"
                         id="name"
                         value={name}
+                   
+                        disabled={true}
+                        readOnly={true} 
                         onChange={(e) => setName(e.target.value)}
                         required
                       />

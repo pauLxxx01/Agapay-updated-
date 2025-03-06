@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import formatPhilippinePhoneNumber from "../../helper/phoneFormat";
 import axios from "axios";
 import { toast } from "react-toastify"; // Import Toastify
@@ -7,36 +7,77 @@ import { motion } from "framer-motion";
 import "./user.scss";
 import { useNavigate } from "react-router-dom";
 import { zoomIn } from "../../../variants";
+import ConfirmDialog from "../../../components/confirmDialog/confirmDialog";
 
-const User = () => {
+const User = ({ isUpdate = false, initialData = {} }) => {
+  const [parent, setParent] = useState([]);
 
-  const navigate = useNavigate()
+  const [readOnly, setReadOnly] = useState(isUpdate);
+
+  const toggleReadOnly = () => {
+    if (isUpdate) {
+      setReadOnly(!readOnly);
+    } 
+  };
+
+  useEffect(() => {
+    if (isUpdate) {
+      const fetchData = async () => {
+        try {
+          const parentsResponse = await axios.get("/user/parent/getParent");
+          const parents = parentsResponse.data.parents;
+
+          if (parents && initialData.parent) {
+            const userParent = parents.find(
+              (p) => p._id.toString() === initialData.parent.toString()
+            );
+            setParent(userParent);
+          } else {
+            console.log("No parents data or initialData.parent available.");
+            setParent(null); // or setParent({}) depending on your needs
+          }
+        } catch (error) {
+          console.error("Error fetching parents:", error);
+          toast.error("Failed to load parents data.");
+          setParent(null); // or setParent({}) depending on your needs
+        }
+      };
+      fetchData();
+    }
+  }, [initialData.parent, isUpdate]);
+
+  const navigate = useNavigate();
   // for user
-  const [role, setRole] = useState({
-    professor: false,
-    student: false,
-  });
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [accountId, setAccountId] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [department, setDepartment] = useState("");
-  const [address, setAddress] = useState("");
+  const [role, setRole] = useState(initialData.role || "");
+  const [name, setName] = useState(initialData.name || "");
+  const [email, setEmail] = useState(initialData.email || "");
+  const [password, setPassword] = useState(initialData.password || "");
+  const [accountId, setAccountId] = useState(initialData.account_id || "");
+  const [phoneNumber, setPhoneNumber] = useState(
+    initialData.phone_number || ""
+  );
+  const [department, setDepartment] = useState(initialData.department || "");
+  const [address, setAddress] = useState(initialData.address || "");
 
-  const [altPhoneNumber, setAltPhoneNumber] = useState("");
-  const [altAddress, setAltAddress] = useState("");
-  const [degree, setDegree] = useState("");
-  const [schoolYear, setSchoolYear] = useState("");
+  const [altPhoneNumber, setAltPhoneNumber] = useState(
+    initialData.alt_phone_number || ""
+  );
+  const [altAddress, setAltAddress] = useState(initialData.alt_address || "");
+  const [degree, setDegree] = useState(initialData.degree || "");
+  const [schoolYear, setSchoolYear] = useState(initialData.school_year || "");
 
-  // for parent
-  const [parentName, setParentName] = useState("");
-  const [parentPhone, setParentPhone] = useState("");
-  const [parentAddress, setParentAddress] = useState("");
-  const [parentRelationship, setParentRelationship] = useState("");
+  // For parent
+  const [parentName, setParentName] = useState(parent.name || "");
+  const [parentPhone, setParentPhone] = useState(parent.phone || "");
+  const [parentAddress, setParentAddress] = useState(parent.address || "");
+  const [parentRelationship, setParentRelationship] = useState(
+    parent.relationship || ""
+  );
 
-  const [parentAltPhone, setParentAltPhone] = useState("");
-  const [parentAltAddress, setParentAltAddress] = useState("");
+  const [parentAltPhone, setParentAltPhone] = useState(parent.alt_phone || "");
+  const [parentAltAddress, setParentAltAddress] = useState(
+    parent.alt_address || ""
+  );
 
   // Handle role selection
   const handleRoleChange = (e) => {
@@ -44,6 +85,16 @@ const User = () => {
     setRole(selectedRole);
   };
 
+  useEffect(() => {
+    if (isUpdate) {
+      setParentName(parent.name);
+      setParentPhone(parent.phone);
+      setParentAddress(parent.address);
+      setParentRelationship(parent.relationship);
+      setParentAltAddress(parent.alt_address);
+      setParentAltPhone(parent.alt_phone);
+    }
+  }, [isUpdate, parent]);
   const handleUpload = (e) => {
     e.preventDefault();
 
@@ -74,8 +125,15 @@ const User = () => {
       return;
     }
 
-    axios
-      .post("/user/register", {
+    const endpoint = isUpdate
+      ? `/userUpdate/parentUpdate/${initialData._id}`
+      : `/user/register`;
+    const method = isUpdate ? "put" : "post";
+
+    axios({
+      method: method,
+      url: endpoint,
+      data: {
         role: role,
         name,
         email,
@@ -98,58 +156,41 @@ const User = () => {
 
         parentAltPhone: parentAltPhone,
         parentAltAddress: parentAltAddress,
-      })
+      },
+    })
       .then((res) => {
-        console.log("Data registered: ", {
-          role: role.professor ? "Professor" : role.student ? "Student" : "",
-          name,
-          email,
-          password,
-          account_id: accountId,
-          phone_number: phoneNumber,
-
-          alt_phone_number: altPhoneNumber,
-          degree: degree,
-          school_year: schoolYear,
-          alt_address: altAddress,
-
-          department,
-          address,
-
-          parentName,
-          parentAddress,
-          parentRelationship,
-          parentPhone: parentPhone,
-
-          parentAltPhone: parentAltPhone,
-          parentAltAddress: parentAltAddress,
-        });
-
-        // Reset fields after successful registration
-        setRole("");
-        setName("");
-        setEmail("");
-        setPassword("");
-        setAccountId("");
-        setPhoneNumber("");
-        setDepartment("");
-
-        setDegree("");
-        setAltPhoneNumber("");
-        setSchoolYear("");
-        setAltAddress("");
-
-        setAddress("");
-
-        setParentName("");
-        setParentPhone("");
-        setParentAddress("");
-        setParentRelationship("");
-        setParentAltPhone("");
-        setParentAltAddress("");
-
         // Show success toast
-        toast.success("User registration successful!");
+
+        toast.success(
+          isUpdate
+            ? "Profile updated successfully!"
+            : "Registration successful!"
+        );
+        // Reset fields after successful registration
+        if (!isUpdate) {
+          setRole("");
+          setName("");
+          setEmail("");
+          setPassword("");
+          setAccountId("");
+          setPhoneNumber("");
+          setDepartment("");
+
+          setDegree("");
+          setAltPhoneNumber("");
+          setSchoolYear("");
+          setAltAddress("");
+
+          setAddress("");
+
+          setParentName("");
+          setParentPhone("");
+          setParentAddress("");
+          setParentRelationship("");
+          setParentAltPhone("");
+          setParentAltAddress("");
+        }
+        navigate("/home/accounts");
         console.log(res);
       })
       .catch((error) => {
@@ -163,16 +204,105 @@ const User = () => {
       });
   };
 
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [idToDelete, setIdToDelete] = useState(null);
+  console.log(initialData.report_data);
+
+  const handleDelete = async (id) => {
+    setIdToDelete(id);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      // Delete user and parent concurrently
+      await Promise.all([
+        axios.delete(`/user/delete/${idToDelete}`),
+        axios.delete(`/user/parent/delete/${initialData.parent.toString()}`),
+      ]);
+
+      // Check if report_data exists and delete messages concurrently
+      if (
+        Array.isArray(initialData.report_data) &&
+        initialData.report_data.length > 0
+      ) {
+        await Promise.all(
+          initialData.report_data.map((id) =>
+            axios.delete(`/user/message/delete/${id}`)
+          )
+        );
+      }
+
+      toast.success("Responder deleted successfully!");
+      navigate("/home/accounts");
+    } catch (error) {
+      if (error.response) {
+        toast.error(error.response.data.message || error.response.statusText);
+      } else {
+        toast.error(error.message);
+      }
+    } finally {
+      setConfirmOpen(false);
+    }
+  };
+
+  const handleCloseConfirm = () => {
+    setConfirmOpen(false);
+  };
+
+  const handleClear = () => {
+    setRole("");
+    setName("");
+    setEmail("");
+    setPassword("");
+    setAccountId("");
+    setPhoneNumber("");
+    setDepartment("");
+    setAddress("");
+    setAltPhoneNumber("");
+    setAltAddress("");
+    setDegree("");
+    setSchoolYear("");
+    setParentName("");
+    setParentPhone("");
+    setParentAddress("");
+    setParentRelationship("");
+    setParentAltPhone("");
+    setParentAltAddress("");
+  };
+
   return (
     <motion.div
-     variants={zoomIn(0.1)}
-        initial="hidden"
-        whileInView="show"
-    className="form-container-user">
+      variants={zoomIn(0.1)}
+      initial="hidden"
+      whileInView="show"
+      className="form-container-user"
+    >
+      <div className="btn-top-container">
+        {isUpdate && (
+          <button
+            className={readOnly ? "btn-en" : "btn-dis"}
+            onClick={toggleReadOnly}
+          >
+            {readOnly ? "Edit" : "Read only"}
+          </button>
+        )}
+
+        {isUpdate && !readOnly && (
+          <button className="btn-clear" onClick={handleClear}>
+            Clear
+          </button>
+        )}
+      </div>
       <form onSubmit={handleUpload} className="user-form">
         <div className="header-container">
-          <h2>Registration</h2>
+          <h2>
+            {isUpdate
+              ? `Update ${initialData.name}'s Profile `
+              : "User Registration"}
+          </h2>
         </div>
+
         <div className="grid-container">
           <div className="user-info">
             <h3>User Information</h3>
@@ -186,6 +316,7 @@ const User = () => {
                     value="Professor"
                     checked={role === "Professor"}
                     onChange={handleRoleChange}
+                    readOnly={readOnly}
                   />
                   Professor
                 </label>
@@ -196,6 +327,7 @@ const User = () => {
                     value="Student"
                     checked={role === "Student"}
                     onChange={handleRoleChange}
+                    readOnly={readOnly}
                   />
                   Student
                 </label>
@@ -208,6 +340,7 @@ const User = () => {
                 id="name"
                 placeholder="Name"
                 value={name}
+                readOnly={readOnly}
                 onChange={(e) => setName(e.target.value)}
                 required
               />
@@ -219,6 +352,7 @@ const User = () => {
                 id="email"
                 placeholder="Email"
                 value={email}
+                readOnly={readOnly}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
@@ -230,6 +364,7 @@ const User = () => {
                 id="password"
                 placeholder="Password"
                 value={password}
+                readOnly={readOnly}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
@@ -241,6 +376,7 @@ const User = () => {
                 placeholder="University Account ID"
                 id="accountId"
                 value={accountId}
+                readOnly={readOnly}
                 onChange={(e) => setAccountId(e.target.value.toUpperCase())}
                 required
               />
@@ -251,8 +387,10 @@ const User = () => {
               <select
                 id="schoolYear"
                 value={schoolYear}
+                readOnly={readOnly}
+                disabled={readOnly}
                 onChange={(e) => setSchoolYear(e.target.value)}
-                required
+                required={readOnly ? false : true} // Disable required when disabled
               >
                 <option value="" disabled>
                   Year
@@ -271,6 +409,7 @@ const User = () => {
               <select
                 id="degree"
                 value={degree}
+                readOnly={readOnly}
                 onChange={(e) => setDegree(e.target.value)}
                 required
               >
@@ -318,6 +457,7 @@ const User = () => {
               <select
                 id="department"
                 value={department}
+                readOnly={readOnly}
                 onChange={(e) => setDepartment(e.target.value)}
                 required
               >
@@ -342,6 +482,7 @@ const User = () => {
               <input
                 type="text"
                 id="phoneNumber"
+                readOnly={readOnly}
                 placeholder="Phone number"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
@@ -355,6 +496,7 @@ const User = () => {
               <input
                 type="text"
                 id="phoneSecondaryNumber"
+                readOnly={readOnly}
                 placeholder="Secondary Phone Number"
                 value={altPhoneNumber}
                 onChange={(e) => setAltPhoneNumber(e.target.value)}
@@ -366,6 +508,7 @@ const User = () => {
               <input
                 type="text"
                 id="address"
+                readOnly={readOnly}
                 placeholder="Address"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
@@ -378,6 +521,7 @@ const User = () => {
                 type="text"
                 id="Secondaryaddress"
                 placeholder="Address"
+                readOnly={readOnly}
                 value={altAddress}
                 onChange={(e) => setAltAddress(e.target.value)}
                 required
@@ -391,6 +535,7 @@ const User = () => {
               <input
                 type="text"
                 id="parentName"
+                readOnly={readOnly}
                 value={parentName}
                 onChange={(e) => setParentName(e.target.value)}
                 required
@@ -402,6 +547,7 @@ const User = () => {
               <input
                 type="text"
                 id="parentPhone"
+                readOnly={readOnly}
                 placeholder="Phone Number"
                 value={parentPhone}
                 onChange={(e) => setParentPhone(e.target.value)}
@@ -414,6 +560,7 @@ const User = () => {
               <input
                 type="text"
                 id="parentAltPhone"
+                readOnly={readOnly}
                 placeholder="Secondary Phone Number"
                 value={parentAltPhone}
                 onChange={(e) => setParentAltPhone(e.target.value)}
@@ -427,6 +574,7 @@ const User = () => {
                 type="text"
                 id="parentAddress"
                 placeholder="Address"
+                readOnly={readOnly}
                 value={parentAddress}
                 onChange={(e) => setParentAddress(e.target.value)}
                 required
@@ -440,6 +588,7 @@ const User = () => {
               <input
                 type="text"
                 id="parentAltAddress"
+                readOnly={readOnly}
                 placeholder="Secondary Address"
                 value={parentAltAddress}
                 onChange={(e) => setParentAltAddress(e.target.value)}
@@ -450,6 +599,7 @@ const User = () => {
               <label htmlFor="parentRelationship">Relationship</label>
               <select
                 id="parentRelationship"
+                readOnly={readOnly}
                 value={parentRelationship}
                 onChange={(e) => setParentRelationship(e.target.value)}
                 required
@@ -464,18 +614,31 @@ const User = () => {
             </div>
           </div>
           <div className="btn-container-user">
-          <button onClick={() => navigate('/home/accounts')} className="cancel-button-register">
-            Cancel
-          </button>
-          <button type="submit" className="submit-button-register">
-            Register
-          </button>
-         
+            <button
+              onClick={() => navigate("/home/accounts")}
+              className="cancel-button-register"
+            >
+              Cancel
+            </button>
+            <button
+              className="delete-button-register"
+              onClick={() => handleDelete(initialData._id)}
+            >
+              Delete
+            </button>
+            {!readOnly && (
+              <button type="submit" className="submit-button-register">
+                {isUpdate ? "Update" : "Register"}
+              </button>
+            )}
           </div>
-         
-          
         </div>
       </form>
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={handleCloseConfirm}
+        onConfirm={handleConfirmDelete}
+      />
     </motion.div>
   );
 };

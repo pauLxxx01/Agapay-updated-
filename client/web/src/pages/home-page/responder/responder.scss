@@ -66,3 +66,12 @@
   border: 1px solid #eee;
   background-color: #fff;
 }
+tr:hover{
+  background-color: rgba(213, 210, 210, 0.16);
+  cursor: pointer;
+
+}
+tr{
+  transition: all 0.3s ease-in-out;
+ 
+}

@@ -80,19 +80,19 @@ const ShowProgress = ({ navigation, route }) => {
     const initialize = async () => {
       setLoading(true);
       console.log(report);
-      const percentage = String(report[0]?.percentage);
-      console.log("percentage: ", percentage);
+      // const percentage = String(report[0]?.percentage);
+      // console.log("percentage: ", percentage);
       try {
         // Match current progress
-        const matchInfos = progressReportInformation.find(
-          (info) => String(info.percentage) === percentage
-        );
+        // const matchInfos = progressReportInformation.find(
+        //   (info) => String(info.percentage) === percentage
+        // );
 
-        console.log("match infos: ", matchInfos);
-        
-        setCurrentMessage(matchInfos?.message || "Progress underway...");
+        // console.log("match infos: ", matchInfos);
 
-        // Fetch admin data
+        // setCurrentMessage(matchInfos?.message || "Progress underway...");
+
+        // // Fetch admin data
         const fetchAdmins = async () => {
           try {
             const adminResponse = await axios.get("/getAdmin");
@@ -149,6 +149,16 @@ const ShowProgress = ({ navigation, route }) => {
       socket.off("progressUpdate");
     };
   }, [socket]);
+
+  useEffect(() => {
+    if (report && report.length > 0) {
+      const percentage = String(report[0]?.percentage);
+      const matchInfos = progressReportInformation.find(
+        (info) => String(info.percentage) === percentage
+      );
+      setCurrentMessage(matchInfos?.message || "Progress underway...");
+    }
+  }, [report]);
 
   useEffect(() => {
     if (currentMessage) {
@@ -244,9 +254,12 @@ const ShowProgress = ({ navigation, route }) => {
 
   const handleCompletionClose = () => {
     setIsReportComplete(false);
-    navigation.navigate("Homepage");
+    navigation.navigate("Feedback");
   };
-
+  let hours = Math.floor(travelTime / 60);
+  let minutes = Math.round(travelTime % 60);
+  let timeMessage =
+    hours > 0 ? `${hours} hours and ${minutes} minutes` : `${minutes} minutes`;
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.progressContainer}>
@@ -264,7 +277,22 @@ const ShowProgress = ({ navigation, route }) => {
         <View style={styles.dot} />
         <Text style={styles.messageText}>{currentMessage}</Text>
       </Animated.View>
-
+      <View>
+        <Text
+          style={{
+            fontSize: 18,
+            color: "maroon",
+            textAlign: "center",
+            fontWeight: "bold",
+          }}
+        >
+          HELP IS COMING!
+        </Text>
+        <Text style={{ fontSize: 12, textAlign: "center", color: "maroon" }}>
+          Please give us just a moment. Our responders are rushing to assist you
+          as quickly as possible.
+        </Text>
+      </View>
       <MapView
         style={styles.map}
         initialRegion={origin ? userLocation : mapRegion}
@@ -294,14 +322,17 @@ const ShowProgress = ({ navigation, route }) => {
           )}
       </MapView>
       {travelTime !== null && (
-        <Text style={styles.travelTimeText}>
-          Estimated Travel Time:
-          <Text style={{ fontWeight: "bold" }}>
-            {" "}
-            {Math.round(travelTime)} minutes
+        <View>
+          <Text style={styles.travelTimeText}>Estimated travel time:</Text>
+          <Text style={styles.travelTimeText}>
+            <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+              {" "}
+              {timeMessage}
+            </Text>
           </Text>
-        </Text>
+        </View>
       )}
+
       <View style={styles.floatingButtonContainer}>
         <TouchableOpacity
           style={styles.floatingButton}
@@ -369,6 +400,7 @@ const ShowProgress = ({ navigation, route }) => {
               Thank you for using our application! Your report is now complete.
               Explore more features anytime.
             </Text>
+           
             <TouchableOpacity
               style={styles.closeButton}
               onPress={handleCompletionClose}
@@ -392,7 +424,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   travelTimeText: {
+    textAlign: "center",
     color: "maroon",
+    fontSize: 12,
   },
   progressContainer: {
     position: "absolute",
@@ -487,7 +521,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   messageText: {
-    fontSize: isSmallDevice ? 14 : 16,
+    fontSize: isSmallDevice ? 12 : 14,
     color: "#FFF",
   },
   messageContainer: {
@@ -519,7 +553,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   modalText: {
-    fontSize: 16,
+    fontSize: 12,
     marginBottom: 20,
     textAlign: "center",
   },

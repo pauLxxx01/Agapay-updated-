@@ -7,9 +7,9 @@
   gap: 12px;
 }
 .btn-search {
-  margin-bottom: 12px;
+
   display: flex;
-  margin-bottom: 12px;
+  
   justify-content: flex-end;
   input[type="search"] {
     width: 50%;
@@ -44,39 +44,38 @@
     transform: scale(0.95);
   }
 }
-.count-container{
- display: flex;
+.count-container {
+  display: flex;
   justify-content: flex-end;
 }
-  .count-announcement {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    width: 25%;
-    padding: 10px 15px;
-    border-radius: 12px;
-    position: relative;
-    overflow: hidden;
-    color: maroon; 
-   
-    transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.24);
-    border-right: 1px solid rgba(0, 0, 0, 0.24);
-    .dataCount {
-      padding-bottom: 12px;
-      &:first-child {
-        font-weight: 900;
-        font-size: 70px;
-      }
-      &:last-child {
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-size: 12px;
-        text-align: center;
-      }
+.count-announcement {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: 25%;
+  padding: 10px 15px;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  color: maroon;
+
+  transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.24);
+  border-right: 1px solid rgba(0, 0, 0, 0.24);
+  .dataCount {
+    padding-bottom: 12px;
+    &:first-child {
+      font-weight: 900;
+      font-size: 70px;
+    }
+    &:last-child {
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 12px;
+      text-align: center;
     }
   }
-
+}
 
 .btn-action-container {
   display: flex;
@@ -86,18 +85,28 @@
   justify-content: center;
   button {
     cursor: pointer;
-    color: $soft-color;
-    background-color: $dark-bg;
+
     border: none;
     padding: 8px 12px;
     border-radius: 5px;
     transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
     &:hover {
       transform: scale(1.05);
-      background-color: rgba(128, 0, 0, 0.333);
-      color: #e0e0e0;
+
     }
   }
+  .view-btn {
+    background-color: #007bff;
+  }
+  .hide-btn {
+    background-color: red;
+    color: white;
+  }
+  .unhide-btn{
+    background-color: green;
+    color: white;
+  }
+  
 }
 
 .announce-form {
@@ -116,43 +125,46 @@
     position: relative;
   }
   .form-group-announce input {
-    color:maroon;
+    color: maroon;
     font-family: "Arial", sans-serif;
     width: 100%;
-    font-size: 16px;
+    font-size: 12px;
     padding: 12px;
     border-radius: 8px;
     background-color: transparent;
-    border: none;
+   
   }
 
   input::placeholder {
     font-weight: bold;
+ 
     color: maroon;
     text-transform: uppercase;
   }
   textarea::placeholder {
+ font-family: sans-serif;
     color: rgba(128, 0, 0, 0.318);
     text-transform: uppercase;
   }
   label {
     width: 30%;
     padding: 12px;
+    font-size: 12px;
     color: maroon;
     font-weight: bold;
     text-transform: uppercase;
   }
   textarea {
     font-family: "Arial", sans-serif;
-    min-width: 500px;
+   width: 100%;
     min-height: 200px;
-    font-size: 16px;
+    font-size: 12px;
     color: maroon;
     resize: none;
     padding: 12px;
     background-color: white;
     border-radius: 8px;
-    border: 0.5px solid rgba(189, 189, 189, 0.178);
+    border: 0.5px solid rgba(14, 14, 14, 0.178);
   }
   .time {
     display: flex;
@@ -162,20 +174,18 @@
   textarea:focus {
     outline: none;
   }
-  
 }
 
-.modal-header{
+.modal-header {
   display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-end;
+
   padding: 12px 0;
-  h2{
+  h2 {
     font-size: 24px;
     color: maroon;
   }
-  .close-btn{
+  .close-btn {
     background-color: transparent;
     border: none;
     font-size: 22px;
@@ -184,42 +194,101 @@
     width: 30px;
     height: 30px;
     transition: background-color 0.3s ease, color 0.3s ease;
-    &:hover{
-
+    &:hover {
       border-radius: 10px;
       background-color: rgba(128, 128, 128, 0.226);
-      
     }
   }
- 
-  
 }
-.modal-body{
+.modal-body {
   display: flex;
   flex-direction: column;
   gap: 1em;
   width: 100%;
 }
-.info-item{
+.info-item {
   display: flex;
   flex-direction: column;
 
-  h3{
-    font-size: 18px;
+  h3 {
+    font-size: 16px;
     text-transform: uppercase;
     color: maroon;
-    font-weight: bolder;
-    
+    font-weight: bold;
   }
+  p {
+    font-size: calc(100% - 2.5px);
+  }
+ 
+
 }
-.announceTitle{
+.announceTitle {
   font-size: 18px;
   font-weight: bold;
   background-color: maroon;
   color: white;
-  padding: 12px;
-  border-radius: 12px;
+  padding: 8px;
   display: flex;
   justify-content: center;
+}
+.btnHideAndUnhide {
+  display: flex;
+ 
+  justify-content: flex-end;
+  .linksHide {
+    cursor: pointer;
+    
+    border: none;
+    background-color: transparent;
+    position: relative; /* Add this for positioning the underline */
+   
 
+    &:hover {
+      /* Add an underline that animates from start to end */
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 1px; /* Adjust the height of the underline */
+        background-color: maroon; /* Match the color of the text */
+        animation: underline 0.5s ease-in-out forwards;
+      }
+    }
+  }
+
+  @keyframes underline {
+    0% {
+      width: 0;
+    }
+    100% {
+      width: 100%;
+    }
+  }
+}
+.modalContainer {
+  position: fixed;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background-color: white;
+  padding: 42px;
+  color: maroon;
+}
+.modals{
+  position: fixed;
+  top: 0;
+ 
+  width: 100%;
+  background-color: white;
+ display: flex;
+ justify-content: center;
+  color: maroon;
+}
+.form-container-announce {
+  width: 60%;
+  background-color: #f9f9f9; /* Light background color */
+  border-radius: 10px; /* Rounded corners for a smoother look */
+  box-shadow: 18px 15px 20px 20px rgba(0, 0, 0, 0.1);
 }

@@ -44,14 +44,53 @@
   background-color: maroon;
   color: #fff;
   border: none;
-  padding: 10px 20px;
+  padding: 8px 18px;
   font-size: 16px;
   cursor: pointer;
   border-radius: 12px;
   width: 50%;
+  transition: background-color 0.3s ease-in-out, scale 0.3s ease-in-out;
+ scale: 0.99;
+ &:hover{
+  background-color: maroon;
+  scale: 1;
+  }
 }
 .btn-primary{
+  background-color: transparent;
   width: 100%;
+  &:hover{
+    background-color: transparent;
+  }
+ 
+}
+.cancel{
+  background-color: #fe9d00;
+  color: white;
+ transition: background-color 0.3s ease-in-out, scale 0.3s ease-in-out;
+ scale: 0.95;
+ &:hover{
+    background-color: #fe9d00;
+  scale: 1;
+  }
+}
+.delete{
+  background-color: maroon;
+  transition: background-color 0.3s ease-in-out, scale 0.3s ease-in-out;
+  scale: 0.95;
+  &:hover{
+    background-color:  maroon;
+  scale: 1;
+  }
+}
+.update{
+  background-color: green;
+  transition: background-color 0.3s ease-in-out, scale 0.3s ease-in-out;
+  scale: 0.95;
+  &:hover{
+    background-color: green;
+  scale: 1;
+  }
 }
 .btn-container{
   display: flex;

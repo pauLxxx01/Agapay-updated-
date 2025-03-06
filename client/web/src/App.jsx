@@ -24,6 +24,9 @@ import { Screen, Layout } from "./layout/layout.jsx";
 import ResponderRegister from "./Accounts/Responder/responder-registration/responder-register.jsx";
 import ResponderAccounts from "./Accounts/Responder/responder-accounts/responder-display";
 
+import ResponderWrapper from "./Accounts/Responder/responder-accounts/responderWrapper.jsx";
+import UserWrapper from "./Accounts/Users/user-accounts/userWrapper.jsx";
+
 import { ToastContainer } from "react-toastify"; // Import ToastContainer
 import "react-toastify/dist/ReactToastify.css"; // Import toastify styles
 import { AuthProvider } from "./context/authContext.jsx";
@@ -162,18 +165,18 @@ function App() {
           ),
         },
         {
-          path: "/home/responder/registration",
+          path: "/home/responder/registration/:isUpdate",
           element: (
             <PrivateRoute>
-              <ResponderRegister />
+              <ResponderWrapper />
             </PrivateRoute>
           ),
         },
         {
-          path: "/home/account/user/registration",
+          path: "/home/account/user/registration/:isUpdate",
           element: (
             <PrivateRoute>
-              <UserRegistration />
+              <UserWrapper />
             </PrivateRoute>
           )
         }

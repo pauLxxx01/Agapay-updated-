@@ -7,9 +7,9 @@ import Accounts from "../responder/responder.jsx";
 
 const AccountCatagory = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState("Accounts");
+  const [selectedOption, setSelectedOption] = useState("Users");
   const dropdownRef = useRef(null);
-  const options = ["Accounts", "Responders"];
+  const options = ["Users", "Responders"];
   const placeholder = "Select an account";
 
   // Toggle dropdown open/close
@@ -22,18 +22,19 @@ const AccountCatagory = () => {
     selectedOptions(option); // Call selectedOptions here
   };
 
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState("user");
 
   // Update selected based on selectedOption
   const selectedOptions = (option) => {
     switch (option) {
-      case "Accounts":
-        setSelected("accounts");
+      case "Users":
+        setSelected("user");
         break;
       case "Responders":
         setSelected("responder");
         break;
       default:
+      
         console.log("No matching option found.");
     }
   };

@@ -37,18 +37,13 @@ const Progress = ({ navigation, route }) => {
   const [errorMsg, setErrorMsg] = useState(null);
   const [lat, setLat] = useState();
   const [long, setLong] = useState();
-  const [mapRegion, setMapRegion] = useState({
-    latitude: 37.78825,
-    longitude: -122.4324,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
-  });
   const [location, setLocation] = useState(null);
+  const [mapRegion, setMapRegion] = useState(null);
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        setErrorMessage("Permission to access location was denied");
+        Alert("Permission to access location was denied");
         return;
       }
 
@@ -91,42 +86,6 @@ const Progress = ({ navigation, route }) => {
       console.error(error);
     }
   };
-  // const getLocation = async () => {
-  //   let servicesEnabled = await Location.hasServicesEnabledAsync();
-  //   if (!servicesEnabled) {
-  //     Alert.alert(
-  //       "Location Services Disabled",
-  //       "Please enable location services to continue."
-  //     );
-  //     return;
-  //   }
-
-  //   let { status } = await Location.requestForegroundPermissionsAsync();
-  //   if (status !== "granted") {
-  //     setErrorMsg("Permission to access location was denied");
-  //     return;
-  //   }
-
-  //   let location = await Location.getCurrentPositionAsync({
-  //     accuracy: Location.Accuracy.High,
-  //     maximumAge: 10000,
-  //     timeout: 5000,
-  //   });
-  //   setMapRegion({
-  //     latitude: location.coords.latitude,
-  //     longitude: location.coords.longitude,
-  //     latitudeDelta: 0.0999,
-  // longitudeDelta: 0.000999,
-  //   });
-  //   setLocationApproved(true);
-  //   handleLocationApproved()
-  //   console.log(location);
-  //   console.log("lat:", location.coords.latitude);
-  //   console.log("long:", location.coords.longitude);
-  //   // Update state with the location coordinates
-  //   setLat(location.coords.latitude);
-  //   setLong(location.coords.longitude);
-  // };
 
   const { name, img, photoUri, ...reminder } = route.params;
   const [state] = useContext(AuthContext);
@@ -141,7 +100,12 @@ const Progress = ({ navigation, route }) => {
   const [buttonEnabled, setButtonEnabled] = useState(false); // New state for button enabled
 
   console.log(buttonEnabled);
-  console.log(reportText, capturedPhotos.length, selectedValue, isLocationApproved)
+  console.log(
+    reportText,
+    capturedPhotos.length,
+    selectedValue,
+    isLocationApproved
+  );
   const handleLocationApproved = () => {
     setIsLocationApproved(true);
   };
@@ -176,7 +140,7 @@ const Progress = ({ navigation, route }) => {
     }
   };
   useEffect(() => {
-    checkButtonEnabled(); 
+    checkButtonEnabled();
   }, [reportText, capturedPhotos, selectedValue, isLocationApproved]);
 
   const handleSubmit = async () => {
@@ -329,15 +293,22 @@ const Progress = ({ navigation, route }) => {
             onChangeText={setReportText}
           />
         </View>
-        <MapView style={styles.map} region={mapRegion}>
-          <Marker
-            coordinate={{
-              latitude: mapRegion.latitude,
-              longitude: mapRegion.longitude,
-            }}
-            title="My Location"
-          />
-        </MapView>
+        {mapRegion ? (
+          <MapView style={styles.map} region={mapRegion}>
+            <Marker
+              coordinate={{
+                latitude: mapRegion.latitude,
+                longitude: mapRegion.longitude,
+              }}
+              title="My Location"
+            />
+          </MapView>
+        ) : (
+          <Text style={{ textAlign: "center", padding: 20, color: "white" }}>
+            Not yet located
+          </Text>
+        )}
+
         <View style={styles.buttonContainer}>
           <Button title="Get My Location" onPress={handleGetLocation} />
         </View>
@@ -413,7 +384,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   locationContainer: {
-  
     marginBottom: width * 0.04, // Spacing before the button
   },
   headerTitle: {
@@ -463,7 +433,7 @@ const styles = StyleSheet.create({
   imageScrollView: {
     backgroundColor: "#fff",
     borderRadius: 10,
-   
+
     padding: 5,
     borderWidth: 1,
     borderColor: secondaryColor,
@@ -536,7 +506,7 @@ const styles = StyleSheet.create({
     borderColor: secondaryColor,
     borderWidth: 1,
     height: width * 0.3, // Fixed height for the container
-    overflow: 'hidden', // Clip content that overflows
+    overflow: "hidden", // Clip content that overflows
   },
   input: {
     fontSize: width * 0.04,

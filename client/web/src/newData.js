@@ -224,6 +224,7 @@ export const responderTable = [
     KEY: "emergency_role",
     Label: "Emergency Role",
   },
+ 
 ];
 
 export const accountsHeaderTable = [
@@ -249,6 +250,7 @@ export const accountsHeaderTable = [
     KEY: "degree",
     Label: "COURSE",
   },
+ 
 ];
 
 export const announcementHeaderTable = [

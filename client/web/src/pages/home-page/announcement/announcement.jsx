@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useContext } from "react";
+import  { useEffect, useState, useContext } from "react";
 import { fadeIn, zoomIn } from "../../../variants";
 import { motion } from "framer-motion";
 import axios from "axios";
 import Loading from "../../../components/loading/loading";
 import "./announcement.scss";
-import { announcementHeaderTable, headerTableAnnounce } from "../../../newData";
+import { announcementHeaderTable } from "../../../newData";
 
 import { AuthContext } from "../../../context/authContext";
 import {
@@ -13,11 +13,11 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Grow,
   IconButton,
   Menu,
   Typography,
   MenuItem,
+  Alert,
 } from "@mui/material";
 import { useSocket } from "../../../socket/Socket";
 
@@ -263,177 +263,13 @@ const Announcement = () => {
   return (
     <motion.div variants={zoomIn(0.1)} initial="hidden" whileInView="show">
       <div className="title">
-        <h1>{showHiddenAnnouncements ? "Hidden Announcement" : "Announcement"}</h1>
+        <h1>
+          {showHiddenAnnouncements ? "Hidden Announcement" : "Announcement"}
+        </h1>
       </div>
 
       <div className="announcement-container">
-        {isModalViewOpen && (
-          <div>
-            <div className="modal">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h2>Announcement Details</h2>
-
-                  <button onClick={closeUpdateModal} className="close-btn">
-                    &times;
-                  </button>
-                </div>
-                <div className="modal-body">
-                  <div className="info-item">
-                    <p className="announceTitle">{title}</p>
-                  </div>
-                  <div className="info-item">
-                    <h3>{topic}</h3>
-                    <p>{description}</p>
-                  </div>
-
-                  <div className="info-item">
-                    <h3>Department:</h3>
-                    <p>{department}</p>
-                  </div>
-                  <div className="info-item">
-                    <h3>Date:</h3>
-                    <p>{formatDate(date)}</p>
-                  </div>
-
-                  <div className="info-item">
-                    <h3>Duration:</h3>
-                    <p>{duration}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {isModalOpen && (
-          <div>
-            <div className="modals">
-              <div className="form-container-announce">
-                <form className="announce-form" onSubmit={handleToConfirm}>
-                  <div className="header-container">
-                    <h2>Announcement</h2>
-                  </div>
-
-                  <div className="announce-container">
-                    <div className="announce-info">
-                      <div className="form-group-announce">
-                        <input
-                          placeholder="Title"
-                          type="text"
-                          value={title}
-                          onChange={(e) => setTitle(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div className="form-group-announce">
-                        <input
-                          type="datetime-local"
-                          value={date}
-                          onChange={(e) => setDate(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div className="form-group-announce">
-                        <div className="time">
-                          <label htmlFor="start">Start</label>
-
-                          <input
-                            id="start"
-                            type="time"
-                            value={start}
-                            onChange={(e) => {
-                              setStart(e.target.value);
-                            }}
-                            required
-                          />
-                          <label htmlFor="end">End</label>
-                          <input
-                            id="end"
-                            type="time"
-                            value={end}
-                            onChange={(e) => setEnd(e.target.value)}
-                            required
-                          />
-                        </div>
-                      </div>
-                      <div className="form-group-announce">
-                        <input
-                          placeholder="Topic"
-                          type="text"
-                          value={topic}
-                          onChange={(e) => setTopic(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="role">From</label>
-                        <select
-                          id="role"
-                          value={department}
-                          onChange={(e) => setDepartment(e.target.value)}
-                          required
-                        >
-                          <option value="" disabled>
-                            Select department...
-                          </option>
-                          <option value="Health and Safety Office">
-                            Health and Safety Office
-                          </option>
-                          <option value="Admission Office">
-                            Admission Office
-                          </option>
-                          <option value="General Services Department">
-                            General Services Department
-                          </option>
-                          <option value="Information & Communications Technology Department">
-                            Information & Communications Technology Department
-                          </option>
-                          <option value="Human Resource Department">
-                            Human Resource Department
-                          </option>
-                          <option value="Medical and Dental Services">
-                            Medical and Dental Services
-                          </option>
-                          <option value="Office of Student Affairs & Services">
-                            Office of Student Affairs & Services
-                          </option>
-                          <option value="Registrar's Office">
-                            Registrar's Office
-                          </option>
-                          <option value="University Laboratories">
-                            University Laboratories
-                          </option>
-                        </select>
-                      </div>
-                      <div className="form-group-announce">
-                        <textarea
-                          placeholder="Description..."
-                          type="text"
-                          className="message-input"
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          required
-                        />
-                      </div>{" "}
-                    </div>
-
-                    <button
-                      type="button"
-                      className="cancel-btn"
-                      onClick={closeUpdateModal}
-                    >
-                      Cancel
-                    </button>
-                    <button type="submit" className="update-btn">
-                      Send
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
+     
 
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
           <DialogTitle>Confirm Navigation</DialogTitle>
@@ -472,12 +308,15 @@ const Announcement = () => {
           />
         </div>
         <div className="btnHideAndUnhide">
-          <button className="linksHide"  onClick={() => setShowHiddenAnnouncements(!showHiddenAnnouncements)}>
-          <p>
-            {showHiddenAnnouncements
-              ? "Check Latest Announcements?"
-              : "Check Hidden Announcements?"}
-          </p>
+          <button
+            className="linksHide"
+            onClick={() => setShowHiddenAnnouncements(!showHiddenAnnouncements)}
+          >
+            <p>
+              {showHiddenAnnouncements
+                ? "Check Latest Announcements?"
+                : "Check Hidden Announcements?"}
+            </p>
           </button>
         </div>
         <table className="user-table">
@@ -486,7 +325,7 @@ const Announcement = () => {
               {announcementHeaderTable.map((header) => (
                 <th key={header.id}>
                   {header.Label}
-                  {header.KEY !== "number" && header.KEY !== "name" && (
+                  {header.KEY !== "number" && header.KEY !== "action" && (
                     <>
                       <IconButton onClick={(e) => handleClick(e, header.KEY)}>
                         <MoreVertIcon sx={{ color: "white", fontSize: 12 }} />
@@ -691,6 +530,172 @@ const Announcement = () => {
           </motion.div>
         )}
       </div>
+
+      {isModalViewOpen && (
+        <div className="modalContainer">
+              <div className="modalCardContainer">
+                <div className="modal-header">
+                  <button onClick={closeUpdateModal} className="close-btn">
+                    &times;
+                  </button>
+                </div>
+                <div className="modal-body">
+                  <div className="info-item">
+                    <h2 className="announceTitle">{title}</h2>
+                  </div>
+                  <div className="info-item">
+                    <h3>{topic}</h3>
+                    <p>{description}</p>
+                  </div>
+
+                  <div className="info-item">
+                    <h3>Department:</h3>
+                    <p>{department}</p>
+                  </div>
+                  <div className="info-item">
+                    <h3>Date:</h3>
+                    <p>{formatDate(date)}</p>
+                  </div>
+
+                  <div className="info-item">
+                    <h3>Duration:</h3>
+                    <p>{duration}</p>
+                  </div>
+                </div>
+              </div>
+              </div>
+        )}
+
+        
+        {isModalOpen && (
+          <div>
+            <div className="modals">
+              <div className="form-container-announce">
+                <form className="announce-form" onSubmit={handleToConfirm}>
+                  <div className="header-container">
+                    <h2>Announcement</h2>
+                  </div>
+
+                  <div className="announce-container">
+                    <div className="announce-info">
+                      <div className="form-group-announce">
+                        <input
+                          placeholder="Title"
+                          type="text"
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="form-group-announce">
+                        <input
+                          type="datetime-local"
+                          value={date}
+                          onChange={(e) => setDate(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="form-group-announce">
+                        <div className="time">
+                          <label htmlFor="start">Start</label>
+
+                          <input
+                            id="start"
+                            type="time"
+                            value={start}
+                            onChange={(e) => {
+                              setStart(e.target.value);
+                            }}
+                            required
+                          />
+                          <label htmlFor="end">End</label>
+                          <input
+                            id="end"
+                            type="time"
+                            value={end}
+                            onChange={(e) => setEnd(e.target.value)}
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="form-group-announce">
+                        <input
+                          placeholder="Topic"
+                          type="text"
+                          value={topic}
+                          onChange={(e) => setTopic(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="role">From</label>
+                        <select
+                          id="role"
+                          value={department}
+                          onChange={(e) => setDepartment(e.target.value)}
+                          required
+                        >
+                          <option value="" disabled>
+                            Select department...
+                          </option>
+                          <option value="Health and Safety Office">
+                            Health and Safety Office
+                          </option>
+                          <option value="Admission Office">
+                            Admission Office
+                          </option>
+                          <option value="General Services Department">
+                            General Services Department
+                          </option>
+                          <option value="Information & Communications Technology Department">
+                            Information & Communications Technology Department
+                          </option>
+                          <option value="Human Resource Department">
+                            Human Resource Department
+                          </option>
+                          <option value="Medical and Dental Services">
+                            Medical and Dental Services
+                          </option>
+                          <option value="Office of Student Affairs & Services">
+                            Office of Student Affairs & Services
+                          </option>
+                          <option value="Registrar's Office">
+                            Registrar's Office
+                          </option>
+                          <option value="University Laboratories">
+                            University Laboratories
+                          </option>
+                        </select>
+                      </div>
+                      <div className="form-group-announce">
+                        <textarea
+                          placeholder="Description..."
+                          type="text"
+                          className="message-input"
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          required
+                        />
+                      </div>{" "}
+                    </div>
+
+                    <button
+                      type="button"
+                      className="cancel-btn"
+                      onClick={closeUpdateModal}
+                    >
+                      Cancel
+                    </button>
+                    <button type="submit" className="update-btn">
+                      Send
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
     </motion.div>
   );
 };
