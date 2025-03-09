@@ -24,6 +24,7 @@ import {
   Polyline,
 } from "@react-google-maps/api";
 import { useNavigate } from "react-router-dom";
+import Loading from "../../../components/loading/loading";
 
 const MessageTable = ({ tableFormat, filteredMessages }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, order: "asc" });
@@ -52,7 +53,6 @@ const MessageTable = ({ tableFormat, filteredMessages }) => {
     console.log("Received success " + JSON.stringify(data));
     setData(data);
     const filter = users.find((user) => user.report_data.includes(data._id));
-    console.log(filter);
     setFilteredUser(filter);
     // Navigate to in-progress report page
   };
@@ -63,6 +63,7 @@ const MessageTable = ({ tableFormat, filteredMessages }) => {
       try {
         const parentId = filteredUser.parent;
 
+        console.log(filteredUser.parent);
         const parentResponse = await axios.get(
           `/user/parent/specific/${parentId}`
         );
@@ -188,6 +189,10 @@ const MessageTable = ({ tableFormat, filteredMessages }) => {
     width: "100%",
     height: "400px",
   };
+
+  if(loading) {
+    return <Loading />
+  }
   return (
     <>
       {isModalOpen && (

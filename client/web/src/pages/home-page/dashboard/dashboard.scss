@@ -67,9 +67,10 @@
     align-items: center;
     letter-spacing: 1px;
     font-size: 16px;
-    background-color: rgba(210, 105, 30, 0.747);
+    background-color: rgb(210, 105, 30);
+   
     &:hover {
-      background-color: rgb(210, 105, 30);
+      background-color: rgba(210, 105, 30, 0.747);
    
     }
   }
@@ -127,10 +128,11 @@
     align-items: center;
     letter-spacing: 1px;
     font-size: 16px;
-    background-color: #f7b42dad;
+    background-color: #f7b32d;
+   
 
     &:hover {
-      background-color: #f7b32d;
+      background-color: #f7b42dad;
       transform: scale(1.05);
       color: $soft-color;
     }
