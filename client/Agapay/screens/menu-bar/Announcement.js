@@ -161,9 +161,10 @@ const Announcement = ({ navigation }) => {
     >
       <View style={styles.flag} />
       <View style={styles.announcementContent}>
-        <Text style={styles.departmentText}>{item.department}</Text>
+      <Text style={styles.titleText}>{item.title}</Text>
+       
         <View style={styles.titleRow}>
-          <Text style={styles.titleText}>{item.title}</Text>
+        <Text style={styles.departmentText}>{item.department}</Text>
           {item._id === pinnedId && (
             <Icon name="push-pin" size={20} style={styles.pinIcon} />
           )}
@@ -344,17 +345,21 @@ const Announcement = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   modalOverlay: {
-    flex: 1,
+display: "flex",
+height: "100%",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContentContainer: {
-    padding: 12  
+    padding: 12  ,
+    height: "60%",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   modalContent: {
-    maxHeight: "85%",
+    
     backgroundColor: "#fff",
     borderRadius: 12,
     paddingVertical: 20,
@@ -460,7 +465,7 @@ const styles = StyleSheet.create({
   },
   departmentText: {
     color: "#555",
-    fontSize: 16,
+    fontSize: 12,
   },
   titleRow: {
     flexDirection: "row",
@@ -468,12 +473,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   titleText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
   },
   dateText: {
     color: "#aaa",
-    fontSize: 14,
+    fontSize: 12,
   },
   pinIcon: {
     color: "#800000",
